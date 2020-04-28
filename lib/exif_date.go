@@ -17,29 +17,29 @@ import (
 
 func formatError(label string, dateString string) (time.Time, error) {
 	var t time.Time
-	return t, fmt.Errorf("Bad Format for %s: %s\n", dateString, label)
+	return t, fmt.Errorf("Bad Format for %s: %s Problem\n", dateString, label)
 }
 
 func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	splitDateTime := strings.Split(exifDateTime, " ")
 	if len(splitDateTime) != 2 {
-		return formatError("No space", exifDateTime)
+		return formatError("Space Problem", exifDateTime)
 	}
 	date := splitDateTime[0]
 	timeOfDay := splitDateTime[1]
 
 	splitDate := strings.Split(date, ":")
 	if len(splitDate) != 3 {
-		return formatError("Date split", exifDateTime)
+		return formatError("Date Split", exifDateTime)
 	}
 
 	year, err := strconv.Atoi(splitDate[0])
 	if err != nil { return formatError("Year", exifDateTime) }
 
-	month, _ := strconv.Atoi(splitDate[1])
+	month, err := strconv.Atoi(splitDate[1])
 	if err != nil { return formatError("Month", exifDateTime) }
 
-	day, _ := strconv.Atoi(splitDate[2])
+	day, err := strconv.Atoi(splitDate[2])
 	if err != nil { return formatError("Day", exifDateTime) }
 
 	splitTime := strings.Split(timeOfDay, ":")
@@ -54,7 +54,7 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	if err != nil { return formatError("Minute", exifDateTime) }
 
 	second, err := strconv.Atoi(splitTime[2])
-	if err != nil { return formatError("Second", exifDateTime) }
+	if err != nil { return formatError("Sec", exifDateTime) }
 
 	t := time.Date(year, time.Month(month), day,
 			hour, minute, second, 0, time.Local)
