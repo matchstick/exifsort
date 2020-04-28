@@ -86,18 +86,21 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 	exifDateEntry.Path = filepath
 
 	f, err := os.Open(filepath)
-	log.PanicIf(err)
+	if err != nil {
+		return entry, err
+	}
 
 	data, err := ioutil.ReadAll(f)
-	log.PanicIf(err)
+	if err != nil {
+		return entry, err
+	}
 
 	rawExif, err := exif.SearchAndExtractExif(data)
 	if err != nil {
 		if err == exif.ErrNoExif {
 			return exifDateEntry, nil
 		}
-
-		log.Panic(err)
+		return exifDateEntry, err
 	}
 
 	// Run the parse.
@@ -132,7 +135,6 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		value, err := ite.Value()
 		if err != nil {
 			if log.Is(err, exifcommon.ErrUnhandledUndefinedTypedTag) == true {
-				fmt.Printf("WARNING: Non-standard undefined tag: [%s] (%04x)\n", ifdPath, tagId)
 				return nil
 			}
 
@@ -161,7 +163,9 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 	}
 
 	_, err = exif.Visit(exifcommon.IfdStandard, im, ti, rawExif, visitor)
-	log.PanicIf(err)
+	if err != nil {
+		return exifDateEntry, err
+	}
 
 	for _, entry := range entries {
 		// TODO Is this the best field? from quick googling it looks
