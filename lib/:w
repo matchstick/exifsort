@@ -21,6 +21,7 @@ func formatError(label string, dateString string) (time.Time, error) {
 }
 
 func extractTimeFromStr(exifDateTime string) (time.Time, error) {
+	fmt.Printf("Extracting %s\n", exifDateTime)
 	splitDateTime := strings.Split(exifDateTime, " ")
 	if len(splitDateTime) != 2 {
 		return formatError("No space", exifDateTime)
@@ -29,35 +30,25 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	timeOfDay := splitDateTime[1]
 
 	splitDate := strings.Split(date, ":")
-	if len(splitDate) != 3 {
+	fmt.Printf("%q\n", splitDate)
+	if len(splitDateTime) != 3 {
 		return formatError("Date split", exifDateTime)
 	}
 
-	year, err := strconv.Atoi(splitDate[0])
-	if err != nil { return formatError("Year", exifDateTime) }
-
+	year, _ := strconv.Atoi(splitDate[0])
 	month, _ := strconv.Atoi(splitDate[1])
-	if err != nil { return formatError("Month", exifDateTime) }
-
 	day, _ := strconv.Atoi(splitDate[2])
-	if err != nil { return formatError("Day", exifDateTime) }
 
 	splitTime := strings.Split(timeOfDay, ":")
 	if len(splitTime) != 3 {
 		return formatError("Time Split", exifDateTime)
 	}
+	hour, _ := strconv.Atoi(splitTime[0])
+	minute, _ := strconv.Atoi(splitTime[1])
+	second, _ := strconv.Atoi(splitTime[2])
 
-	hour, err := strconv.Atoi(splitTime[0])
-	if err != nil { return formatError("Hour", exifDateTime) }
-
-	minute, err := strconv.Atoi(splitTime[1])
-	if err != nil { return formatError("Minute", exifDateTime) }
-
-	second, err := strconv.Atoi(splitTime[2])
-	if err != nil { return formatError("Second", exifDateTime) }
-
-	t := time.Date(year, time.Month(month), day,
-			hour, minute, second, 0, time.Local)
+	t := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.Local)
+	fmt.Printf("%q", t)
 	return t, nil
 }
 
@@ -94,6 +85,7 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 	rawExif, err := exif.SearchAndExtractExif(data)
 	if err != nil {
 		if err == exif.ErrNoExif {
+			fmt.Printf("No EXIF data.\n")
 			return exifDateEntry, nil
 		}
 
@@ -123,6 +115,8 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		it, err := ti.Get(ifdPath, tagId)
 		if err != nil {
 			if log.Is(err, exif.ErrTagNotFound) {
+				// Decide to turn into a log error or not
+				//				fmt.Printf("WARNING: Unknown tag: [%s] (%04x)\n", ifdPath, tagId)
 				return nil
 			} else {
 				log.Panic(err)
@@ -167,8 +161,8 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		// TODO Is this the best field? from quick googling it looks
 		// like the most reliable.
 		if entry.TagName == "DateTimeOriginal" {
-			exifDateEntry.Time, err =
-				extractTimeFromStr(entry.ValueString)
+
+			exifDateEntry.Time, err = extractTimeFromStr(entry.ValueString)
 			if err != nil {
 				return exifDateEntry, err
 			}

@@ -37,7 +37,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	if entry.Valid == false {
+		fmt.Printf("No Exif Data\n")
+		return
+	}
 	fmt.Printf("Retrieved %+v\n", entry)
 //	cmd.Execute()
 }
