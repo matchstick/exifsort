@@ -1,16 +1,42 @@
+/*
+Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
 import (
 	"flag"
 	"fmt"
+// For when we move to cobra
+//	"github.com/matchstick/exifSort/cmd"
 	"github.com/matchstick/exifSort/lib"
 )
 
-func main() {
-	mediaDir := flag.String("media", "bobo", "Directory with Media")
-	flag.Parse()
-	fmt.Println("Hello. Photo Media found here ", *mediaDir)
-	fmt.Println("tail:", flag.Args())
-	exifSort.PhotoSorting()
-}
+var filepathArg = ""
 
+func main() {
+	flag.StringVar(&filepathArg, "filepath", "bobo", "File-path of image")
+	flag.Parse()
+
+	fmt.Println("Opening:", filepathArg)
+	var entry exifSort.ExifDateEntry;
+	var err error
+	entry, err = exifSort.ExtractExifDate(filepathArg)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Retrieved %+v", entry)
+//	cmd.Execute()
+}
