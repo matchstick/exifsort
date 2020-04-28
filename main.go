@@ -26,17 +26,18 @@ import (
 var filepathArg = ""
 
 func main() {
-	flag.StringVar(&filepathArg, "filepath", "bobo", "File-path of image")
+	flag.StringVar(&filepathArg, "filepath", "", "File-path of image")
 	flag.Parse()
+	if filepathArg == "" {
+		panic("Set filepath")
+	}
 
 	fmt.Println("Opening:", filepathArg)
-	var entry exifSort.ExifDateEntry;
-	var err error
-	entry, err = exifSort.ExtractExifDate(filepathArg)
+	entry, err := exifSort.ExtractExifDate(filepathArg)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Retrieved %+v", entry)
+	fmt.Printf("Retrieved %+v\n", entry)
 //	cmd.Execute()
 }

@@ -32,12 +32,7 @@ type ExifDateEntry struct {
 }
 
 func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
-	fmt.Println("Opening:%s", filepath)
-	exifDateEntry := ExifDateEntry {
-		Valid: false,
-		Path: filepath,
-		Date: "",
-	}
+	var exifDateEntry = ExifDateEntry { false, filepath, "" }
 
 	f, err := os.Open(filepath)
 	log.PanicIf(err)
@@ -78,7 +73,8 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		it, err := ti.Get(ifdPath, tagId)
 		if err != nil {
 			if log.Is(err, exif.ErrTagNotFound) {
-				fmt.Printf("WARNING: Unknown tag: [%s] (%04x)\n", ifdPath, tagId)
+				// Decide to turn into a log error or not
+//				fmt.Printf("WARNING: Unknown tag: [%s] (%04x)\n", ifdPath, tagId)
 				return nil
 			} else {
 				log.Panic(err)
@@ -120,12 +116,14 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 	log.PanicIf(err)
 
 	for _, entry := range entries {
-		if entry.TagName == "DateTimeOriginal" || entry.TagName == "DateTime" {
+		// TODO Is this the best field? from quick googling it looks
+		// like the most reliable.
+		if entry.TagName == "DateTimeOriginal" {
+			//TODO figure out time
 			exifDateEntry.Date = entry.ValueString
 		}
-		fmt.Printf("IFD-PATH=[%s] ID=(0x%04x) NAME=[%s] COUNT=(%d) TYPE=[%s] VALUE=[%s]\n",
-			entry.IfdPath, entry.TagId, entry.TagName, entry.UnitCount, entry.TagTypeName, entry.ValueString)
 	}
+	
 	exifDateEntry.Valid = true
 	return exifDateEntry, nil
 }
