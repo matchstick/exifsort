@@ -10,8 +10,8 @@ import (
 
 	"github.com/dsoprea/go-exif/v2"
 	"github.com/dsoprea/go-exif/v2/common"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -34,13 +34,19 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	}
 
 	year, err := strconv.Atoi(splitDate[0])
-	if err != nil { return formatError("Year", exifDateTime) }
+	if err != nil {
+		return formatError("Year", exifDateTime)
+	}
 
 	month, err := strconv.Atoi(splitDate[1])
-	if err != nil { return formatError("Month", exifDateTime) }
+	if err != nil {
+		return formatError("Month", exifDateTime)
+	}
 
 	day, err := strconv.Atoi(splitDate[2])
-	if err != nil { return formatError("Day", exifDateTime) }
+	if err != nil {
+		return formatError("Day", exifDateTime)
+	}
 
 	splitTime := strings.Split(timeOfDay, ":")
 	if len(splitTime) != 3 {
@@ -48,16 +54,22 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	}
 
 	hour, err := strconv.Atoi(splitTime[0])
-	if err != nil { return formatError("Hour", exifDateTime) }
+	if err != nil {
+		return formatError("Hour", exifDateTime)
+	}
 
 	minute, err := strconv.Atoi(splitTime[1])
-	if err != nil { return formatError("Minute", exifDateTime) }
+	if err != nil {
+		return formatError("Minute", exifDateTime)
+	}
 
 	second, err := strconv.Atoi(splitTime[2])
-	if err != nil { return formatError("Sec", exifDateTime) }
+	if err != nil {
+		return formatError("Sec", exifDateTime)
+	}
 
 	t := time.Date(year, time.Month(month), day,
-			hour, minute, second, 0, time.Local)
+		hour, minute, second, 0, time.Local)
 	return t, nil
 }
 
@@ -77,7 +89,7 @@ type IfdEntry struct {
 type ExifDateEntry struct {
 	Valid bool
 	Path  string
-	Time time.Time
+	Time  time.Time
 }
 
 func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {

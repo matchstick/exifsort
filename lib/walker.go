@@ -49,7 +49,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	}
 	// Only looking for media files that may have exif.
 	skip, err := skipFileType(path)
-	if  err != nil {
+	if err != nil {
 		fmt.Printf("%q\n", err)
 		return nil
 	}

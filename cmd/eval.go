@@ -25,11 +25,11 @@ import (
 )
 
 func fileReadable(filename string) error {
-         file, err := os.OpenFile(filename, os.O_RDONLY, 0666)
-         defer file.Close()
-         if err != nil {
+	file, err := os.OpenFile(filename, os.O_RDONLY, 0666)
+	defer file.Close()
+	if err != nil {
 		return err
-         }
+	}
 	return nil
 }
 
@@ -38,7 +38,7 @@ var evalCmd = &cobra.Command{
 	Use:   "eval",
 	Short: "Evals exif date data for one file only",
 	Long: `Usage: exifSort eval <filename>
-retreives the date data for one file from it's exif data. `, 
+retreives the date data for one file from it's exif data. `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Eval: " + strings.Join(args, " "))
 		filePath := args[0]
