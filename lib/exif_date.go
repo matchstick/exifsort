@@ -183,14 +183,15 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		// TODO Is this the best field? from quick googling it looks
 		// like the most reliable.
 		if entry.TagName == "DateTimeOriginal" {
+			exifDateEntry.Valid = true
 			exifDateEntry.Time, err =
 				extractTimeFromStr(entry.ValueString)
 			if err != nil {
 				return exifDateEntry, err
 			}
+			break
 		}
 	}
 
-	exifDateEntry.Valid = true
 	return exifDateEntry, nil
 }

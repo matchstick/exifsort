@@ -77,10 +77,10 @@ func TestExtractExifDate(t *testing.T) {
 
 	entry, err = ExtractExifDate(invalidExifPath)
 	if err != nil {
-		t.Errorf("Unexpected Error with good input file\n")
+		t.Errorf("Expected Error with good invalid Exif file\n")
 	}
-	if invalidEntry.Valid != false {
-		t.Errorf("Unexpected valid Entry with invalid file\n")
+	if entry.Valid != false {
+		t.Errorf("Unexpected invalid Entry with invalid Exif file\n")
 	}
 
 	nonePath := "../gobofragggle"

@@ -6,36 +6,35 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-func skipFileType(path string) (bool, error) {
-
 	// We are going to do this check a lot so let's use a map.
-	exifTypes := map[string]int{
-		"bmp":  1,
-		"CR2":  1,
-		"dng":  1,
-		"gif":  1,
-		"jpeg": 1,
-		"jpg":  1,
-		"nef":  1,
-		"png":  1,
-		"psd":  1,
-		"RAF":  1,
-		"raw":  1,
-		"tif":  1,
-		"tiff": 1,
+var	exifTypes = map[string]bool{
+		"bmp":  true,
+		"cr2":  true,
+		"dng":  true,
+		"gif":  true,
+		"jpeg": true,
+		"jpg":  true,
+		"nef":  true,
+		"png":  true,
+		"psd":  true,
+		"raf":  true,
+		"raw":  true,
+		"tif":  true,
+		"tiff": true,
 	}
 
+
+func skipFileType(path string) bool {
 	pieces := strings.Split(path, ".")
 	numPieces := len(pieces)
 	if numPieces < 2 {
-		return false, fmt.Errorf("No suffix to split for %s\n", path)
+		return false
 	}
-	suffix := pieces[numPieces-1]
-	fmt.Printf("Suffix %s\n", suffix)
-	skip := exifTypes[suffix] == 0
-	return skip, nil
+	suffix := strings.ToLower(pieces[numPieces-1])
+	return exifTypes[suffix]
 }
+
+var entries = make([]ExifDateEntry, 0)
 
 func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
@@ -48,13 +47,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 	// Only looking for media files that may have exif.
-	skip, err := skipFileType(path)
-	if err != nil {
-		fmt.Printf("%q\n", err)
-		return nil
-	}
-
-	if skip {
+	if skipFileType(path) {
 		return nil
 	}
 
@@ -62,15 +55,12 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	if entry.Valid == false {
-		fmt.Printf("No Exif Data\n")
-		return nil
-	}
-	fmt.Printf("Retrieved %+v\n", entry)
+	entries = append(entries, entry)
 	return nil
 }
 
 func ScanDir(root string) error {
+
 	err := filepath.Walk(root, scanFunc)
 	if err != nil {
 		return err

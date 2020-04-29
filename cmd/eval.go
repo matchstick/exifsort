@@ -21,7 +21,6 @@ import (
 	"github.com/matchstick/exifSort/lib"
 	"github.com/spf13/cobra"
 	"os"
-	"strings"
 )
 
 func fileReadable(filename string) error {
@@ -39,8 +38,8 @@ var evalCmd = &cobra.Command{
 	Short: "Evals exif date data for one file only",
 	Long: `Usage: exifSort eval <filename>
 retreives the date data for one file from it's exif data. `,
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Eval: " + strings.Join(args, " "))
 		filePath := args[0]
 		err := fileReadable(filePath)
 		if err != nil {
@@ -49,27 +48,21 @@ retreives the date data for one file from it's exif data. `,
 		}
 		entry, err := exifSort.ExtractExifDate(filePath)
 		if err != nil {
-			fmt.Printf("%q\n", err)
+			fmt.Printf("%s\n", err)
 			return
 		}
 		if entry.Valid == false {
-			fmt.Printf("No Exif Data\n")
+			fmt.Printf("None\n")
 			return
 		}
-		fmt.Printf("Retrieved %+v\n", entry)
+		t := entry.Time
+		dateStr := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",
+					t.Year(), t.Month(), t.Day(),
+					t.Hour(), t.Minute(), t.Second())
+		fmt.Printf("%s\n", dateStr)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(evalCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// evalCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// evalCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
