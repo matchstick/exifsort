@@ -23,7 +23,4 @@ var filepathArg = ""
 
 func main() {
 	cmd.Execute()
-//	var rootCmd = &cobra.Command{Use: "app"}
-//	rootCmd.AddCommand(evalCmd, scanCmd, sortCmd)
-//	rootCmd.Execute()
 }
