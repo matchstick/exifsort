@@ -6,23 +6,23 @@ import (
 	"path/filepath"
 	"strings"
 )
-	// We are going to do this check a lot so let's use a map.
-var	exifTypes = map[string]bool{
-		"bmp":  true,
-		"cr2":  true,
-		"dng":  true,
-		"gif":  true,
-		"jpeg": true,
-		"jpg":  true,
-		"nef":  true,
-		"png":  true,
-		"psd":  true,
-		"raf":  true,
-		"raw":  true,
-		"tif":  true,
-		"tiff": true,
-	}
 
+// We are going to do this check a lot so let's use a map.
+var exifTypes = map[string]bool{
+	"bmp":  true,
+	"cr2":  true,
+	"dng":  true,
+	"gif":  true,
+	"jpeg": true,
+	"jpg":  true,
+	"nef":  true,
+	"png":  true,
+	"psd":  true,
+	"raf":  true,
+	"raw":  true,
+	"tif":  true,
+	"tiff": true,
+}
 
 func skipFileType(path string) bool {
 	pieces := strings.Split(path, ".")
