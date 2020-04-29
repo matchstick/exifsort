@@ -9,19 +9,21 @@ Inputs:
 * Progress mode
 * overrride log file exifSort.og
 
-Phase 1:
-Take in inputs
+Take in input:
 	* Config file? 
 	* arg lines?
 
-Phase 2 phase:
-* counting files
-Gathering phase
-* Read EXIF for all files:
-* Display Exif output for:
+exifSort 
+ provide help and list
+
+exifSort -> scan <in dir> <#cpus> <log file> <progress>
+ * walk a directory report of exif state and number of files
+
+exifSort -> sort <in dir> <out dir>  <#cpus> <log file>
+ * walk a directory and then process files to a target directory of nested 
+
+exifSort -> eval <file>
+ * Just extract one file's time info
 	* Totals, percentage
 	* Exif found
 	* Exif not found
-	* 
-Show progress:
-Spinner and also percent of files? with count of files? How do we get 

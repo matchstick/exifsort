@@ -16,31 +16,14 @@ limitations under the License.
 package main
 
 import (
-	"flag"
-	"fmt"
-// For when we move to cobra
-//	"github.com/matchstick/exifSort/cmd"
-	"github.com/matchstick/exifSort/lib"
+	"github.com/matchstick/exifSort/cmd"
 )
 
 var filepathArg = ""
 
 func main() {
-	flag.StringVar(&filepathArg, "filepath", "", "File-path of image")
-	flag.Parse()
-	if filepathArg == "" {
-		panic("Set filepath")
-	}
-
-	fmt.Println("Opening:", filepathArg)
-	entry, err := exifSort.ExtractExifDate(filepathArg)
-	if err != nil {
-		panic(err)
-	}
-	if entry.Valid == false {
-		fmt.Printf("No Exif Data\n")
-		return
-	}
-	fmt.Printf("Retrieved %+v\n", entry)
-//	cmd.Execute()
+	cmd.Execute()
+//	var rootCmd = &cobra.Command{Use: "app"}
+//	rootCmd.AddCommand(evalCmd, scanCmd, sortCmd)
+//	rootCmd.Execute()
 }
