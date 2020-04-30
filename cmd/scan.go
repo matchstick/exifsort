@@ -38,11 +38,8 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 
 		dirPath := args[0]
 		fmt.Printf("scan called on %s\n", dirPath)
-		err := exifSort.ScanDir(dirPath)
-		if err != nil {
-			panic(err)
-		}
-		for _, entry := range exifSort.Entries {
+		go exifSort.ScanDir(dirPath)
+		for entry := range exifSort.EntryChannel {
 			if entry.Valid == false {
 				fmt.Printf("%s,%s\n", entry.Path, "None")
 				continue

@@ -39,7 +39,15 @@ func skipFileType(path string) bool {
 	}
 }
 
-var Entries = make([]ExifDateEntry, 0)
+var EntryChannel = make(chan ExifDateEntry, 100)
+
+func depositEntry(entry ExifDateEntry) {
+	EntryChannel <- entry
+}
+
+func noMoreEntries() {
+	close(EntryChannel)
+}
 
 func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
@@ -60,15 +68,16 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	Entries = append(Entries, entry)
+
+	depositEntry(entry)
 	return nil
 }
 
-func ScanDir(root string) error {
+func ScanDir(root string) {
 
 	err := filepath.Walk(root, scanFunc)
 	if err != nil {
-		return err
+		fmt.Printf("%s\n", err.Error())
 	}
-	return nil
+	noMoreEntries()
 }
