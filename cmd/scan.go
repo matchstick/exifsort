@@ -47,16 +47,7 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 			fmt.Print("Scan requires a directory as an argument\n")
 			return
 		}
-		go exifSort.ScanDir(dirPath)
-		for entry := range exifSort.EntryChannel {
-			if entry.Valid == false {
-				fmt.Printf("%s,%s\n", entry.Path, "None")
-				continue
-			}
-
-			fmt.Printf("%s,%s\n",
-				entry.Path, exifSort.ExifTime(entry.Time))
-		}
+		exifSort.ScanDir(dirPath)
 	},
 }
 

@@ -11,14 +11,14 @@ import (
 func TestSkipFileType(t *testing.T) {
 
 	// Try just gobo.<suffix>
-	for suffix := range exifTypes {
+	for suffix := range mediaSuffixMap {
 		goodInput := fmt.Sprintf("gobo.%s", suffix)
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
 		}
 	}
 	// Try a simple upper case just gobo.<suffix>
-	for suffix := range exifTypes {
+	for suffix := range mediaSuffixMap {
 		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", suffix))
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
@@ -26,7 +26,7 @@ func TestSkipFileType(t *testing.T) {
 	}
 
 	// Try with many "." hey.gobo.<suffix>
-	for suffix := range exifTypes {
+	for suffix := range mediaSuffixMap {
 		goodInput := fmt.Sprintf("hey.gobo.%s", suffix)
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
@@ -37,8 +37,13 @@ func TestSkipFileType(t *testing.T) {
 	if skipFileType(badInput) == false {
 		t.Errorf("Expected False for %s\n", badInput)
 	}
+	badInput = "gobo"
+	if skipFileType(badInput) == false {
+		t.Errorf("Expected False for %s\n", badInput)
+	}
+
 	// Try ".." at the end.<suffix>
-	for suffix := range exifTypes {
+	for suffix := range mediaSuffixMap {
 		badInput := fmt.Sprintf("gobo.%s..", suffix)
 		if skipFileType(badInput) == false {
 			t.Errorf("Expected False for %s\n", badInput)
@@ -60,7 +65,7 @@ func populateExifDir(t *testing.T, dir string, withExif bool, num int) {
 		t.Fatal(err)
 	}
 	for i := 0; i < num; i++ {
-		targetPath := fmt.Sprintf("%s/file%d\n", dir, uniqFileNo)
+		targetPath := fmt.Sprintf("%s/file%d", dir, uniqFileNo)
 		uniqFileNo++
 		err := ioutil.WriteFile(targetPath, content, 0644)
 		if err != nil {
@@ -101,9 +106,28 @@ func buildTestDir(t *testing.T) string {
 
 func TestScanDir(t *testing.T) {
 	tmpPath := buildTestDir(t)
-	err := ScanDir(tmpPath)
-	if err != nil {
-		t.Fatal(err)
-	}
 	defer os.RemoveAll(tmpPath)
+
+	ScanDir(tmpPath)
+/*
+	TODO use when summary is implemented
+	CorrectNumInvalid := 50
+	CorrectNumValid   := 75
+	numInvalid := 0
+	numValid := 0
+
+
+	if entry.Valid {
+		numValid++
+	} else {
+		numInvalid++
+	}
+
+	if CorrectNumInvalid != numInvalid {
+		t.Errorf("Expected %d Invalid Count. Got %d\n", CorrectNumInvalid, numInvalid)
+	}
+	if CorrectNumValid != numValid {
+		t.Errorf("Expected %d Valid Count. Got %d\n", CorrectNumValid, numValid)
+	}
+*/
 }
