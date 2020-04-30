@@ -31,10 +31,15 @@ func skipFileType(path string) bool {
 		return false
 	}
 	suffix := strings.ToLower(pieces[numPieces-1])
-	return exifTypes[suffix]
+	_, ok := exifTypes[suffix]
+	if ok {
+		return false
+	} else {
+		return true
+	}
 }
 
-var entries = make([]ExifDateEntry, 0)
+var Entries = make([]ExifDateEntry, 0)
 
 func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
@@ -55,7 +60,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	entries = append(entries, entry)
+	Entries = append(Entries, entry)
 	return nil
 }
 

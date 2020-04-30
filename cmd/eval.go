@@ -55,11 +55,7 @@ retreives the date data for one file from it's exif data. `,
 			fmt.Printf("None\n")
 			return
 		}
-		t := entry.Time
-		dateStr := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",
-			t.Year(), t.Month(), t.Day(),
-			t.Hour(), t.Minute(), t.Second())
-		fmt.Printf("%s\n", dateStr)
+		fmt.Printf("%s\n", exifSort.ExifTime(entry.Time))
 	},
 }
 

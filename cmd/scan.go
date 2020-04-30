@@ -36,11 +36,20 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		fmt.Println("scan called")
 		dirPath := args[0]
+		fmt.Printf("scan called on %s\n", dirPath)
 		err := exifSort.ScanDir(dirPath)
 		if err != nil {
 			panic(err)
+		}
+		for _, entry := range exifSort.Entries {
+			if entry.Valid == false {
+				fmt.Printf("%s,%s\n", entry.Path, "None")
+				continue
+			}
+
+			fmt.Printf("%s,%s\n",
+			entry.Path, exifSort.ExifTime(entry.Time))
 		}
 	},
 }
