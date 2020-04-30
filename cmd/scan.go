@@ -49,7 +49,7 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 			}
 
 			fmt.Printf("%s,%s\n",
-			entry.Path, exifSort.ExifTime(entry.Time))
+				entry.Path, exifSort.ExifTime(entry.Time))
 		}
 	},
 }
