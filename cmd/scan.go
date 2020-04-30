@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/matchstick/exifSort/lib"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // scanCmd represents the scan command
@@ -37,7 +38,15 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 	Run: func(cmd *cobra.Command, args []string) {
 
 		dirPath := args[0]
-		fmt.Printf("scan called on %s\n", dirPath)
+		info, err := os.Stat(dirPath)
+		if err != nil {
+			fmt.Printf("Error with directory: %s\n", err.Error())
+			return
+		}
+		if info.IsDir() == false {
+			fmt.Print("Scan requires a directory as an argument\n")
+			return
+		}
 		go exifSort.ScanDir(dirPath)
 		for entry := range exifSort.EntryChannel {
 			if entry.Valid == false {
