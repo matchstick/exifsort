@@ -65,16 +65,16 @@ func skipFileType(path string) bool {
 }
 
 type scanStateType struct {
-	skipped uint64
-	validDate uint64
+	skipped     uint64
+	validDate   uint64
 	invalidDate uint64
-	printScan bool
+	printScan   bool
 }
 
 var scanState scanStateType
 
 func resetScanState(printScan bool) {
-	scanState = scanStateType{ 0, 0 , 0, printScan }
+	scanState = scanStateType{0, 0, 0, printScan}
 }
 
 func scanPrintf(s string, params ...interface{}) {
@@ -83,7 +83,7 @@ func scanPrintf(s string, params ...interface{}) {
 	}
 
 	if len(params) == 0 {
-            fmt.Printf(s)
+		fmt.Printf(s)
 	}
 
 	fmt.Printf(s, params...)
