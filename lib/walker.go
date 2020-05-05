@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync/atomic"
 )
 
 // We are going to do this check a lot so let's use a map.
@@ -63,6 +64,31 @@ func skipFileType(path string) bool {
 	return false
 }
 
+type scanStateType struct {
+	skipped uint64
+	validDate uint64
+	invalidDate uint64
+	printScan bool
+}
+
+var scanState scanStateType
+
+func resetScanState(printScan bool) {
+	scanState = scanStateType{ 0, 0 , 0, printScan }
+}
+
+func scanPrintf(s string, params ...interface{}) {
+	if scanState.printScan == false {
+		return
+	}
+
+	if len(params) == 0 {
+            fmt.Printf(s)
+	}
+
+	fmt.Printf(s, params...)
+}
+
 func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		fmt.Printf("Error accessing path %s\n", path)
@@ -75,6 +101,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	}
 	// Only looking for media files that may have exif.
 	if skipFileType(path) {
+		atomic.AddUint64(&scanState.skipped, 1)
 		return nil
 	}
 
@@ -83,18 +110,33 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 		return err
 	}
 	if entry.Valid == false {
-		fmt.Printf("%s,%s\n", entry.Path, "None")
+		atomic.AddUint64(&scanState.invalidDate, 1)
+		scanPrintf("%s,%s\n", entry.Path, "None")
 		return nil
 	}
 
-	fmt.Printf("%s,%s\n", entry.Path, ExifTime(entry.Time))
+	scanPrintf("%s,%s\n", entry.Path, ExifTime(entry.Time))
+	atomic.AddUint64(&scanState.validDate, 1)
 	return nil
 }
 
-func ScanDir(root string) {
+func ScanDir(root string, summarize bool, printScan bool) {
+	resetScanState(printScan)
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	err := powerwalk.Walk(root, scanFunc)
+	runtime.GOMAXPROCS(1)
+
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
+	}
+
+	if summarize {
+		total := scanState.skipped + scanState.invalidDate +
+			scanState.validDate
+		fmt.Printf("Scanned Valid: %d\n", scanState.validDate)
+		fmt.Printf("Scanned Invalid: %d\n", scanState.invalidDate)
+		fmt.Printf("Scanned Skipped: %d\n", scanState.skipped)
+		fmt.Printf("Scanned Total: %d\n", total)
 	}
 }

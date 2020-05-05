@@ -65,7 +65,7 @@ func populateExifDir(t *testing.T, dir string, withExif bool, num int) {
 		t.Fatal(err)
 	}
 	for i := 0; i < num; i++ {
-		targetPath := fmt.Sprintf("%s/file%d", dir, uniqFileNo)
+		targetPath := fmt.Sprintf("%s/file%d.jpg", dir, uniqFileNo)
 		uniqFileNo++
 		err := ioutil.WriteFile(targetPath, content, 0644)
 		if err != nil {
@@ -108,26 +108,16 @@ func TestScanDir(t *testing.T) {
 	tmpPath := buildTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	ScanDir(tmpPath)
-/*
-	TODO use when summary is implemented
-	CorrectNumInvalid := 50
-	CorrectNumValid   := 75
-	numInvalid := 0
-	numValid := 0
+	ScanDir(tmpPath, false, false)
+	const correctNumInvalid uint64 = 50
+	const correctNumValid uint64 = 75
 
-
-	if entry.Valid {
-		numValid++
-	} else {
-		numInvalid++
+	if correctNumInvalid != scanState.invalidDate {
+		t.Errorf("Expected %d Invalid Count. Got %d\n",
+			correctNumInvalid, scanState.invalidDate)
 	}
-
-	if CorrectNumInvalid != numInvalid {
-		t.Errorf("Expected %d Invalid Count. Got %d\n", CorrectNumInvalid, numInvalid)
+	if correctNumValid != scanState.validDate {
+		t.Errorf("Expected %d Valid Count. Got %d\n",
+			correctNumValid, scanState.validDate)
 	}
-	if CorrectNumValid != numValid {
-		t.Errorf("Expected %d Valid Count. Got %d\n", CorrectNumValid, numValid)
-	}
-*/
 }
