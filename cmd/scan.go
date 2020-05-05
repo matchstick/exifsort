@@ -37,6 +37,9 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		summarize, _ := cmd.Flags().GetBool("summarize")
+
 		dirPath := args[0]
 		info, err := os.Stat(dirPath)
 		if err != nil {
@@ -47,10 +50,12 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 			fmt.Print("Scan requires a directory as an argument\n")
 			return
 		}
-		exifSort.ScanDir(dirPath)
+		exifSort.ScanDir(dirPath, summarize, !quiet)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(scanCmd)
+        scanCmd.Flags().BoolP("quiet", "q", false, "Don't print output while scanning")
+        scanCmd.Flags().BoolP("summarize", "s", false, "Print a summary when done scanning")
 }
