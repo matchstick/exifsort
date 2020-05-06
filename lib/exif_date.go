@@ -10,6 +10,8 @@ import (
 
 	"github.com/dsoprea/go-exif/v2"
 	"github.com/dsoprea/go-exif/v2/common"
+	"github.com/dsoprea/go-exif/v2/undefined"
+
 	"strconv"
 	"strings"
 	"time"
@@ -116,7 +118,6 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 	}
 
 	// Run the parse.
-
 	im := exif.NewIfdMappingWithStandard()
 	ti := exif.NewTagIndex()
 
@@ -140,7 +141,7 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 			if log.Is(err, exif.ErrTagNotFound) {
 				return nil
 			} else {
-				log.Panic(err)
+				return err
 			}
 		}
 
@@ -148,9 +149,11 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		if err != nil {
 			if log.Is(err, exifcommon.ErrUnhandledUndefinedTypedTag) == true {
 				return nil
+			} else if err == exifundefined.ErrUnparseableValue {
+				return nil
 			}
 
-			log.Panic(err)
+			return err
 		}
 
 		valueString, err := ite.FormatFirst()

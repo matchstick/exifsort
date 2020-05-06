@@ -69,12 +69,13 @@ type scanStateType struct {
 	validDate   uint64
 	invalidDate uint64
 	printScan   bool
+	errFiles    []string
 }
 
 var scanState scanStateType
 
 func resetScanState(printScan bool) {
-	scanState = scanStateType{0, 0, 0, printScan}
+	scanState = scanStateType{0, 0, 0, printScan, nil}
 }
 
 func scanPrintf(s string, params ...interface{}) {
@@ -107,17 +108,42 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 
 	entry, err := ExtractExifDate(path)
 	if err != nil {
-		return err
-	}
-	if entry.Valid == false {
-		atomic.AddUint64(&scanState.invalidDate, 1)
-		scanPrintf("%s,%s\n", entry.Path, "None")
+		returnErr := fmt.Errorf("ERROR with File %s with (%s)",
+			path, err.Error())
+		fmt.Println(returnErr)
+		scanState.errFiles = append(scanState.errFiles, path)
 		return nil
 	}
 
-	scanPrintf("%s,%s\n", entry.Path, ExifTime(entry.Time))
+	if entry.Valid == false {
+		atomic.AddUint64(&scanState.invalidDate, 1)
+		scanPrintf("%s, %s\n", entry.Path, "None")
+		return nil
+	}
+
+	scanPrintf("%s, %s\n", entry.Path, ExifTime(entry.Time))
 	atomic.AddUint64(&scanState.validDate, 1)
 	return nil
+}
+
+func scanSummary(summarize bool) {
+	if summarize == false {
+		return
+	}
+	total := scanState.skipped + scanState.invalidDate +
+		scanState.validDate
+	fmt.Printf("Scanned Valid: %d\n", scanState.validDate)
+	fmt.Printf("Scanned Invalid: %d\n", scanState.invalidDate)
+	fmt.Printf("Scanned Skipped: %d\n", scanState.skipped)
+	fmt.Printf("Scanned Total: %d\n", total)
+	if len(scanState.errFiles) == 0 {
+		fmt.Println("No Files caused Errors")
+		return
+	}
+	fmt.Println("Error Files were:")
+	for _, path := range scanState.errFiles {
+		fmt.Printf("\t%s\n", path)
+	}
 }
 
 func ScanDir(root string, summarize bool, printScan bool) {
@@ -128,15 +154,8 @@ func ScanDir(root string, summarize bool, printScan bool) {
 	runtime.GOMAXPROCS(1)
 
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		fmt.Printf("Scan Error (%s)\n", err.Error())
 	}
 
-	if summarize {
-		total := scanState.skipped + scanState.invalidDate +
-			scanState.validDate
-		fmt.Printf("Scanned Valid: %d\n", scanState.validDate)
-		fmt.Printf("Scanned Invalid: %d\n", scanState.invalidDate)
-		fmt.Printf("Scanned Skipped: %d\n", scanState.skipped)
-		fmt.Printf("Scanned Total: %d\n", total)
-	}
+	scanSummary(summarize)
 }
