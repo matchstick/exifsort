@@ -111,6 +111,10 @@ func ExtractExifDate(filepath string) (ExifDateEntry, error) {
 		return entry, err
 	}
 
+	if mc.RootIfd == nil {
+		return entry, err
+	}
+
 	_, found := mc.RootIfd.EntriesByTagId[it.Id]
 	if found == false {
 		return entry, err
