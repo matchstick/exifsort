@@ -33,11 +33,12 @@ var formBadInput = map[string]string{
 	"2008:03:01 12:36:Gobo": "Sec",
 }
 
-func TestExtractTimeFromStr(t *testing.T) {
-	goodString := "2008:03:01 12:36:01"
+func TestGoodTimes(t *testing.T) {
+	good1String := "2008:03:01 12:36:01"
+	good2String := "2008:03:01 12:36:01.34"
 	goodTime := time.Date(2008, time.Month(3), 1, 12, 36, 1, 0, time.Local)
 
-	testTime, err := extractTimeFromStr(goodString)
+	testTime, err := extractTimeFromStr(good1String)
 	if testTime != goodTime {
 		t.Errorf("Return Time is incorrect %q\n", testTime)
 	}
@@ -45,8 +46,19 @@ func TestExtractTimeFromStr(t *testing.T) {
 		t.Errorf("Error is incorrectly not nil %q\n", err)
 	}
 
+	testTime, err = extractTimeFromStr(good2String)
+	if testTime != goodTime {
+		t.Errorf("Return Time is incorrect %q\n", testTime)
+	}
+	if err != nil {
+		t.Errorf("Error is incorrectly not nil %q\n", err)
+	}
+
+}
+
+func TestExtractBadTimeFromStr(t *testing.T) {
 	for input, errLabel := range formBadInput {
-		testTime, err = extractTimeFromStr(input)
+		_, err := extractTimeFromStr(input)
 		if err == nil {
 			t.Fatalf("Expected error on input: %s\n", input)
 		}

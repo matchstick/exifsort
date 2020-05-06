@@ -22,6 +22,22 @@ func formatError(label string, dateString string) (time.Time, error) {
 	return t, fmt.Errorf("Bad Format for %s: %s Problem\n", dateString, label)
 }
 
+// Seconds are funny. The format may be "<sec> <milli>"
+// or it may be with an extra decmial place such as <sec>.<hundredths>
+func extractSecsFractionFromStr(secsStr string) (int, error) {
+	splitSecs := strings.Split(secsStr, ".")
+	if len(splitSecs) != 2 {
+		return 0, fmt.Errorf("Not a fraction second")
+	}
+
+	// We only care about what is in front of the "."
+	secs, err := strconv.Atoi(splitSecs[0])
+	if err != nil {
+		return 0, fmt.Errorf("Not a convertaible second")
+	}
+	return secs, nil
+}
+
 func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	splitDateTime := strings.Split(exifDateTime, " ")
 	if len(splitDateTime) != 2 {
@@ -67,7 +83,10 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 	second, err := strconv.Atoi(splitTime[2])
 	if err != nil {
-		return formatError("Sec", exifDateTime)
+		second, err = extractSecsFractionFromStr(splitTime[2])
+		if err != nil {
+			return formatError("Sec", exifDateTime)
+		}
 	}
 
 	t := time.Date(year, time.Month(month), day,
