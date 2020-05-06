@@ -93,10 +93,10 @@ type ExifDateEntry struct {
 	Time  time.Time
 }
 
-func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
-	var exifDateEntry ExifDateEntry
-	exifDateEntry.Valid = false
-	exifDateEntry.Path = filepath
+func ExtractExifDate(filepath string) (ExifDateEntry, error) {
+	var entry ExifDateEntry
+	entry.Valid = false
+	entry.Path = filepath
 
 	mc, err := exifknife.GetExif(filepath)
 	if err != nil {
@@ -122,11 +122,11 @@ func ExtractExifDate(filepath string) (entry ExifDateEntry, err error) {
 		return entry, err
 	}
 
-	exifDateEntry.Valid = true
-	exifDateEntry.Time, err = extractTimeFromStr(value.(string))
+	entry.Valid = true
+	entry.Time, err = extractTimeFromStr(value.(string))
 	if err != nil {
-		return exifDateEntry, err
+		return entry, err
 	}
 
-	return exifDateEntry, nil
+	return entry, nil
 }

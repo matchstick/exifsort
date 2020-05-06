@@ -146,10 +146,20 @@ func scanSummary(summarize bool) {
 	}
 }
 
-func ScanDir(root string, summarize bool, printScan bool) {
+func ScanDir(root string, summarize bool, printScan bool, cpus int) {
 	resetScanState(printScan)
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	if cpus == 0 {
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	} else if cpus > runtime.NumCPU() {
+		fmt.Printf("Specified %d cpu but only have %d\n",
+			cpus, runtime.NumCPU())
+		return
+	} else {
+		fmt.Printf("Using %d CPUs\n", cpus)
+		runtime.GOMAXPROCS(cpus)
+	}
+
 	err := powerwalk.Walk(root, scanFunc)
 	runtime.GOMAXPROCS(1)
 
