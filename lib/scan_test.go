@@ -108,7 +108,7 @@ func TestScanDir(t *testing.T) {
 	tmpPath := buildTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	ScanDir(tmpPath, false, false, 0)
+	ScanDir(tmpPath, false, false)
 	const correctNumInvalid uint64 = 50
 	const correctNumValid uint64 = 75
 

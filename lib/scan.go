@@ -2,9 +2,8 @@ package exifSort
 
 import (
 	"fmt"
-	"github.com/stretchr/powerwalk"
 	"os"
-	"runtime"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 )
@@ -146,22 +145,10 @@ func scanSummary(summarize bool) {
 	}
 }
 
-func ScanDir(root string, summarize bool, printScan bool, cpus int) {
+func ScanDir(root string, summarize bool, printScan bool) {
 	resetScanState(printScan)
 
-	if cpus == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	} else if cpus > runtime.NumCPU() {
-		fmt.Printf("Specified %d cpu but only have %d\n",
-			cpus, runtime.NumCPU())
-		return
-	} else {
-		fmt.Printf("Using %d CPUs\n", cpus)
-		runtime.GOMAXPROCS(cpus)
-	}
-
-	err := powerwalk.Walk(root, scanFunc)
-	runtime.GOMAXPROCS(1)
+	err := filepath.Walk(root, scanFunc)
 
 	if err != nil {
 		fmt.Printf("Scan Error (%s)\n", err.Error())

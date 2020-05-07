@@ -39,7 +39,6 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 
 		quiet, _ := cmd.Flags().GetBool("quiet")
 		summarize, _ := cmd.Flags().GetBool("summarize")
-		cpus, _ := cmd.Flags().GetInt("cpus")
 
 		dirPath := args[0]
 		info, err := os.Stat(dirPath)
@@ -51,7 +50,7 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 			fmt.Print("Scan requires a directory as an argument\n")
 			return
 		}
-		exifSort.ScanDir(dirPath, summarize, !quiet, cpus)
+		exifSort.ScanDir(dirPath, summarize, !quiet)
 	},
 }
 
@@ -59,5 +58,4 @@ func init() {
 	rootCmd.AddCommand(scanCmd)
 	scanCmd.Flags().BoolP("quiet", "q", false, "Don't print output while scanning")
 	scanCmd.Flags().BoolP("summarize", "s", false, "Print a summary when done scanning")
-	scanCmd.Flags().IntP("cpus", "c", 0, "Number of Cpus; 0 uses max available")
 }
