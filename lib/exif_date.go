@@ -92,7 +92,10 @@ type ExifDateEntry struct {
 	Path  string
 	Time  time.Time
 }
-
+// The return value is subtle here. It is the difference between a broken exif
+// and having one that does not have the time tag.
+// return an err for a broken exif that creates an error on parse
+// return entry.Valid == false for one with a bad entry.
 func ExtractExifDate(filepath string) (ExifDateEntry, error) {
 	var entry ExifDateEntry
 	entry.Valid = false
@@ -112,18 +115,18 @@ func ExtractExifDate(filepath string) (ExifDateEntry, error) {
 	}
 
 	if mc.RootIfd == nil {
-		return entry, err
+		return entry, nil
 	}
 
 	_, found := mc.RootIfd.EntriesByTagId[it.Id]
 	if found == false {
-		return entry, err
+		return entry, nil
 	}
 
 	ite := mc.RootIfd.EntriesByTagId[it.Id][0]
 	value, err := ite.Value()
 	if err != nil {
-		return entry, err
+		return entry, nil
 	}
 
 	entry.Valid = true
