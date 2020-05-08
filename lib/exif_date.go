@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/dsoprea/go-exif-knife"
 	"github.com/dsoprea/go-exif/v2"
-	"github.com/dsoprea/go-exif/v2/common"
+	//"github.com/dsoprea/go-exif/v2/common"
 	"strconv"
 	"strings"
 	"time"
@@ -94,42 +94,40 @@ type ExifDateEntry struct {
 }
 // The return value is subtle here. It is the difference between a broken exif
 // and having one that does not have the time tag.
-// return an err for a broken exif that creates an error on parse
-// return entry.Valid == false for one with a bad entry.
+// return an err for an media file that breaks our exif engine on parse
+// return entry.Valid == false for one wit invalid data after being parsed.
 func ExtractExifDate(filepath string) (ExifDateEntry, error) {
 	var entry ExifDateEntry
 	entry.Valid = false
 	entry.Path = filepath
 
+	// Get the Exif Data and Ifd root
 	mc, err := exifknife.GetExif(filepath)
 	if err != nil {
 		return entry, err
 	}
-
-	ti := exif.NewTagIndex()
-
-	it, err := ti.GetWithName(exifcommon.IfdPathStandard,
-		"DateTime")
-	if err != nil {
-		return entry, err
-	}
-
+	// If the roo is not there there is no exif data
 	if mc.RootIfd == nil {
 		return entry, nil
 	}
 
-	_, found := mc.RootIfd.EntriesByTagId[it.Id]
-	if found == false {
-		return entry, nil
-	}
-
-	ite := mc.RootIfd.EntriesByTagId[it.Id][0]
-	value, err := ite.Value()
+	// See if the EXIF info path is there. We want DateTimeOriginal
+	exifIfd, err := exif.FindIfdFromRootIfd(mc.RootIfd, "IFD/Exif")
 	if err != nil {
 		return entry, nil
 	}
 
+	// Query for DateTimeOriginal
+	results, err := exifIfd.FindTagWithName("DateTimeOriginal")
+	if err != nil  || len(results) != 1 {
+		return entry, nil
+	}
+
+	// Found it, so extract value
+	value, _ := results[0].Value()
 	entry.Valid = true
+
+	// Parse string into Time
 	entry.Time, err = extractTimeFromStr(value.(string))
 	if err != nil {
 		return entry, err

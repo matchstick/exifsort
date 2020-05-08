@@ -107,10 +107,11 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 
 	entry, err := ExtractExifDate(path)
 	if err != nil {
-		returnErr := fmt.Errorf("ERROR with File %s with (%s)",
-			path, err.Error())
+		atomic.AddUint64(&scanState.invalidDate, 1)
+		errStr := fmt.Sprintf("%s with (%s)", path, err.Error())
+		returnErr := fmt.Errorf("ERROR: File %s", errStr)
 		fmt.Println(returnErr)
-		scanState.errFiles = append(scanState.errFiles, path)
+		scanState.errFiles = append(scanState.errFiles, errStr)
 		return nil
 	}
 
