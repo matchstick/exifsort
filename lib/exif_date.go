@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dsoprea/go-exif-knife"
 	"github.com/dsoprea/go-exif/v2"
-	//"github.com/dsoprea/go-exif/v2/common"
 	"strconv"
 	"strings"
 	"time"
@@ -92,6 +91,7 @@ type ExifDateEntry struct {
 	Path  string
 	Time  time.Time
 }
+
 // The return value is subtle here. It is the difference between a broken exif
 // and having one that does not have the time tag.
 // return an err for an media file that breaks our exif engine on parse
@@ -119,7 +119,7 @@ func ExtractExifDate(filepath string) (ExifDateEntry, error) {
 
 	// Query for DateTimeOriginal
 	results, err := exifIfd.FindTagWithName("DateTimeOriginal")
-	if err != nil  || len(results) != 1 {
+	if err != nil || len(results) != 1 {
 		return entry, nil
 	}
 
