@@ -86,52 +86,47 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	return t, nil
 }
 
-type ExifDateEntry struct {
-	Valid bool
-	Path  string
-	Time  time.Time
-}
-
 // The return value is subtle here. It is the difference between a broken exif
 // and having one that does not have the time tag.
 // return an err for an media file that breaks our exif engine on parse
 // return entry.Valid == false for one wit invalid data after being parsed.
-func ExtractExifDate(filepath string) (ExifDateEntry, error) {
-	var entry ExifDateEntry
-	entry.Valid = false
-	entry.Path = filepath
+func ExtractExifTime(filepath string) (time.Time, error) {
 
+	var time time.Time
 	// Get the Exif Data and Ifd root
 	mc, err := exifknife.GetExif(filepath)
 	if err != nil {
-		return entry, err
+		return time, err
 	}
-	// If the roo is not there there is no exif data
+	// If the root is not there there is no exif data
 	if mc.RootIfd == nil {
-		return entry, nil
+		return time, fmt.Errorf("Root Ifd not found.")
 	}
 
 	// See if the EXIF info path is there. We want DateTimeOriginal
 	exifIfd, err := exif.FindIfdFromRootIfd(mc.RootIfd, "IFD/Exif")
 	if err != nil {
-		return entry, nil
+		return time, fmt.Errorf("IFD/Exif not found.")
 	}
 
 	// Query for DateTimeOriginal
 	results, err := exifIfd.FindTagWithName("DateTimeOriginal")
-	if err != nil || len(results) != 1 {
-		return entry, nil
+	if err != nil {
+		return time, fmt.Errorf("DateTimeOriginal Tag not found.")
 	}
+	if len(results) != 1 {
+		return time, fmt.Errorf("Too many DateTimeOriginal Tags found.")
+	}
+
 
 	// Found it, so extract value
 	value, _ := results[0].Value()
-	entry.Valid = true
 
 	// Parse string into Time
-	entry.Time, err = extractTimeFromStr(value.(string))
+	time, err = extractTimeFromStr(value.(string))
 	if err != nil {
-		return entry, err
+		return time, err
 	}
 
-	return entry, nil
+	return time, nil
 }

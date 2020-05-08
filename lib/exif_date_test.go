@@ -69,39 +69,32 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 	}
 }
 
-func TestExtractExifDate(t *testing.T) {
+func TestExtractExifTime(t *testing.T) {
 
 	validExifPath := "../data/with_exif.jpg"
 	goodDateStr := "2020:04:28 14:12:21"
 	goodTime, _ := extractTimeFromStr(goodDateStr)
-	validEntry := ExifDateEntry{true, validExifPath, goodTime}
 
-	entry, err := ExtractExifDate(validExifPath)
+	time, err := ExtractExifTime(validExifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
-	if validEntry != entry {
-		t.Errorf("Unexpected Entry with good input file\n")
+
+	if goodTime != time {
+		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
 	}
 
 	invalidExifPath := "../data/no_exif.jpg"
-	invalidEntry := ExifDateEntry{false, invalidExifPath, goodTime}
 
-	entry, err = ExtractExifDate(invalidExifPath)
-	if err != nil {
-		t.Errorf("Expected Error with good invalid Exif file\n")
-	}
-	if entry.Valid != false {
-		t.Errorf("Unexpected invalid Entry with invalid Exif file\n")
+	time, err = ExtractExifTime(invalidExifPath)
+	if err == nil {
+		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 
 	nonePath := "../gobofragggle"
-	entry, err = ExtractExifDate(nonePath)
+	time, err = ExtractExifTime(nonePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
-	}
-	if invalidEntry.Valid != false {
-		t.Errorf("Unexpected valid Entry with invalid file\n")
 	}
 
 }

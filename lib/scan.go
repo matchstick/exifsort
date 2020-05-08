@@ -105,23 +105,16 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	entry, err := ExtractExifDate(path)
+	time, err := ExtractExifTime(path)
 	if err != nil {
 		atomic.AddUint64(&scanState.invalidDate, 1)
 		errStr := fmt.Sprintf("%s with (%s)", path, err.Error())
-		returnErr := fmt.Errorf("ERROR: File %s", errStr)
-		fmt.Println(returnErr)
+		scanPrintf("%s\n", errStr)
 		scanState.errFiles = append(scanState.errFiles, errStr)
 		return nil
 	}
 
-	if entry.Valid == false {
-		atomic.AddUint64(&scanState.invalidDate, 1)
-		scanPrintf("%s, %s\n", entry.Path, "None")
-		return nil
-	}
-
-	scanPrintf("%s, %s\n", entry.Path, ExifTime(entry.Time))
+	scanPrintf("%s, %s\n", path, ExifTime(time))
 	atomic.AddUint64(&scanState.validDate, 1)
 	return nil
 }

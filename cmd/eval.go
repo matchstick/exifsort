@@ -46,16 +46,12 @@ retreives the date data for one file from it's exif data. `,
 			fmt.Printf("%q\n", err)
 			return
 		}
-		entry, err := exifSort.ExtractExifDate(filePath)
+		time, err := exifSort.ExtractExifTime(filePath)
 		if err != nil {
 			fmt.Printf("%s\n", err)
 			return
 		}
-		if entry.Valid == false {
-			fmt.Printf("None\n")
-			return
-		}
-		fmt.Printf("%s\n", exifSort.ExifTime(entry.Time))
+		fmt.Printf("%s\n", exifSort.ExifTime(time))
 	},
 }
 
