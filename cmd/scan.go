@@ -56,6 +56,8 @@ Usage: exifSort scan <dir> -mode=[line|summary]
 
 func init() {
 	rootCmd.AddCommand(scanCmd)
-	scanCmd.Flags().BoolP("quiet", "q", false, "Don't print output while scanning")
-	scanCmd.Flags().BoolP("summarize", "s", false, "Print a summary when done scanning")
+	scanCmd.Flags().BoolP("quiet", "q", false,
+				"Don't print output while scanning")
+	scanCmd.Flags().BoolP("summarize", "s", false,
+				"Print a summary when done scanning")
 }

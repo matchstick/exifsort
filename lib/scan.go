@@ -54,7 +54,7 @@ func scanSummary(summarize bool) {
 }
 
 func ScanDir(root string, summarize bool, doPrint bool) {
-	walkState.resetWalkState(doPrint)
+	walkState.Init(doPrint)
 
 	err := filepath.Walk(root, scanFunc)
 
