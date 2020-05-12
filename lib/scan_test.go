@@ -112,12 +112,12 @@ func TestScanDir(t *testing.T) {
 	const correctNumInvalid uint64 = 50
 	const correctNumValid uint64 = 75
 
-	if correctNumInvalid != scanState.invalidDate {
+	if correctNumInvalid != walkState.invalid() {
 		t.Errorf("Expected %d Invalid Count. Got %d\n",
-			correctNumInvalid, scanState.invalidDate)
+			correctNumInvalid, walkState.invalid())
 	}
-	if correctNumValid != scanState.validDate {
+	if correctNumValid != walkState.valid() {
 		t.Errorf("Expected %d Valid Count. Got %d\n",
-			correctNumValid, scanState.validDate)
+			correctNumValid, walkState.valid())
 	}
 }

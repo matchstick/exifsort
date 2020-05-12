@@ -118,7 +118,6 @@ func ExtractExifTime(filepath string) (time.Time, error) {
 		return time, fmt.Errorf("Too many DateTimeOriginal Tags found.")
 	}
 
-
 	// Found it, so extract value
 	value, _ := results[0].Value()
 

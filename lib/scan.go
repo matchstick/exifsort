@@ -4,90 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
-	"sync/atomic"
 )
-
-// We are going to do this check a lot so let's use a map.
-var mediaSuffixMap = map[string]bool{
-	"bmp":  true,
-	"cr2":  true,
-	"dng":  true,
-	"gif":  true,
-	"jpeg": true,
-	"jpg":  true,
-	"nef":  true,
-	"png":  true,
-	"psd":  true,
-	"raf":  true,
-	"raw":  true,
-	"tif":  true,
-	"tiff": true,
-}
-
-// Running this on a synology results in the file server creating all these
-// useless media files. We want to skip them.
-func isSynologyFile(path string) bool {
-	if strings.Contains(path, "@eaDir") {
-		return true
-	}
-	if strings.Contains(path, "@syno") {
-		return true
-	}
-	if strings.Contains(path, "synofile_thumb") {
-		return true
-	}
-
-	return false
-}
-
-func skipFileType(path string) bool {
-	// All comparisons are lower case as case don't matter
-	path = strings.ToLower(path)
-	if isSynologyFile(path) {
-		// skip
-		return true
-	}
-	pieces := strings.Split(path, ".")
-	numPieces := len(pieces)
-	if numPieces < 2 {
-		// skip
-		return true
-	}
-	suffix := pieces[numPieces-1]
-	_, inMediaMap := mediaSuffixMap[suffix]
-	if inMediaMap == false {
-		// skip
-		return true
-	}
-	return false
-}
-
-type scanStateType struct {
-	skipped     uint64
-	validDate   uint64
-	invalidDate uint64
-	printScan   bool
-	errFiles    []string
-}
-
-var scanState scanStateType
-
-func resetScanState(printScan bool) {
-	scanState = scanStateType{0, 0, 0, printScan, nil}
-}
-
-func scanPrintf(s string, params ...interface{}) {
-	if scanState.printScan == false {
-		return
-	}
-
-	if len(params) == 0 {
-		fmt.Printf(s)
-	}
-
-	fmt.Printf(s, params...)
-}
 
 func scanFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
@@ -101,21 +18,19 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 	}
 	// Only looking for media files that may have exif.
 	if skipFileType(path) {
-		atomic.AddUint64(&scanState.skipped, 1)
+		walkState.storeSkipped()
 		return nil
 	}
 
 	time, err := ExtractExifTime(path)
 	if err != nil {
-		atomic.AddUint64(&scanState.invalidDate, 1)
-		errStr := fmt.Sprintf("%s with (%s)", path, err.Error())
-		scanPrintf("%s\n", errStr)
-		scanState.errFiles = append(scanState.errFiles, errStr)
+		walkState.storeInvalid(path, err.Error())
+		walkState.walkPrintf("%s\n", walkErrMsg(path, err.Error()))
 		return nil
 	}
 
-	scanPrintf("%s, %s\n", path, ExifTime(time))
-	atomic.AddUint64(&scanState.validDate, 1)
+	walkState.walkPrintf("%s, %s\n", path, ExifTime(time))
+	walkState.storeValid()
 	return nil
 }
 
@@ -123,24 +38,23 @@ func scanSummary(summarize bool) {
 	if summarize == false {
 		return
 	}
-	total := scanState.skipped + scanState.invalidDate +
-		scanState.validDate
-	fmt.Printf("Scanned Valid: %d\n", scanState.validDate)
-	fmt.Printf("Scanned Invalid: %d\n", scanState.invalidDate)
-	fmt.Printf("Scanned Skipped: %d\n", scanState.skipped)
-	fmt.Printf("Scanned Total: %d\n", total)
-	if len(scanState.errFiles) == 0 {
+	fmt.Printf("Scanned Valid: %d\n", walkState.valid())
+	fmt.Printf("Scanned Invalid: %d\n", walkState.invalid())
+	fmt.Printf("Scanned Skipped: %d\n", walkState.skipped())
+	fmt.Printf("Scanned Total: %d\n", walkState.total())
+	if walkState.invalid() == 0 {
 		fmt.Println("No Files caused Errors")
 		return
 	}
+
 	fmt.Println("Error Files were:")
-	for _, path := range scanState.errFiles {
-		fmt.Printf("\t%s\n", path)
+	for path, msg := range walkState.errs() {
+		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
 	}
 }
 
-func ScanDir(root string, summarize bool, printScan bool) {
-	resetScanState(printScan)
+func ScanDir(root string, summarize bool, doPrint bool) {
+	walkState.resetWalkState(doPrint)
 
 	err := filepath.Walk(root, scanFunc)
 
