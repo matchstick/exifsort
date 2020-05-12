@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-var sortedState SortedType
+var sortedState sortedType
 
 func sortFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
