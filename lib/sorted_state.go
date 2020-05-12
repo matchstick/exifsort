@@ -8,21 +8,21 @@ import (
 )
 
 const (
-	SORT_NONE = iota
-	SORT_YEAR
-	SORT_MONTH
-	SORT_DAY
+	METHOD_NONE = iota
+	METHOD_YEAR
+	METHOD_MONTH
+	METHOD_DAY
 )
 
-var sortMap = map[int]string{
-	SORT_NONE:  "None",
-	SORT_YEAR:  "Year",
-	SORT_MONTH: "Month",
-	SORT_DAY:   "Day",
+var methodMap = map[int]string{
+	METHOD_NONE:  "None",
+	METHOD_YEAR:  "Year",
+	METHOD_MONTH: "Month",
+	METHOD_DAY:   "Day",
 }
 
-func sortStr(method int) string {
-	str, present := sortMap[method]
+func methodStr(method int) string {
+	str, present := methodMap[method]
 	if present == false {
 		return "unknown"
 	}
@@ -137,7 +137,7 @@ func (st *sortedType) Init(root string, method int) {
 
 func (st *sortedType) Add(path string, time time.Time) {
 	switch st.method {
-	case SORT_YEAR:
+	case METHOD_YEAR:
 		st.AddByYear(path, time)
 	}
 }
@@ -145,7 +145,7 @@ func (st *sortedType) Add(path string, time time.Time) {
 func (st sortedType) String() string {
 	var retStr string
 	retStr += fmt.Sprintf("Root: %s\n", st.root)
-	retStr += fmt.Sprintf("Method: By %s\n", sortStr(st.method))
+	retStr += fmt.Sprintf("Method: By %s\n", methodStr(st.method))
 	for _, year := range st.years {
 		retStr += fmt.Sprintf("Year: %d\n", year.Year())
 		for base, srcPath := range year.media {

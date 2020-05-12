@@ -17,7 +17,7 @@ var ByYearInput = []string{
 
 func TestSortedTimeAddByYear(t *testing.T) {
 	var st sortedType
-	st.Init("root", SORT_YEAR)
+	st.Init("root", METHOD_YEAR)
 	time := time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)
 	for _, path := range ByYearInput {
 		st.Add(path, time)
