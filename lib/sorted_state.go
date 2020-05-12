@@ -66,6 +66,14 @@ func mediaMapAdd(m mediaMap, path string) mediaMap {
 	return m
 }
 
+func (m mediaMap) String() string {
+	var retStr string
+	for base, srcPath := range m {
+		retStr += fmt.Sprintf("\t%s=>\t%s\n", srcPath, base)
+	}
+	return retStr
+}
+
 /*
 type DayBucket struct {
 	Media mediaMap
@@ -146,10 +154,11 @@ func (st sortedType) String() string {
 	var retStr string
 	retStr += fmt.Sprintf("Root: %s\n", st.root)
 	retStr += fmt.Sprintf("Method: By %s\n", methodStr(st.method))
-	for _, year := range st.years {
-		retStr += fmt.Sprintf("Year: %d\n", year.Year())
-		for base, srcPath := range year.media {
-			retStr += fmt.Sprintf("\t%s=>\t%s\n", srcPath, base)
+	switch st.method {
+	case METHOD_YEAR:
+		for _, year := range st.years {
+			retStr += fmt.Sprintf("Year: %d\n", year.Year())
+			retStr += year.media.String()
 		}
 	}
 	return retStr
