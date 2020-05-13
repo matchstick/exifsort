@@ -186,6 +186,7 @@ func (i *index) DumpByDay() string {
 
 // I hate these switches. Will fix with next check in
 func (i index) String() string {
+	fmt.Printf("Hey\n")
 	switch i.method {
 	case METHOD_YEAR:
 		return i.DumpByYear()
