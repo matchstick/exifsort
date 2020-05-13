@@ -139,8 +139,7 @@ func (y *yearIndex) GetAll() mediaMap {
 
 func (y yearIndex) String() string {
 	var retStr string
-	var retMap = y.GetAll()
-	for newPath, oldPath := range retMap {
+	for newPath, oldPath := range y.GetAll() {
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
@@ -191,8 +190,7 @@ func (m *monthIndex) GetAll() mediaMap {
 
 func (m monthIndex) String() string {
 	var retStr string
-	var retMap = m.GetAll()
-	for newPath, oldPath := range retMap {
+	for newPath, oldPath := range m.GetAll() {
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
@@ -247,11 +245,9 @@ func (d *dayIndex) GetAll() mediaMap {
 	return retMap
 }
 
-// I hate these switches. Will fix with next check in
 func (d dayIndex) String() string {
 	var retStr string
-	var retMap = d.GetAll()
-	for newPath, oldPath := range retMap {
+	for newPath, oldPath := range d.GetAll() {
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
