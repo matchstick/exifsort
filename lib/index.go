@@ -71,10 +71,6 @@ type index struct {
 	method int
 }
 
-func (i *index) Id() int {
-	return i.id
-}
-
 func (i *index) Media() mediaMap {
 	return i.media
 }
@@ -92,7 +88,6 @@ func (i *index) InitRoot(method int) {
 	i.method = method
 }
 
-
 func (i *index) EntriesKeys() []int {
 	var keys []int
 	for k := range i.entries {
@@ -100,11 +95,6 @@ func (i *index) EntriesKeys() []int {
 	}
 	sort.Ints(keys)
 	return keys
-}
-
-func (i *index) Index(id int) (index, bool) {
-	idx, present := i.entries[id]
-	return idx, present
 }
 
 func (i *index) GetIndex(id int) index {
@@ -182,7 +172,7 @@ func (i *index) DumpByDay() string {
 		for _, month := range yearIndex.EntriesKeys() {
 			retStr += fmt.Sprintf("Month: %d\n", month)
 			monthIndex := yearIndex.GetIndex(month)
-			for _, day:= range monthIndex.EntriesKeys() {
+			for _, day := range monthIndex.EntriesKeys() {
 				retStr += fmt.Sprintf("Day: %d\n", day)
 				dayIndex := monthIndex.GetIndex(month)
 				retStr += dayIndex.Media().String()
