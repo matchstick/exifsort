@@ -20,7 +20,7 @@ func AddFileSet(t *testing.T, idx *index, start uint, count uint, year int, mont
 	for ii := start; ii < start+count; ii++ {
 		time := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 		name := fmt.Sprintf("IMG_%d.jpg", ii)
-		idx.Add(name, time)
+		idx.Put(name, time)
 	}
 }
 

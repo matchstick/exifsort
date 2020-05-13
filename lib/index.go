@@ -106,18 +106,18 @@ func (i *index) AddPath(path string) {
 	i.media = mediaMapAdd(i.media, path)
 }
 
-func (i *index) AddMediaByYear(path string, time time.Time) {
+func (i *index) PutMediaByYear(path string, time time.Time) {
 	yearIndex := i.GetIndex(time.Year())
 	yearIndex.AddPath(path)
 }
 
-func (i *index) AddMediaByMonth(path string, time time.Time) {
+func (i *index) PutMediaByMonth(path string, time time.Time) {
 	yearIndex := i.GetIndex(time.Year())
 	monthIndex := yearIndex.GetIndex(int(time.Month()))
 	monthIndex.AddPath(path)
 }
 
-func (i *index) AddMediaByDay(path string, time time.Time) {
+func (i *index) PutMediaByDay(path string, time time.Time) {
 	yearIndex := i.GetIndex(time.Year())
 	monthIndex := yearIndex.GetIndex(int(time.Month()))
 	dayIndex := monthIndex.GetIndex(time.Day())
@@ -125,50 +125,121 @@ func (i *index) AddMediaByDay(path string, time time.Time) {
 }
 
 // I hate these switches. Will fix with next check in
-func (i *index) Add(path string, time time.Time) {
+func (i *index) Put(path string, time time.Time) {
 	switch i.method {
 	case METHOD_YEAR:
-		i.AddMediaByYear(path, time)
+		i.PutMediaByYear(path, time)
 	case METHOD_MONTH:
-		i.AddMediaByMonth(path, time)
+		i.PutMediaByMonth(path, time)
 	case METHOD_DAY:
-		i.AddMediaByDay(path, time)
+		i.PutMediaByDay(path, time)
 	default:
 		panic("Unknown method")
 	}
 }
 
-func (i *index) DumpByYear() string {
-	var retStr string
+func (i *index) NewPathByYear(year int, base string) string {
+	return fmt.Sprintf("%04d/%s", year, base)
+}
+
+func (i *index) NewPathByMonth(year int, month int, base string) string {
+	return fmt.Sprintf("%04d/%02d/%s", year, month, base)
+}
+
+func (i *index) NewPathByDay(year int, month int, day int, base string) string {
+	return fmt.Sprintf("%04d/%02d/%02d/%s", year, month, day, base)
+}
+
+func (i *index) GetByYear(path string) (string, bool) {
+	for _, year := range i.entries {
+		yearIndex := i.GetIndex(year.id)
+		for base, origPath := range yearIndex.Media() {
+			if path == origPath {
+				return i.NewPathByYear(year.id, base), true
+			}
+		}
+	}
+	return "", false
+}
+
+func (i *index) GetByMonth(path string) (string, bool) {
+	for _, year := range i.entries {
+		yearIndex := i.GetIndex(year.id)
+		for _, month := range yearIndex.entries {
+			monthIndex := yearIndex.GetIndex(month.id)
+			for base, origPath := range monthIndex.media {
+				if path == origPath {
+					return i.NewPathByMonth(year.id, month.id, base), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func (i *index) GetByDay(path string) (string, bool) {
+	for _, year := range i.entries {
+		yearIndex := i.GetIndex(year.id)
+		for _, month := range yearIndex.entries {
+			monthIndex := yearIndex.GetIndex(month.id)
+			for _, day := range monthIndex.entries {
+				dayIndex := monthIndex.GetIndex(day.id)
+				for base, origPath := range dayIndex.media {
+					if path == origPath {
+						return i.NewPathByDay(year.id, month.id, day.id, base), true
+					}
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func (i *index) Get(path string) (string, bool) {
+	switch i.method {
+	case METHOD_YEAR:
+		return i.GetByYear(path)
+	case METHOD_MONTH:
+		return i.GetByMonth(path)
+	case METHOD_DAY:
+		return i.GetByDay(path)
+	default:
+		panic("Unknown method")
+	}
+}
+
+
+func (i *index) GetAllByYear() mediaMap {
+	var retMap = make(mediaMap)
 	for _, year := range i.EntriesKeys() {
 		yearIndex := i.GetIndex(year)
 		media := yearIndex.Media()
 		for _, base := range media.Keys() {
-			retStr += fmt.Sprintf("%s => %d/%s\n",
-					media[base], year, base)
+			path:= i.NewPathByYear(year, base)
+			retMap[path] = media[base]
 		}
 	}
-	return retStr
+	return retMap
 }
 
-func (i *index) DumpByMonth() string {
-	var retStr string
+func (i *index) GetAllByMonth() mediaMap {
+	var retMap = make(mediaMap)
 	for _, year := range i.EntriesKeys() {
 		yearIndex := i.GetIndex(year)
 		for _, month := range yearIndex.EntriesKeys() {
 			monthIndex := yearIndex.GetIndex(month)
 			media := monthIndex.Media()
 			for _, base := range media.Keys() {
-				retStr += fmt.Sprintf("%s => %d/%d/%s\n",
-						media[base], year, month, base)
+				path := i.NewPathByMonth(year, month, base)
+				retMap[path] = media[base]
 			}
 		}
 	}
-	return retStr
+	return retMap
 }
 
-func (i *index) DumpByDay() string {
-	var retStr string
+func (i *index) GetAllByDay() mediaMap {
+	var retMap = make(mediaMap)
 	for _, year := range i.EntriesKeys() {
 		yearIndex := i.GetIndex(year)
 		for _, month := range yearIndex.EntriesKeys() {
@@ -177,25 +248,45 @@ func (i *index) DumpByDay() string {
 				dayIndex := monthIndex.GetIndex(month)
 				media := dayIndex.Media()
 				for _, base := range media.Keys() {
-					retStr += fmt.Sprintf("%s => %d/%d/%d/%s\n",
-							media[base], year, month, day, base)
+					path := i.NewPathByDay(year, month, day, base)
+					retMap[path] = media[base]
 				}
 			}
 		}
 	}
-	return retStr
+	return retMap
+}
+
+func (i *index) GetAll() mediaMap {
+	switch i.method {
+	case METHOD_YEAR:
+		return i.GetAllByYear()
+	case METHOD_MONTH:
+		return i.GetAllByMonth()
+	case METHOD_DAY:
+		return i.GetAllByDay()
+	default:
+		panic("Unknown method")
+	}
 }
 
 // I hate these switches. Will fix with next check in
 func (i index) String() string {
+	var retMap = make(mediaMap)
+	var retStr string
 	switch i.method {
 	case METHOD_YEAR:
-		return i.DumpByYear()
+		retMap = i.GetAllByYear()
 	case METHOD_MONTH:
-		return i.DumpByMonth()
+		retMap = i.GetAllByMonth()
 	case METHOD_DAY:
-		return i.DumpByDay()
+		retMap = i.GetAllByDay()
 	default:
 		panic("Unknown method")
 	}
+
+	for datePath, oldPath := range retMap {
+		retStr += fmt.Sprintf("%s => %s\n", oldPath, datePath)
+	}
+	return retStr
 }

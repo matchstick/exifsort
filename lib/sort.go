@@ -32,7 +32,7 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 	}
 
 	walkState.storeValid()
-	sortIndex.Add(path, time)
+	sortIndex.Put(path, time)
 	return nil
 }
 
