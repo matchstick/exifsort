@@ -55,121 +55,117 @@ func (m mediaMap) Keys() []string {
 	return keys
 }
 
-type indexMap map[int]index
+type bucketMap map[int]bucket
 
 const ROOT_INDEX = -1
 
-type index struct {
+type bucket struct {
 	media   mediaMap
-	entries indexMap
+	entries bucketMap
 	id      int
 	// I hate having this switch I must fix
 	method int
 }
 
-func (i *index) Media() mediaMap {
-	return i.media
+func (b *bucket) Media() mediaMap {
+	return b.media
 }
 
-func (i *index) Init(id int) {
-	i.media = make(mediaMap)
-	i.entries = make(indexMap)
-	i.id = id
+func (b *bucket) Init(id int) {
+	b.media = make(mediaMap)
+	b.entries = make(bucketMap)
+	b.id = id
 }
 
-func (i *index) InitRoot(method int) {
-	i.media = make(mediaMap)
-	i.entries = make(indexMap)
-	i.id = ROOT_INDEX
-	i.method = method
-}
-
-func (i *index) EntriesKeys() []int {
+func (b *bucket) EntriesKeys() []int {
 	var keys []int
-	for k := range i.entries {
+	for k := range b.entries {
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
 	return keys
 }
 
-func (i *index) GetIndex(id int) index {
-	idx, present := i.entries[id]
+func (b *bucket) GetBucket(id int) bucket {
+	var retBucket bucket
+	retBucket, present := b.entries[id]
 	if present == false {
-		idx.Init(id)
-		i.entries[id] = idx
+		retBucket.Init(id)
+		b.entries[id] = retBucket
 	}
-	return idx
+	return retBucket
 }
 
-func (i *index) AddPath(path string) {
-	i.media = mediaMapAdd(i.media, path)
+func (b *bucket) AddPath(path string) {
+	b.media = mediaMapAdd(b.media, path)
 }
 
-func (i *index) PutMediaByYear(path string, time time.Time) {
-	yearIndex := i.GetIndex(time.Year())
-	yearIndex.AddPath(path)
+type yearIndex struct {
+	b bucket
 }
 
-func (i *index) PutMediaByMonth(path string, time time.Time) {
-	yearIndex := i.GetIndex(time.Year())
-	monthIndex := yearIndex.GetIndex(int(time.Month()))
-	monthIndex.AddPath(path)
-}
-
-func (i *index) PutMediaByDay(path string, time time.Time) {
-	yearIndex := i.GetIndex(time.Year())
-	monthIndex := yearIndex.GetIndex(int(time.Month()))
-	dayIndex := monthIndex.GetIndex(time.Day())
-	dayIndex.AddPath(path)
-}
-
-// I hate these switches. Will fix with next check in
-func (i *index) Put(path string, time time.Time) {
-	switch i.method {
-	case METHOD_YEAR:
-		i.PutMediaByYear(path, time)
-	case METHOD_MONTH:
-		i.PutMediaByMonth(path, time)
-	case METHOD_DAY:
-		i.PutMediaByDay(path, time)
-	default:
-		panic("Unknown method")
-	}
-}
-
-func (i *index) NewPathByYear(year int, base string) string {
+func (y *yearIndex) NewPath(year int, base string) string {
 	return fmt.Sprintf("%04d/%s", year, base)
 }
 
-func (i *index) NewPathByMonth(year int, month int, base string) string {
-	return fmt.Sprintf("%04d/%02d/%s", year, month, base)
+func (y *yearIndex) Put(path string, time time.Time) {
+	yearBucket := y.b.GetBucket(time.Year())
+	yearBucket.AddPath(path)
 }
 
-func (i *index) NewPathByDay(year int, month int, day int, base string) string {
-	return fmt.Sprintf("%04d/%02d/%02d/%s", year, month, day, base)
-}
-
-func (i *index) GetByYear(path string) (string, bool) {
-	for _, year := range i.entries {
-		yearIndex := i.GetIndex(year.id)
-		for base, origPath := range yearIndex.Media() {
+func (y *yearIndex) Get(path string) (string, bool) {
+	for year, yearBucket := range y.b.entries {
+		for base, origPath := range yearBucket.Media() {
 			if path == origPath {
-				return i.NewPathByYear(year.id, base), true
+				return y.NewPath(year, base), true
 			}
 		}
 	}
 	return "", false
 }
 
-func (i *index) GetByMonth(path string) (string, bool) {
-	for _, year := range i.entries {
-		yearIndex := i.GetIndex(year.id)
-		for _, month := range yearIndex.entries {
-			monthIndex := yearIndex.GetIndex(month.id)
-			for base, origPath := range monthIndex.media {
+func (y *yearIndex) GetAll() mediaMap {
+	var retMap = make(mediaMap)
+	for _, year := range y.b.EntriesKeys() {
+		yearBucket := y.b.GetBucket(year)
+		media := yearBucket.Media()
+		for _, base := range media.Keys() {
+			path := y.NewPath(year, base)
+			retMap[path] = media[base]
+		}
+	}
+	return retMap
+}
+
+func (y yearIndex) String() string {
+	var retStr string
+	var retMap = y.GetAll()
+	for newPath, oldPath := range retMap {
+		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
+	}
+	return retStr
+}
+
+type monthIndex struct {
+	b bucket
+}
+
+func (m *monthIndex) Put(path string, time time.Time) {
+	yearBucket := m.b.GetBucket(time.Year())
+	monthBucket := yearBucket.GetBucket(int(time.Month()))
+	monthBucket.AddPath(path)
+}
+
+func (m *monthIndex) NewPath(year int, month int, base string) string {
+	return fmt.Sprintf("%04d/%02d/%s", year, month, base)
+}
+
+func (m *monthIndex) Get(path string) (string, bool) {
+	for year, yearBucket := range m.b.entries {
+		for month, monthBucket := range yearBucket.entries {
+			for base, origPath := range monthBucket.media {
 				if path == origPath {
-					return i.NewPathByMonth(year.id, month.id, base), true
+					return m.NewPath(year, month, base), true
 				}
 			}
 		}
@@ -177,16 +173,53 @@ func (i *index) GetByMonth(path string) (string, bool) {
 	return "", false
 }
 
-func (i *index) GetByDay(path string) (string, bool) {
-	for _, year := range i.entries {
-		yearIndex := i.GetIndex(year.id)
-		for _, month := range yearIndex.entries {
-			monthIndex := yearIndex.GetIndex(month.id)
-			for _, day := range monthIndex.entries {
-				dayIndex := monthIndex.GetIndex(day.id)
-				for base, origPath := range dayIndex.media {
+func (m *monthIndex) GetAll() mediaMap {
+	var retMap = make(mediaMap)
+	for _, year := range m.b.EntriesKeys() {
+		yearBucket := m.b.GetBucket(year)
+		for _, month := range yearBucket.EntriesKeys() {
+			monthBucket := yearBucket.GetBucket(month)
+			media := monthBucket.Media()
+			for _, base := range media.Keys() {
+				path := m.NewPath(year, month, base)
+				retMap[path] = media[base]
+			}
+		}
+	}
+	return retMap
+}
+
+func (m monthIndex) String() string {
+	var retStr string
+	var retMap = m.GetAll()
+	for newPath, oldPath := range retMap {
+		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
+	}
+	return retStr
+}
+
+type dayIndex struct {
+	b bucket
+}
+
+func (d *dayIndex) Put(path string, time time.Time) {
+	yearBucket := d.b.GetBucket(time.Year())
+	monthBucket := yearBucket.GetBucket(int(time.Month()))
+	dayBucket := monthBucket.GetBucket(time.Day())
+	dayBucket.AddPath(path)
+}
+
+func (d *dayIndex) NewPath(year int, month int, day int, base string) string {
+	return fmt.Sprintf("%04d/%02d/%02d/%s", year, month, day, base)
+}
+
+func (d *dayIndex) Get(path string) (string, bool) {
+	for year, yearBucket := range d.b.entries {
+		for month, monthBucket := range yearBucket.entries {
+			for day, dayBucket := range monthBucket.entries {
+				for base, origPath := range dayBucket.media {
 					if path == origPath {
-						return i.NewPathByDay(year.id, month.id, day.id, base), true
+						return d.NewPath(year, month, day, base), true
 					}
 				}
 			}
@@ -195,60 +228,17 @@ func (i *index) GetByDay(path string) (string, bool) {
 	return "", false
 }
 
-func (i *index) Get(path string) (string, bool) {
-	switch i.method {
-	case METHOD_YEAR:
-		return i.GetByYear(path)
-	case METHOD_MONTH:
-		return i.GetByMonth(path)
-	case METHOD_DAY:
-		return i.GetByDay(path)
-	default:
-		panic("Unknown method")
-	}
-}
-
-
-func (i *index) GetAllByYear() mediaMap {
+func (d *dayIndex) GetAll() mediaMap {
 	var retMap = make(mediaMap)
-	for _, year := range i.EntriesKeys() {
-		yearIndex := i.GetIndex(year)
-		media := yearIndex.Media()
-		for _, base := range media.Keys() {
-			path:= i.NewPathByYear(year, base)
-			retMap[path] = media[base]
-		}
-	}
-	return retMap
-}
-
-func (i *index) GetAllByMonth() mediaMap {
-	var retMap = make(mediaMap)
-	for _, year := range i.EntriesKeys() {
-		yearIndex := i.GetIndex(year)
-		for _, month := range yearIndex.EntriesKeys() {
-			monthIndex := yearIndex.GetIndex(month)
-			media := monthIndex.Media()
-			for _, base := range media.Keys() {
-				path := i.NewPathByMonth(year, month, base)
-				retMap[path] = media[base]
-			}
-		}
-	}
-	return retMap
-}
-
-func (i *index) GetAllByDay() mediaMap {
-	var retMap = make(mediaMap)
-	for _, year := range i.EntriesKeys() {
-		yearIndex := i.GetIndex(year)
-		for _, month := range yearIndex.EntriesKeys() {
-			monthIndex := yearIndex.GetIndex(month)
-			for _, day := range monthIndex.EntriesKeys() {
-				dayIndex := monthIndex.GetIndex(month)
-				media := dayIndex.Media()
+	for _, year := range d.b.EntriesKeys() {
+		yearBucket := d.b.GetBucket(year)
+		for _, month := range yearBucket.EntriesKeys() {
+			monthBucket := yearBucket.GetBucket(month)
+			for _, day := range monthBucket.EntriesKeys() {
+				dayBucket := monthBucket.GetBucket(month)
+				media := dayBucket.Media()
 				for _, base := range media.Keys() {
-					path := i.NewPathByDay(year, month, day, base)
+					path := d.NewPath(year, month, day, base)
 					retMap[path] = media[base]
 				}
 			}
@@ -257,36 +247,48 @@ func (i *index) GetAllByDay() mediaMap {
 	return retMap
 }
 
-func (i *index) GetAll() mediaMap {
-	switch i.method {
-	case METHOD_YEAR:
-		return i.GetAllByYear()
-	case METHOD_MONTH:
-		return i.GetAllByMonth()
-	case METHOD_DAY:
-		return i.GetAllByDay()
-	default:
-		panic("Unknown method")
-	}
-}
-
 // I hate these switches. Will fix with next check in
-func (i index) String() string {
-	var retMap = make(mediaMap)
+func (d dayIndex) String() string {
 	var retStr string
-	switch i.method {
-	case METHOD_YEAR:
-		retMap = i.GetAllByYear()
-	case METHOD_MONTH:
-		retMap = i.GetAllByMonth()
-	case METHOD_DAY:
-		retMap = i.GetAllByDay()
-	default:
-		panic("Unknown method")
-	}
-
-	for datePath, oldPath := range retMap {
-		retStr += fmt.Sprintf("%s => %s\n", oldPath, datePath)
+	var retMap = d.GetAll()
+	for newPath, oldPath := range retMap {
+		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
+}
+
+type index interface {
+	Put(string, time.Time)
+	Get(string) (string, bool)
+	GetAll() mediaMap
+}
+
+func createYearIndex() *yearIndex {
+	var y yearIndex
+	y.b.Init(ROOT_INDEX)
+	return &y
+}
+
+func createMonthIndex() *monthIndex {
+	var m monthIndex
+	m.b.Init(ROOT_INDEX)
+	return &m
+}
+func createDayIndex() *dayIndex {
+	var d dayIndex
+	d.b.Init(ROOT_INDEX)
+	return &d
+}
+
+func CreateIndex(method int) index {
+	switch method {
+	case METHOD_YEAR:
+		return createYearIndex()
+	case METHOD_MONTH:
+		return createMonthIndex()
+	case METHOD_DAY:
+		return createDayIndex()
+	default:
+		panic("Unknown method")
+	}
 }
