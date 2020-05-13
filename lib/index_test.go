@@ -26,7 +26,6 @@ func AddFileSet(t *testing.T, idx *index, start uint, count uint, year int, mont
 
 func TestIndex(t *testing.T) {
 	var idx index
-	fmt.Printf("heyman\n")
 	idx.InitRoot(METHOD_YEAR)
 	// Populate  for a year
 	for ii := 2000; ii < 2020; ii += 1 {
@@ -34,6 +33,7 @@ func TestIndex(t *testing.T) {
 		AddFileSet(t, &idx, 15, 5, ii, 1, 1)  // five duplicate files each year
 	}
 
+	idx.InitRoot(METHOD_MONTH)
 	// Populate for a month
 	for ii := 1; ii <= 12; ii += 1 {
 		AddFileSet(t, &idx, 10, 10, 1, ii, 1) // ten files for each month in year 1.
@@ -44,6 +44,5 @@ func TestIndex(t *testing.T) {
 		AddFileSet(t, &idx, 10, 10, ii, 1, 1) // ten files  each year.
 		AddFileSet(t, &idx, 15, 5, ii, 1, 1)  // five duplicate files each year
 	}
-	fmt.Printf("heyman\n")
 	fmt.Printf("%s\n", idx)
 }

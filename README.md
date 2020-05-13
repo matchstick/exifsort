@@ -21,3 +21,4 @@ exifSort -> sort <in dir> <out dir> <year | month | day>
 
 exifSort -> eval <file>
  * Prints the date information of one file specified. TODO needs glob support.
+ TODO (check for duplciate files, first checktimestamp, then check contents)

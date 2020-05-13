@@ -45,18 +45,14 @@ func mediaMapAdd(m mediaMap, path string) mediaMap {
 	return m
 }
 
-func (m mediaMap) String() string {
-	var retStr string
+func (m mediaMap) Keys() []string {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
 
 	sort.Strings(keys)
-	for _, base := range keys {
-		retStr += fmt.Sprintf("\t%s\t%s\n", base, m[base])
-	}
-	return retStr
+	return keys
 }
 
 type indexMap map[int]index
@@ -145,9 +141,12 @@ func (i *index) Add(path string, time time.Time) {
 func (i *index) DumpByYear() string {
 	var retStr string
 	for _, year := range i.EntriesKeys() {
-		retStr += fmt.Sprintf("Year: %d\n", year)
 		yearIndex := i.GetIndex(year)
-		retStr += yearIndex.Media().String()
+		media := yearIndex.Media()
+		for _, base := range media.Keys() {
+			retStr += fmt.Sprintf("%s => %d/%s\n",
+					media[base], year, base)
+		}
 	}
 	return retStr
 }
@@ -155,12 +154,14 @@ func (i *index) DumpByYear() string {
 func (i *index) DumpByMonth() string {
 	var retStr string
 	for _, year := range i.EntriesKeys() {
-		retStr += fmt.Sprintf("Year: %d\n", year)
 		yearIndex := i.GetIndex(year)
 		for _, month := range yearIndex.EntriesKeys() {
-			retStr += fmt.Sprintf("Month: %d\n", month)
 			monthIndex := yearIndex.GetIndex(month)
-			retStr += monthIndex.Media().String()
+			media := monthIndex.Media()
+			for _, base := range media.Keys() {
+				retStr += fmt.Sprintf("%s => %d/%d/%s\n",
+						media[base], year, month, base)
+			}
 		}
 	}
 	return retStr
@@ -169,15 +170,16 @@ func (i *index) DumpByMonth() string {
 func (i *index) DumpByDay() string {
 	var retStr string
 	for _, year := range i.EntriesKeys() {
-		retStr += fmt.Sprintf("Year: %d\n", year)
 		yearIndex := i.GetIndex(year)
 		for _, month := range yearIndex.EntriesKeys() {
-			retStr += fmt.Sprintf("Month: %d\n", month)
 			monthIndex := yearIndex.GetIndex(month)
 			for _, day := range monthIndex.EntriesKeys() {
-				retStr += fmt.Sprintf("Day: %d\n", day)
 				dayIndex := monthIndex.GetIndex(month)
-				retStr += dayIndex.Media().String()
+				media := dayIndex.Media()
+				for _, base := range media.Keys() {
+					retStr += fmt.Sprintf("%s => %d/%d/%d/%s\n",
+							media[base], year, month, day, base)
+				}
 			}
 		}
 	}
@@ -186,7 +188,6 @@ func (i *index) DumpByDay() string {
 
 // I hate these switches. Will fix with next check in
 func (i index) String() string {
-	fmt.Printf("Hey\n")
 	switch i.method {
 	case METHOD_YEAR:
 		return i.DumpByYear()
