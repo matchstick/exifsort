@@ -263,31 +263,20 @@ type index interface {
 	GetAll() mediaMap
 }
 
-func createYearIndex() *yearIndex {
-	var y yearIndex
-	y.b.Init(ROOT_INDEX)
-	return &y
-}
-
-func createMonthIndex() *monthIndex {
-	var m monthIndex
-	m.b.Init(ROOT_INDEX)
-	return &m
-}
-func createDayIndex() *dayIndex {
-	var d dayIndex
-	d.b.Init(ROOT_INDEX)
-	return &d
-}
-
 func CreateIndex(method int) index {
 	switch method {
 	case METHOD_YEAR:
-		return createYearIndex()
+		var y yearIndex
+		y.b.Init(ROOT_INDEX)
+		return &y
 	case METHOD_MONTH:
-		return createMonthIndex()
+		var m monthIndex
+		m.b.Init(ROOT_INDEX)
+		return &m
 	case METHOD_DAY:
-		return createDayIndex()
+		var d dayIndex
+		d.b.Init(ROOT_INDEX)
+		return &d
 	default:
 		panic("Unknown method")
 	}
