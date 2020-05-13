@@ -137,6 +137,8 @@ func (i *index) Add(path string, time time.Time) {
 		i.AddMediaByMonth(path, time)
 	case METHOD_DAY:
 		i.AddMediaByDay(path, time)
+	default:
+		panic("Unknown method")
 	}
 }
 
@@ -192,6 +194,6 @@ func (i index) String() string {
 	case METHOD_DAY:
 		return i.DumpByDay()
 	default:
-		return ""
+		panic("Unknown method")
 	}
 }
