@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-var sortedState sortedType
+var sortIndex index
 
 func sortFunc(path string, info os.FileInfo, err error) error {
 	if err != nil {
@@ -32,7 +32,7 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 	}
 
 	walkState.storeValid()
-	sortedState.Add(path, time)
+	sortIndex.Add(path, time)
 	return nil
 }
 
@@ -45,7 +45,7 @@ func sortSummary(summarize bool) {
 
 func SortDir(root string, method int, summarize bool, doPrint bool) {
 	walkState.Init(doPrint)
-	sortedState.Init(root, method)
+	sortIndex.InitRoot(method)
 	err := filepath.Walk(root, scanFunc)
 
 	if err != nil {

@@ -66,3 +66,25 @@ func skipFileType(path string) bool {
 	}
 	return false
 }
+
+const (
+	METHOD_NONE = iota
+	METHOD_YEAR
+	METHOD_MONTH
+	METHOD_DAY
+)
+
+var methodMap = map[int]string{
+	METHOD_NONE:  "None",
+	METHOD_YEAR:  "Year",
+	METHOD_MONTH: "Month",
+	METHOD_DAY:   "Day",
+}
+
+func methodStr(method int) string {
+	str, present := methodMap[method]
+	if present == false {
+		return "unknown"
+	}
+	return str
+}
