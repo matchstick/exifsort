@@ -191,6 +191,7 @@ func (i index) String() string {
 		return i.DumpByMonth()
 	case METHOD_DAY:
 		return i.DumpByDay()
+	default:
+		return ""
 	}
-	return ""
 }
