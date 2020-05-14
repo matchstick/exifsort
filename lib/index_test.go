@@ -23,7 +23,10 @@ func PutFiles(t *testing.T, idx index, start uint, count uint,
 		time := time.Date(year, time.Month(month), day,
 				0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d.jpg", ii)
-		idx.Put(name, time)
+		err := idx.Put(name, time)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -33,33 +36,32 @@ func GetFiles(t *testing.T, idx index, start uint, count uint,
 		testTime := time.Date(year, time.Month(month), day,
 				0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d.jpg", ii)
-		fmt.Printf("name: %s\n", name)
 		idxPath, present := idx.Get(name)
 		if present == false {
 			t.Fatalf("Cannot find %s\n", name)
 		}
 		testPath := idx.PathStr(testTime, name)
 		if idxPath != testPath {
-			t.Fatalf("Recvd paths (%s) != %s using time %s\n",idxPath, testPath, testTime)
+			t.Fatalf("Recvd paths (%s) != %s using time %s\n",
+				idxPath, testPath, testTime)
 		}
 	}
 }
 
 func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 		year int, month int, day int, collisionCount int) {
-		fmt.Printf("Duplicates\n")
 	for ii := start; ii < start+count; ii++ {
 		testTime := time.Date(year, time.Month(month), day,
 				0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d_%d.jpg", ii, collisionCount)
-		fmt.Printf("name: %s\n", name)
 		idxPath, present := idx.Get(name)
 		if present == false {
 			t.Fatalf("Cannot find %s\n", name)
 		}
 		testPath := idx.PathStr(testTime, name)
 		if idxPath != testPath {
-			t.Fatalf("Recvd paths (%s) != %s using time %s\n",idxPath, testPath, testTime)
+			t.Fatalf("Recvd collison paths (%s) != %s using time %s\n",
+				idxPath, testPath, testTime)
 		}
 	}
 }
@@ -85,14 +87,40 @@ func TestDayIndex(t *testing.T) {
 	fmt.Printf("%s\n", idx)
 }
 
-func TestDuplicates(t *testing.T) {
+func TestCollisionYear(t *testing.T) {
 	var idx = CreateIndex(METHOD_YEAR)
 	PutFiles(t, idx, 10, 10, 1, 2, 4)
 	PutFiles(t, idx, 10, 10, 1, 2, 4)
 	PutFiles(t, idx, 10, 10, 1, 2, 4)
-	fmt.Printf("%s\n", idx)
 	GetFiles(t, idx, 10, 10, 1, 2, 4)
 	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
 	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
 }
 
+func TestCollisionMonth(t *testing.T) {
+	var idx = CreateIndex(METHOD_MONTH)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	GetFiles(t, idx, 10, 10, 1, 2, 4)
+	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
+	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
+}
+
+func TestCollisionDay(t *testing.T) {
+	var idx = CreateIndex(METHOD_DAY)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	PutFiles(t, idx, 10, 10, 1, 2, 4)
+	GetFiles(t, idx, 10, 10, 1, 2, 4)
+	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
+	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
+}
+func TestDuplicateYear(t *testing.T) {
+	var exifPath = "../data/with_exif.jpg"
+	var idx = CreateIndex(METHOD_YEAR)
+	time, _ := ExtractExifTime(exifPath)
+	idx.Put(exifPath, time)
+	idx.Put(exifPath, time)
+
+}

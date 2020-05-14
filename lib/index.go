@@ -2,11 +2,22 @@ package exifSort
 
 import (
 	"fmt"
+	"github.com/udhos/equalfile"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 )
+
+
+// The goal of the index system is to be able to accept as input:
+// a) media pathname
+// b) time it should be sorted to
+// c) method to sort (by year, by month, by day)
+
+// The index will store the original path, and the basename in a time based directory structure.
+// We need top handle collisions and duplicates. Hence the data structure.
+
 
 // key   == new name for file. It could be the same as old basename or modified
 //          for collision.
@@ -46,7 +57,7 @@ func (b *bucket) ChildrenKeys() []int {
 	return keys
 }
 
-// Returns a _sorted_ key list.
+// Returns a _sorted_ key list. No technical reason to make it a receive pointer.
 func (b *bucket) SortMediaKeys(m mediaMap) []string {
 	var keys []string
 	for k := range m {
@@ -95,17 +106,32 @@ func (b *bucket) mediaCollisionName(base string) string {
 }
 
 // Add a file to the mediaMap. It needs to handle collisions, duplicates, etc.
-func (b *bucket) MediaAdd(path string) {
+func (b *bucket) MediaAdd(path string) error {
 	var base = filepath.Base(path)
-	_, present := b.media[base]
-	fmt.Printf("Adding %s\n",path)
-	if present {
-		fmt.Printf("collision with %s\n",path)
-		//TODO test for duplicate time and contents
-		base = b.mediaCollisionName(base)
-		fmt.Printf("new base %s\n",base)
+	storedPath, present := b.media[base]
+
+	// Common case, no duplicates or collisions.
+	if present == false {
+		b.media[base] = path
+		return nil
 	}
-	b.media[base] = path
+
+	// Check for same contents
+	cmp := equalfile.New(nil, equalfile.Options{}) // compare using single mode
+	equal, err := cmp.CompareFile(path, storedPath)	
+	if err != nil {
+		return err
+	}
+
+	if equal {
+		return fmt.Errorf("%s is a duplicate of the already stored media %s\n",
+			path, storedPath)
+	}
+
+	// If it has the same name as is not the same file we should add it
+	// with a new base name to not collide.
+	base = b.mediaCollisionName(base)
+	return nil
 }
 
 // yearIndex will sort the paths by year. Each of its bucket's have no
@@ -118,18 +144,19 @@ func (y *yearIndex) PathStr(time time.Time, base string) string {
 	return fmt.Sprintf("%04d/%s", time.Year(), base)
 }
 
-func (y *yearIndex) Put(path string, time time.Time) {
+func (y *yearIndex) Put(path string, time time.Time) error {
 	yearBucket := y.b.GetBucket(time.Year())
-	yearBucket.MediaAdd(path)
+	return yearBucket.MediaAdd(path)
 }
 
 func (y *yearIndex) Get(path string) (string, bool) {
+	soughtBase := filepath.Base(path)
 	for year, yearBucket := range y.b.children {
-		for base, origPath := range yearBucket.Media() {
-			if path == origPath {
-				t := time.Date(year,1,1,
+		for base, _ := range yearBucket.Media() {
+			if base == soughtBase {
+				time := time.Date(year,1,1,
 						1,1,1,1, time.Local)
-				return y.PathStr(t, base), true
+				return y.PathStr(time, base), true
 			}
 		}
 	}
@@ -164,10 +191,10 @@ type monthIndex struct {
 	b bucket
 }
 
-func (m *monthIndex) Put(path string, time time.Time) {
+func (m *monthIndex) Put(path string, time time.Time) error {
 	yearBucket := m.b.GetBucket(time.Year())
 	monthBucket := yearBucket.GetBucket(int(time.Month()))
-	monthBucket.MediaAdd(path)
+	return monthBucket.MediaAdd(path)
 }
 
 func (m *monthIndex) PathStr(time time.Time, base string) string {
@@ -175,11 +202,13 @@ func (m *monthIndex) PathStr(time time.Time, base string) string {
 }
 
 func (m *monthIndex) Get(path string) (string, bool) {
+	soughtBase := filepath.Base(path)
 	for year, yearBucket := range m.b.children {
 		for month, monthBucket := range yearBucket.children {
-			for base, origPath := range monthBucket.media {
-				if path == origPath {
-					time := time.Date(year,time.Month(month),1,1,1,1,1, time.Local)
+			for base, _ := range monthBucket.media {
+				if base == soughtBase {
+					time := time.Date(year,time.Month(month),
+						1,1,1,1,1, time.Local)
 					return m.PathStr(time, base), true
 				}
 			}
@@ -218,11 +247,11 @@ type dayIndex struct {
 	b bucket
 }
 
-func (d *dayIndex) Put(path string, time time.Time) {
+func (d *dayIndex) Put(path string, time time.Time) error {
 	yearBucket := d.b.GetBucket(time.Year())
 	monthBucket := yearBucket.GetBucket(int(time.Month()))
 	dayBucket := monthBucket.GetBucket(time.Day())
-	dayBucket.MediaAdd(path)
+	return dayBucket.MediaAdd(path)
 }
 
 func (d *dayIndex) PathStr(time time.Time, base string) string {
@@ -230,12 +259,16 @@ func (d *dayIndex) PathStr(time time.Time, base string) string {
 }
 
 func (d *dayIndex) Get(path string) (string, bool) {
+	soughtBase := filepath.Base(path)
 	for year, yearBucket := range d.b.children {
 		for month, monthBucket := range yearBucket.children {
 			for day, dayBucket := range monthBucket.children {
-				for base, origPath := range dayBucket.media {
-					if path == origPath {
-						time := time.Date(year, time.Month(month),day,1,1,1,1, time.Local)
+				for base, _ := range dayBucket.media {
+					if base == soughtBase {
+						time := time.Date(year,
+								time.Month(month),day,
+								1,1,1,1,
+								time.Local)
 						return d.PathStr(time, base), true
 					}
 				}
@@ -274,7 +307,7 @@ func (d dayIndex) String() string {
 }
 
 type index interface {
-	Put(string, time.Time)
+	Put(string, time.Time) error
 	Get(string) (string, bool)
 	GetAll() mediaMap
 	PathStr(time.Time, string) string
