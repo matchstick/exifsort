@@ -72,6 +72,7 @@ const (
 	METHOD_YEAR
 	METHOD_MONTH
 	METHOD_DAY
+	METHOD_LIMIT // for testing
 )
 
 var methodMap = map[int]string{

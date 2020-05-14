@@ -124,13 +124,14 @@ func (b *bucket) MediaAdd(path string) error {
 	}
 
 	if equal {
-		return fmt.Errorf("%s is a duplicate of the already stored media %s\n",
+		return fmt.Errorf("%s is a duplicate of the already stored media %s",
 			path, storedPath)
 	}
 
 	// If it has the same name as is not the same file we should add it
 	// with a new base name to not collide.
 	base = b.mediaCollisionName(base)
+	b.media[base] = path
 	return nil
 }
 

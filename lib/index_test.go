@@ -1,5 +1,8 @@
 package exifSort
 
+// TODO this test file is a mess. But it found many bugs. 
+// Now that we know what we want we will rewrite.
+
 import (
 	"fmt"
 	"io/ioutil"
@@ -16,6 +19,27 @@ var ByYearInput = []string{
 }
 
 const exifFile = "../data/with_exif.jpg"
+const diffFile = "../data/diff_exif.jpg"
+const diff2File = "../data/diff2_exif.jpg"
+
+func indexTmpDir(t *testing.T, parent string, name string) string {
+	newDir, err := ioutil.TempDir(parent, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return newDir
+}
+
+func copyFile(t *testing.T, src string, dst string) {
+	content, err := ioutil.ReadFile(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile(dst, content, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 // Add Some filepaths to the index
 // File names are of the form "IMG_<start>.jpg" to "IMG_<end>.jpg"
@@ -30,7 +54,7 @@ func PutFiles(t *testing.T, idx index, dir string, srcFile string,
 		copyFile(t, srcFile, name)
 		err := idx.Put(name, time)
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
 		}
 	}
 }
@@ -70,92 +94,51 @@ func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 		}
 	}
 }
-
-func indexTmpDir(t *testing.T, parent string, name string) string {
-	newDir, err := ioutil.TempDir(parent, name)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return newDir
-}
-
-func copyFile(t *testing.T, src string, dst string) {
-	content, err := ioutil.ReadFile(src)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(dst, content, 0644)
-	if err != nil {
-		t.Fatal(err)
+func indexSizeCheck(t *testing.T, targetSize int, idx index) {
+	idxMap := idx.GetAll()
+	mapSize := len(idxMap)
+	if (mapSize != targetSize) {
+		t.Errorf("Expecting to have index hold %d entries not %d\n", targetSize, mapSize)
 	}
 }
 
-func TestYearIndex(t *testing.T) {
-	var idx = CreateIndex(METHOD_YEAR)
-	testDir := indexTmpDir(t, "", "root")
 
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
-	GetFiles(t, idx, 10, 10, 2020, 1, 1)
-	fmt.Printf("%s\n", idx)
-}
-func TestMonthIndex(t *testing.T) {
-	var idx = CreateIndex(METHOD_MONTH)
-	testDir := indexTmpDir(t, "", "root")
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 1)
-	GetFiles(t, idx, 10, 10, 1, 2, 1)
-	fmt.Printf("%s\n", idx)
+func TestIndexPutGet(t *testing.T) {
+	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+		var idx = CreateIndex(METHOD_YEAR)
+		testDir := indexTmpDir(t, "", "root")
+
+		PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
+		GetFiles(t, idx, 10, 10, 2020, 1, 1)
+		indexSizeCheck(t, 10, idx)
+	}
 }
 
-func TestDayIndex(t *testing.T) {
-	var idx = CreateIndex(METHOD_DAY)
-	testDir := indexTmpDir(t, "", "root")
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
-	GetFiles(t, idx, 10, 10, 1, 2, 4)
-	fmt.Printf("%s\n", idx)
+func TestIndexCollisions(t *testing.T) {
+	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+		var idx = CreateIndex(method)
+		testDir := indexTmpDir(t, "", "root_")
+		testDir1 := indexTmpDir(t, "", "bobo_")
+		testDir2 := indexTmpDir(t, "", "gobo_")
+		PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
+		PutFiles(t, idx, testDir1, diffFile, 10, 10, 1, 2, 4)
+		PutFiles(t, idx, testDir2, diff2File, 10, 10, 1, 2, 4)
+		GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
+		GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
+		indexSizeCheck(t, 30, idx)
+	}
 }
 
-func TestCollisionYear(t *testing.T) {
-	var idx = CreateIndex(METHOD_YEAR)
-	testDir := indexTmpDir(t, "", "root")
-	testDir1 := indexTmpDir(t, "", "root1")
-	testDir2 := indexTmpDir(t, "", "root2")
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir1, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir2, exifFile, 10, 10, 1, 2, 4)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
-}
-
-func TestCollisionMonth(t *testing.T) {
-	var idx = CreateIndex(METHOD_MONTH)
-	testDir := indexTmpDir(t, "", "root")
-	testDir1 := indexTmpDir(t, "", "root1")
-	testDir2 := indexTmpDir(t, "", "root2")
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir1, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir2, exifFile, 10, 10, 1, 2, 4)
-	GetFiles(t, idx, 10, 10, 1, 2, 4)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
-}
-
-func TestCollisionDay(t *testing.T) {
-	var idx = CreateIndex(METHOD_DAY)
-	testDir := indexTmpDir(t, "", "root")
-	testDir1 := indexTmpDir(t, "", "root1")
-	testDir2 := indexTmpDir(t, "", "root2")
-	PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir1, exifFile, 10, 10, 1, 2, 4)
-	PutFiles(t, idx, testDir2, exifFile, 10, 10, 1, 2, 4)
-	GetFiles(t, idx, 10, 10, 1, 2, 4)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
-	GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
-}
-func TestDuplicateYear(t *testing.T) {
-	var exifPath = "../data/with_exif.jpg"
-	var idx = CreateIndex(METHOD_YEAR)
-	time, _ := ExtractExifTime(exifPath)
-	idx.Put(exifPath, time)
-	idx.Put(exifPath, time)
-
+func TestIndexDuplicates(t *testing.T) {
+	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+		var exifPath = "../data/with_exif.jpg"
+		var idx = CreateIndex(METHOD_YEAR)
+		time, _ := ExtractExifTime(exifPath)
+		idx.Put(exifPath, time)
+		err := idx.Put(exifPath, time)
+		if err == nil {
+			t.Error("Expected Error with duplicate Put. Got nil\n")
+		}
+		indexSizeCheck(t, 1, idx)
+	}
 }
