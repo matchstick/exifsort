@@ -68,10 +68,11 @@ func skipFileType(path string) bool {
 }
 
 const (
-	METHOD_YEAR = iota
+	METHOD_NONE = iota
+	METHOD_YEAR
 	METHOD_MONTH
 	METHOD_DAY
-	METHOD_NONE // for testing
+	METHOD_LIMIT // for testing
 )
 
 var methodMap = map[int]string{
@@ -88,23 +89,55 @@ func methodLookup(method int) string {
 	return str
 }
 
-func methodChoices() string {
-	var methods []string
-	for _, str := range methodMap {
+func argChoices(argsMap map[int]string) string {
+	var choices []string
+	for _, str := range argsMap {
 		str = fmt.Sprintf("\"%s\"", str)
-		methods = append(methods, str)
+		choices = append(choices, str)
 	}
-	return strings.Join(methods, ",")
+	return strings.Join(choices, ",")
 }
 
-func MethodArgCheck(argStr string) (int, error) {
+func ArgsParse(argStr string, argsMap map[int]string) (int, error) {
 	/// lower capitilazation for safe comparing
 	argStr = strings.ToLower(argStr)
-	for method, methodStr := range methodMap {
-		methodStr = strings.ToLower(methodStr)
-		if argStr == methodStr {
-			return method, nil
+	for val, str := range argsMap {
+		str = strings.ToLower(str)
+		if argStr == str {
+			return val, nil
 		}
 	}
-	return METHOD_NONE, fmt.Errorf("Method must be one of [%s] (case insensitive)", methodChoices())
+	return -1, fmt.Errorf("unknown arg")
+}
+
+func MethodParse(argStr string) (int, error) {
+	val, err := ArgsParse(argStr, methodMap)
+	if err != nil {
+		retErr := fmt.Errorf("Method must be one of [%s] (case insensitive)",
+			argChoices(methodMap))
+		return METHOD_NONE, retErr
+	}
+	return val, nil
+}
+
+const (
+	ACTION_NONE = iota
+	ACTION_COPY
+	ACTION_MOVE
+	ACTION_LIMIT // for testing
+)
+
+var actionMap = map[int]string{
+	ACTION_COPY: "Copy",
+	ACTION_MOVE: "Move",
+}
+
+func ActionParse(argStr string) (int, error) {
+	val, err := ArgsParse(argStr, actionMap)
+	if err != nil {
+		retErr := fmt.Errorf("Action must be one of [%s] (case insensitive)",
+			argChoices(actionMap))
+		return METHOD_NONE, retErr
+	}
+	return val, nil
 }

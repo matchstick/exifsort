@@ -43,7 +43,7 @@ func sortSummary(summarize bool) {
 	fmt.Printf("Sort Summary\n")
 }
 
-func SortDir(root string, method int, summarize bool, doPrint bool) {
+func SortDir(root string, dst string, method int, action int, summarize bool, doPrint bool) {
 	walkState.Init(doPrint)
 	sortIndex = CreateIndex(method)
 	err := filepath.Walk(root, scanFunc)
