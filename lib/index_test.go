@@ -1,6 +1,6 @@
 package exifSort
 
-// TODO this test file is a mess. But it found many bugs. 
+// TODO this test file is a mess. But it found many bugs.
 // Now that we know what we want we will rewrite.
 
 import (
@@ -45,12 +45,12 @@ func copyFile(t *testing.T, src string, dst string) {
 // File names are of the form "IMG_<start>.jpg" to "IMG_<end>.jpg"
 // We have a time associated with each file based on args provided.
 func PutFiles(t *testing.T, idx index, dir string, srcFile string,
-		start uint, count uint,
-		year int, month int, day int) {
+	start uint, count uint,
+	year int, month int, day int) {
 	for ii := start; ii < start+count; ii++ {
 		time := time.Date(year, time.Month(month), day,
-				0, 0, 0, 0, time.Local)
-		name := fmt.Sprintf("%s/IMG_%d.jpg",dir, ii)
+			0, 0, 0, 0, time.Local)
+		name := fmt.Sprintf("%s/IMG_%d.jpg", dir, ii)
 		copyFile(t, srcFile, name)
 		err := idx.Put(name, time)
 		if err != nil {
@@ -60,10 +60,10 @@ func PutFiles(t *testing.T, idx index, dir string, srcFile string,
 }
 
 func GetFiles(t *testing.T, idx index, start uint, count uint,
-		year int, month int, day int) {
+	year int, month int, day int) {
 	for ii := start; ii < start+count; ii++ {
 		testTime := time.Date(year, time.Month(month), day,
-				0, 0, 0, 0, time.Local)
+			0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d.jpg", ii)
 		idxPath, present := idx.Get(name)
 		if present == false {
@@ -78,10 +78,10 @@ func GetFiles(t *testing.T, idx index, start uint, count uint,
 }
 
 func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
-		year int, month int, day int, collisionCount int) {
+	year int, month int, day int, collisionCount int) {
 	for ii := start; ii < start+count; ii++ {
 		testTime := time.Date(year, time.Month(month), day,
-				0, 0, 0, 0, time.Local)
+			0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d_%d.jpg", ii, collisionCount)
 		idxPath, present := idx.Get(name)
 		if present == false {
@@ -97,14 +97,13 @@ func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 	idxMap := idx.GetAll()
 	mapSize := len(idxMap)
-	if (mapSize != targetSize) {
+	if mapSize != targetSize {
 		t.Errorf("Expecting to have index hold %d entries not %d\n", targetSize, mapSize)
 	}
 }
 
-
 func TestIndexPutGet(t *testing.T) {
-	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
 		var idx = CreateIndex(METHOD_YEAR)
 		testDir := indexTmpDir(t, "", "root")
 
@@ -115,7 +114,7 @@ func TestIndexPutGet(t *testing.T) {
 }
 
 func TestIndexCollisions(t *testing.T) {
-	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
 		var idx = CreateIndex(method)
 		testDir := indexTmpDir(t, "", "root_")
 		testDir1 := indexTmpDir(t, "", "bobo_")
@@ -130,7 +129,7 @@ func TestIndexCollisions(t *testing.T) {
 }
 
 func TestIndexDuplicates(t *testing.T) {
-	for method := METHOD_YEAR; method< METHOD_LIMIT; method++ {
+	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
 		var exifPath = "../data/with_exif.jpg"
 		var idx = CreateIndex(METHOD_YEAR)
 		time, _ := ExtractExifTime(exifPath)

@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 // The goal of the index system is to be able to accept as input:
 // a) media pathname
 // b) time it should be sorted to
@@ -18,13 +17,12 @@ import (
 // The index will store the original path, and the basename in a time based directory structure.
 // We need top handle collisions and duplicates. Hence the data structure.
 
-
 // key   == new name for file. It could be the same as old basename or modified
 //          for collision.
 // value == original full path
 type mediaMap map[string]string
 
-// A bucket is the common "node" of the data structure. 
+// A bucket is the common "node" of the data structure.
 // It can optionally be a leaf (where it would populate it's media)
 // Or an intermediary where it would populate it's children.
 type bucketMap map[int]bucket
@@ -32,9 +30,9 @@ type bucketMap map[int]bucket
 const ROOT_INDEX = -1
 
 type bucket struct {
-	media   mediaMap
+	media    mediaMap
 	children bucketMap
-	id      int
+	id       int
 }
 
 func (b *bucket) Media() mediaMap {
@@ -118,7 +116,7 @@ func (b *bucket) MediaAdd(path string) error {
 
 	// Check for same contents
 	cmp := equalfile.New(nil, equalfile.Options{}) // compare using single mode
-	equal, err := cmp.CompareFile(path, storedPath)	
+	equal, err := cmp.CompareFile(path, storedPath)
 	if err != nil {
 		return err
 	}
@@ -155,8 +153,8 @@ func (y *yearIndex) Get(path string) (string, bool) {
 	for year, yearBucket := range y.b.children {
 		for base, _ := range yearBucket.Media() {
 			if base == soughtBase {
-				time := time.Date(year,1,1,
-						1,1,1,1, time.Local)
+				time := time.Date(year, 1, 1,
+					1, 1, 1, 1, time.Local)
 				return y.PathStr(time, base), true
 			}
 		}
@@ -169,7 +167,7 @@ func (y *yearIndex) GetAll() mediaMap {
 	for year, yearBucket := range y.b.children {
 		media := yearBucket.Media()
 		for base, oldPath := range media {
-			time := time.Date(year,1,1,1,1,1,1, time.Local)
+			time := time.Date(year, 1, 1, 1, 1, 1, 1, time.Local)
 			path := y.PathStr(time, base)
 			retMap[path] = oldPath
 		}
@@ -208,8 +206,8 @@ func (m *monthIndex) Get(path string) (string, bool) {
 		for month, monthBucket := range yearBucket.children {
 			for base, _ := range monthBucket.media {
 				if base == soughtBase {
-					time := time.Date(year,time.Month(month),
-						1,1,1,1,1, time.Local)
+					time := time.Date(year, time.Month(month),
+						1, 1, 1, 1, 1, time.Local)
 					return m.PathStr(time, base), true
 				}
 			}
@@ -224,7 +222,7 @@ func (m *monthIndex) GetAll() mediaMap {
 		for month, monthBucket := range yearBucket.children {
 			media := monthBucket.Media()
 			for base, oldPath := range media {
-				time := time.Date(year, time.Month(month),1,1,1,1,1, time.Local)
+				time := time.Date(year, time.Month(month), 1, 1, 1, 1, 1, time.Local)
 				path := m.PathStr(time, base)
 				retMap[path] = oldPath
 			}
@@ -267,9 +265,9 @@ func (d *dayIndex) Get(path string) (string, bool) {
 				for base, _ := range dayBucket.media {
 					if base == soughtBase {
 						time := time.Date(year,
-								time.Month(month),day,
-								1,1,1,1,
-								time.Local)
+							time.Month(month), day,
+							1, 1, 1, 1,
+							time.Local)
 						return d.PathStr(time, base), true
 					}
 				}
@@ -286,7 +284,7 @@ func (d *dayIndex) GetAll() mediaMap {
 			for day, dayBucket := range monthBucket.children {
 				media := dayBucket.Media()
 				for base, oldPath := range media {
-					time := time.Date(year, time.Month(month),day,1,1,1,1, time.Local)
+					time := time.Date(year, time.Month(month), day, 1, 1, 1, 1, time.Local)
 					newPath := d.PathStr(time, base)
 					retMap[newPath] = oldPath
 				}
@@ -301,7 +299,7 @@ func (d dayIndex) String() string {
 	media := d.GetAll()
 	keys := d.b.SortMediaKeys(media)
 	for _, newPath := range keys {
-		oldPath:= media[newPath]
+		oldPath := media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr

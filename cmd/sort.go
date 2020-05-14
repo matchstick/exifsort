@@ -17,8 +17,9 @@ package cmd
 
 import (
 	"fmt"
-
+	"github.com/matchstick/exifSort/lib"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // sortCmd represents the sort command
@@ -31,21 +32,39 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Args: cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("sort called")
+
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		summarize, _ := cmd.Flags().GetBool("summarize")
+
+		srcDir := args[0]
+		dstDir := args[1]
+		methodArg := args[2]
+		info, err := os.Stat(srcDir)
+		if err != nil || info.IsDir() == false {
+			fmt.Printf("Input Directory \"%s\" has error (%s)\n", srcDir, err.Error())
+			return
+		}
+		// dstDir must not be created yet
+		_, err = os.Stat(dstDir)
+		if err == nil || os.IsExist(err) {
+			fmt.Printf("Output directory \"%s\" must not exist\n", dstDir)
+			return
+		}
+		method, err := exifSort.MethodArgCheck(methodArg)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			return
+		}
+		exifSort.SortDir(srcDir, method, summarize, !quiet)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(sortCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// sortCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// sortCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	sortCmd.Flags().BoolP("quiet", "q", false,
+		"Don't print output while scanning")
+	sortCmd.Flags().BoolP("summarize", "s", false,
+		"Print a summary when done scanning")
 }

@@ -68,24 +68,43 @@ func skipFileType(path string) bool {
 }
 
 const (
-	METHOD_NONE = iota
-	METHOD_YEAR
+	METHOD_YEAR = iota
 	METHOD_MONTH
 	METHOD_DAY
-	METHOD_LIMIT // for testing
+	METHOD_NONE // for testing
 )
 
 var methodMap = map[int]string{
-	METHOD_NONE:  "None",
 	METHOD_YEAR:  "Year",
 	METHOD_MONTH: "Month",
 	METHOD_DAY:   "Day",
 }
 
-func methodStr(method int) string {
+func methodLookup(method int) string {
 	str, present := methodMap[method]
 	if present == false {
 		return "unknown"
 	}
 	return str
+}
+
+func methodChoices() string {
+	var methods []string
+	for _, str := range methodMap {
+		str = fmt.Sprintf("\"%s\"", str)
+		methods = append(methods, str)
+	}
+	return strings.Join(methods, ",")
+}
+
+func MethodArgCheck(argStr string) (int, error) {
+	/// lower capitilazation for safe comparing
+	argStr = strings.ToLower(argStr)
+	for method, methodStr := range methodMap {
+		methodStr = strings.ToLower(methodStr)
+		if argStr == methodStr {
+			return method, nil
+		}
+	}
+	return METHOD_NONE, fmt.Errorf("Method must be one of [%s] (case insensitive)", methodChoices())
 }
