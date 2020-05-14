@@ -53,7 +53,6 @@ var sortCmd = &cobra.Command{
 			fmt.Printf("Output directory \"%s\" must not exist\n", dstDir)
 			return
 		}
-		fmt.Printf("method: %s\n", methodArg)
 		method, err := exifSort.MethodParse(methodArg)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
