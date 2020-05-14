@@ -63,8 +63,6 @@ type bucket struct {
 	media   mediaMap
 	entries bucketMap
 	id      int
-	// I hate having this switch I must fix
-	method int
 }
 
 func (b *bucket) Media() mediaMap {
@@ -104,8 +102,8 @@ type yearIndex struct {
 	b bucket
 }
 
-func (y *yearIndex) NewPath(year int, base string) string {
-	return fmt.Sprintf("%04d/%s", year, base)
+func (y *yearIndex) NewPath(time time.Time, base string) string {
+	return fmt.Sprintf("%04d/%s", time.Year(), base)
 }
 
 func (y *yearIndex) Put(path string, time time.Time) {
@@ -117,7 +115,9 @@ func (y *yearIndex) Get(path string) (string, bool) {
 	for year, yearBucket := range y.b.entries {
 		for base, origPath := range yearBucket.Media() {
 			if path == origPath {
-				return y.NewPath(year, base), true
+				t := time.Date(year,1,1,
+						1,1,1,1, time.Local)
+				return y.NewPath(t, base), true
 			}
 		}
 	}
@@ -129,8 +129,10 @@ func (y *yearIndex) GetAll() mediaMap {
 	for _, year := range y.b.EntriesKeys() {
 		yearBucket := y.b.GetBucket(year)
 		media := yearBucket.Media()
-		for _, base := range media.Keys() {
-			path := y.NewPath(year, base)
+		for _, base := range media {
+			time := time.Date(year,1,1,1,1,1,1,
+					time.Local)
+			path := y.NewPath(time, base)
 			retMap[path] = media[base]
 		}
 	}
@@ -139,8 +141,10 @@ func (y *yearIndex) GetAll() mediaMap {
 
 func (y yearIndex) String() string {
 	var retStr string
-	for newPath, oldPath := range y.GetAll() {
-		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
+	media := y.GetAll()
+	for _, oldPath := range media.Keys() {
+		newPath := media[oldPath]
+		retStr += fmt.Sprintf("%s => %s\n", newPath, oldPath)
 	}
 	return retStr
 }
@@ -155,8 +159,8 @@ func (m *monthIndex) Put(path string, time time.Time) {
 	monthBucket.AddPath(path)
 }
 
-func (m *monthIndex) NewPath(year int, month int, base string) string {
-	return fmt.Sprintf("%04d/%02d/%s", year, month, base)
+func (m *monthIndex) NewPath(time time.Time, base string) string {
+	return fmt.Sprintf("%04d/%02d/%s", time.Year(), time.Month(), base)
 }
 
 func (m *monthIndex) Get(path string) (string, bool) {
@@ -164,7 +168,8 @@ func (m *monthIndex) Get(path string) (string, bool) {
 		for month, monthBucket := range yearBucket.entries {
 			for base, origPath := range monthBucket.media {
 				if path == origPath {
-					return m.NewPath(year, month, base), true
+					time := time.Date(year,time.Month(month),1,1,1,1,1, time.Local)
+					return m.NewPath(time, base), true
 				}
 			}
 		}
@@ -180,7 +185,8 @@ func (m *monthIndex) GetAll() mediaMap {
 			monthBucket := yearBucket.GetBucket(month)
 			media := monthBucket.Media()
 			for _, base := range media.Keys() {
-				path := m.NewPath(year, month, base)
+				time := time.Date(year, time.Month(month),1,1,1,1,1, time.Local)
+				path := m.NewPath(time, base)
 				retMap[path] = media[base]
 			}
 		}
@@ -190,7 +196,9 @@ func (m *monthIndex) GetAll() mediaMap {
 
 func (m monthIndex) String() string {
 	var retStr string
-	for newPath, oldPath := range m.GetAll() {
+	media := m.GetAll()
+	for _, newPath := range media.Keys() {
+		oldPath := media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
@@ -207,8 +215,8 @@ func (d *dayIndex) Put(path string, time time.Time) {
 	dayBucket.AddPath(path)
 }
 
-func (d *dayIndex) NewPath(year int, month int, day int, base string) string {
-	return fmt.Sprintf("%04d/%02d/%02d/%s", year, month, day, base)
+func (d *dayIndex) NewPath(time time.Time, base string) string {
+	return fmt.Sprintf("%04d/%02d/%02d/%s", time.Year(), time.Month(), time.Day(), base)
 }
 
 func (d *dayIndex) Get(path string) (string, bool) {
@@ -217,7 +225,8 @@ func (d *dayIndex) Get(path string) (string, bool) {
 			for day, dayBucket := range monthBucket.entries {
 				for base, origPath := range dayBucket.media {
 					if path == origPath {
-						return d.NewPath(year, month, day, base), true
+						time := time.Date(year, time.Month(month),day,1,1,1,1, time.Local)
+						return d.NewPath(time, base), true
 					}
 				}
 			}
@@ -228,15 +237,17 @@ func (d *dayIndex) Get(path string) (string, bool) {
 
 func (d *dayIndex) GetAll() mediaMap {
 	var retMap = make(mediaMap)
+
 	for _, year := range d.b.EntriesKeys() {
 		yearBucket := d.b.GetBucket(year)
 		for _, month := range yearBucket.EntriesKeys() {
 			monthBucket := yearBucket.GetBucket(month)
 			for _, day := range monthBucket.EntriesKeys() {
-				dayBucket := monthBucket.GetBucket(month)
+				dayBucket := monthBucket.GetBucket(day)
 				media := dayBucket.Media()
 				for _, base := range media.Keys() {
-					path := d.NewPath(year, month, day, base)
+					time := time.Date(year, time.Month(month),day,1,1,1,1, time.Local)
+					path := d.NewPath(time, base)
 					retMap[path] = media[base]
 				}
 			}
@@ -247,7 +258,9 @@ func (d *dayIndex) GetAll() mediaMap {
 
 func (d dayIndex) String() string {
 	var retStr string
-	for newPath, oldPath := range d.GetAll() {
+	media := d.GetAll()
+	for _, newPath := range media.Keys() {
+		oldPath:= media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
 	return retStr
@@ -257,6 +270,7 @@ type index interface {
 	Put(string, time.Time)
 	Get(string) (string, bool)
 	GetAll() mediaMap
+	NewPath(time.Time, string) string
 }
 
 func CreateIndex(method int) index {
