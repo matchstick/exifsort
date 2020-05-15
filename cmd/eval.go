@@ -38,10 +38,12 @@ var evalCmd = &cobra.Command{
 	Short: "Evals exif date data for files",
 	Long: `Report time for files not directories
 
-	exifSort eval <files>
+	exifSort eval <files>...
 
-	exifSort eval will check every file inputted and
-        then print their exifData to stdout if possible. `,
+	ARGUMENTS
+
+	files
+	file list (expanded by shell) that will have their exifDate reported`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, path := range args {

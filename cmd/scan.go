@@ -28,20 +28,15 @@ var scanCmd = &cobra.Command{
 	Short: "Scan directory for Exif Dates",
 	Long: `Scan directory for Exif Date Info. 
 
-	exifSort scan [<options>...] <directory>
+	exifSort scan [<options>...] <dir>
 
 	exifSort will recursively check every file in an input directory and
         then print it's exifData to stdout if possible.
 
-        OPTIONS
+	ARGUMENTS
 
-	-q, --quiet
-	Suppress line by line time printing
-
-	-s,  --summary
-	when done scanning print a sumamry of stats 
-
-`,
+	src
+	Input directory of media files`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -61,7 +56,7 @@ var scanCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(scanCmd)
 	scanCmd.Flags().BoolP("quiet", "q", false,
-		"Don't print output while scanning")
+		"Suppress line by line printing.")
 	scanCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary when done scanning")
+		"Print a summary of stats when done.")
 }

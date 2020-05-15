@@ -36,25 +36,21 @@ var sortCmd = &cobra.Command{
 
 	ARGUMENTS
 
-	srcDir
+	src
 	Input directory of media files
 
-	dstDir
+	dst
 	Directory to create for output cannot exist
 
 	method
 	How to sort the media. It can be by "Year", "Month", or "Day"
 
+		Year : dst -> year-> media
+		Month: dst -> year-> month -> media
+		Day  : dst -> year-> month -> day -> media
+
 	action
-	How the media is transferred from src to dst
-
-        OPTIONS
-
-	-q, --quiet
-	Suppress line by line time printing
-
-	-s,  --summary
-	When done sorting print a sumamry of stats`,
+	How the media is transferred from src to dst`,
 	Args: cobra.MinimumNArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -94,7 +90,7 @@ var sortCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(sortCmd)
 	sortCmd.Flags().BoolP("quiet", "q", false,
-		"Don't print output while scanning")
+		"Suppress line by line printing.")
 	sortCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary when done scanning")
+		"Print a summary of stats when done.")
 }
