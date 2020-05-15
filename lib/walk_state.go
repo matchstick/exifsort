@@ -50,7 +50,7 @@ func (w *walkStateType) storeSkipped() {
 // has to be a global so it can be accessed via walk routines
 var walkState walkStateType
 
-func (w *walkStateType) Init(walkDoPrint bool) {
+func (w *walkStateType) init(walkDoPrint bool) {
 	w.skippedCount = 0
 	w.validCount = 0
 	w.invalidCount = 0

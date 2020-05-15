@@ -52,12 +52,12 @@ var evalCmd = &cobra.Command{
 				fmt.Printf("%s, %q\n", path, err)
 				continue
 			}
-			time, err := exifSort.ExtractExifTime(path)
+			timeStr, err := exifSort.ExtractExifTimeStr(path)
 			if err != nil {
 				fmt.Printf("%s, %s\n", path, err)
 				continue
 			}
-			fmt.Printf("%s, %s\n", path, exifSort.ExifTime(time))
+			fmt.Printf("%s, %s\n", path, timeStr)
 		}
 	},
 }

@@ -29,7 +29,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	walkState.walkPrintf("%s, %s\n", path, ExifTime(time))
+	walkState.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
 	walkState.storeValid()
 	return nil
 }
@@ -54,7 +54,7 @@ func scanSummary(summarize bool) {
 }
 
 func ScanDir(root string, summarize bool, doPrint bool) {
-	walkState.Init(doPrint)
+	walkState.init(doPrint)
 
 	err := filepath.Walk(root, scanFunc)
 

@@ -129,3 +129,11 @@ func ExtractExifTime(filepath string) (time.Time, error) {
 
 	return time, nil
 }
+
+func ExtractExifTimeStr(path string) (string, error) {
+	time, err := ExtractExifTime(path)
+	if err != nil {
+		return "", err
+	}
+	return exifTimeToStr(time), nil
+}

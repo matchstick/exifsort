@@ -44,7 +44,7 @@ func sortSummary(summarize bool) {
 }
 
 func SortDir(src string, dst string, method int, action int, summarize bool, doPrint bool) {
-	walkState.Init(doPrint)
+	walkState.init(doPrint)
 	sortIndex = CreateIndex(method)
 	err := filepath.Walk(src, sortFunc)
 	if err != nil {
