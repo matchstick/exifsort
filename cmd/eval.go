@@ -35,23 +35,28 @@ func fileReadable(filename string) error {
 // evalCmd represents the eval command
 var evalCmd = &cobra.Command{
 	Use:   "eval",
-	Short: "Evals exif date data for one file only",
-	Long: `Usage: exifSort eval <filename>
-retreives the date data for one file from it's exif data. `,
+	Short: "Evals exif date data for files",
+	Long: `Report time for files not directories
+
+	exifSort eval <files>
+
+	exifSort eval will check every file inputted and
+        then print their exifData to stdout if possible. `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filePath := args[0]
-		err := fileReadable(filePath)
-		if err != nil {
-			fmt.Printf("%q\n", err)
-			return
+		for _, path := range args {
+			err := fileReadable(path)
+			if err != nil {
+				fmt.Printf("%s, %q\n", path, err)
+				continue
+			}
+			time, err := exifSort.ExtractExifTime(path)
+			if err != nil {
+				fmt.Printf("%s, %s\n", path, err)
+				continue
+			}
+			fmt.Printf("%s, %s\n", path, exifSort.ExifTime(time))
 		}
-		time, err := exifSort.ExtractExifTime(filePath)
-		if err != nil {
-			fmt.Printf("%s\n", err)
-			return
-		}
-		fmt.Printf("%s\n", exifSort.ExifTime(time))
 	},
 }
 

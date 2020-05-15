@@ -25,12 +25,36 @@ import (
 // sortCmd represents the sort command
 var sortCmd = &cobra.Command{
 	Use:   "sort",
-	Short: "Accepts an input directory and wil move or copy all media files into an oputput directory sorted by time taken",
-	Long: `sort takes in four arguments:
-		srcDir: input directory of media files
-		dstDir: directory it will create to output files in time sorted format
-		method: "Year", "Month", "Day" - How to sort them by year, month or day
-		action: "Copy", "Move" - Whether to copy or move files`,
+	Short: "Accepts an input directory and will sort media by time created",
+	Long: `Sort directory by Exif Date Info. 
+
+	exifSort sort [<options>...] <src> <dst> <method> <action>
+
+	exifSort will recursively check every file in an input directory and
+	then create antoher directory structure organized by time to either
+	move or copy the files into
+
+	ARGUMENTS
+
+	srcDir
+	Input directory of media files
+
+	dstDir
+	Directory to create for output cannot exist
+
+	method
+	How to sort the media. It can be by "Year", "Month", or "Day"
+
+	action
+	How the media is transferred from src to dst
+
+        OPTIONS
+
+	-q, --quiet
+	Suppress line by line time printing
+
+	-s,  --summary
+	When done sorting print a sumamry of stats`,
 	Args: cobra.MinimumNArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 

@@ -25,13 +25,21 @@ import (
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
 	Use:   "scan",
-	Short: "Scan Directory for Exif Dates",
-	Long: `Scan a directory for Exif Date Info. Has two modes: 
+	Short: "Scan directory for Exif Dates",
+	Long: `Scan directory for Exif Date Info. 
 
-	'line'    - a line for every file found and scanned
-	'summary' - a compact summary of what was found 
+	exifSort scan [<options>...] <directory>
 
-Usage: exifSort scan <dir> -mode=[line|summary]
+	exifSort will recursively check every file in an input directory and
+        then print it's exifData to stdout if possible.
+
+        OPTIONS
+
+	-q, --quiet
+	Suppress line by line time printing
+
+	-s,  --summary
+	when done scanning print a sumamry of stats 
 
 `,
 	Args: cobra.MinimumNArgs(1),
