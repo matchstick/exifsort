@@ -194,7 +194,10 @@ func (m *monthIndex) Put(path string, time time.Time) error {
 }
 
 func (m *monthIndex) PathStr(time time.Time, base string) string {
-	return fmt.Sprintf("%04d/%02d/%s", time.Year(), time.Month(), base)
+	return fmt.Sprintf("%04d/%04d_%02d/%s",
+			time.Year(), // Year label
+			time.Year(), time.Month(), // Month label
+			base)
 }
 
 func (m *monthIndex) Get(path string) (string, bool) {
@@ -252,7 +255,11 @@ func (d *dayIndex) Put(path string, time time.Time) error {
 }
 
 func (d *dayIndex) PathStr(time time.Time, base string) string {
-	return fmt.Sprintf("%04d/%02d/%02d/%s", time.Year(), time.Month(), time.Day(), base)
+	return fmt.Sprintf("%04d/%04d_%02d/%04d_%02d_%02d/%s",
+				time.Year(),
+				time.Year(), time.Month(),
+				time.Year(), time.Month(), time.Day(),
+				base)
 }
 
 func (d *dayIndex) Get(path string) (string, bool) {
