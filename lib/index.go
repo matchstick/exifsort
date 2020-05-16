@@ -27,7 +27,7 @@ type mediaMap map[string]string
 // Or an intermediary where it would populate it's children.
 type bucketMap map[int]bucket
 
-const ROOT_INDEX = -1
+const rootIndex = -1
 
 type bucket struct {
 	media    mediaMap
@@ -308,19 +308,19 @@ type index interface {
 	PathStr(time.Time, string) string
 }
 
-func CreateIndex(method int) index {
+func createIndex(method int) index {
 	switch method {
 	case METHOD_YEAR:
 		var y yearIndex
-		y.b.init(ROOT_INDEX)
+		y.b.init(rootIndex)
 		return &y
 	case METHOD_MONTH:
 		var m monthIndex
-		m.b.init(ROOT_INDEX)
+		m.b.init(rootIndex)
 		return &m
 	case METHOD_DAY:
 		var d dayIndex
-		d.b.init(ROOT_INDEX)
+		d.b.init(rootIndex)
 		return &d
 	default:
 		panic("Unknown method")

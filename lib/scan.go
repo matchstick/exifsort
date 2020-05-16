@@ -53,10 +53,10 @@ func scanSummary(summarize bool) {
 	}
 }
 
-func ScanDir(root string, summarize bool, doPrint bool) {
+func ScanDir(src string, summarize bool, doPrint bool) {
 	walkState.init(doPrint)
 
-	err := filepath.Walk(root, scanFunc)
+	err := filepath.Walk(src, scanFunc)
 
 	if err != nil {
 		fmt.Printf("Scan Error (%s)\n", err.Error())

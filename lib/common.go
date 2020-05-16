@@ -68,11 +68,10 @@ func skipFileType(path string) bool {
 }
 
 const (
-	METHOD_NONE = iota
-	METHOD_YEAR
+	METHOD_YEAR = iota
 	METHOD_MONTH
 	METHOD_DAY
-	METHOD_LIMIT // for testing
+	METHOD_NONE
 )
 
 var methodMap = map[int]string{
@@ -110,7 +109,7 @@ func argsParse(argStr string, argsMap map[int]string) (int, error) {
 	return -1, fmt.Errorf("unknown arg")
 }
 
-func MethodParse(argStr string) (int, error) {
+func ParseMethod(argStr string) (int, error) {
 	val, err := argsParse(argStr, methodMap)
 	if err != nil {
 		retErr := fmt.Errorf("Method must be one of [%s] (case insensitive)",
@@ -121,10 +120,9 @@ func MethodParse(argStr string) (int, error) {
 }
 
 const (
-	ACTION_NONE = iota
-	ACTION_COPY
+	ACTION_COPY = iota
 	ACTION_MOVE
-	ACTION_LIMIT // for testing
+	ACTION_NONE
 )
 
 var actionMap = map[int]string{
@@ -132,12 +130,12 @@ var actionMap = map[int]string{
 	ACTION_MOVE: "Move",
 }
 
-func ActionParse(argStr string) (int, error) {
+func ParseAction(argStr string) (int, error) {
 	val, err := argsParse(argStr, actionMap)
 	if err != nil {
 		retErr := fmt.Errorf("Action must be one of [%s] (case insensitive)",
 			argChoices(actionMap))
-		return METHOD_NONE, retErr
+		return ACTION_NONE, retErr
 	}
 	return val, nil
 }

@@ -103,8 +103,8 @@ func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 }
 
 func TestIndexPutGet(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
-		var idx = CreateIndex(METHOD_YEAR)
+	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
+		var idx = createIndex(METHOD_YEAR)
 		testDir := indexTmpDir(t, "", "root")
 
 		PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
@@ -114,8 +114,8 @@ func TestIndexPutGet(t *testing.T) {
 }
 
 func TestIndexCollisions(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
-		var idx = CreateIndex(method)
+	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
+		var idx = createIndex(method)
 		testDir := indexTmpDir(t, "", "root_")
 		testDir1 := indexTmpDir(t, "", "bobo_")
 		testDir2 := indexTmpDir(t, "", "gobo_")
@@ -129,9 +129,9 @@ func TestIndexCollisions(t *testing.T) {
 }
 
 func TestIndexDuplicates(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_LIMIT; method++ {
+	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
 		var exifPath = "../data/with_exif.jpg"
-		var idx = CreateIndex(METHOD_YEAR)
+		var idx = createIndex(METHOD_YEAR)
 		time, _ := ExtractExifTime(exifPath)
 		idx.Put(exifPath, time)
 		err := idx.Put(exifPath, time)
