@@ -82,9 +82,9 @@ func skipFileType(path string) bool {
 
 // Methods to sort media files in nested directory structure.
 const (
-	METHOD_YEAR = iota // Year : dst -> year-> media
-	METHOD_MONTH       // Year : dst -> year-> month -> media
-	METHOD_DAY         // Year : dst -> year-> month -> day -> media
+	METHOD_YEAR  = iota // Year : dst -> year-> media
+	METHOD_MONTH        // Year : dst -> year-> month -> media
+	METHOD_DAY          // Year : dst -> year-> month -> day -> media
 	METHOD_NONE
 )
 

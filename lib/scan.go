@@ -57,7 +57,7 @@ func scanSummary(summarize bool) {
 // print it's time of creation as stored by exifdata as it scans.
 //
 // ScanDir only scans media files listed in the mediaSuffixMap, other files are
-// skipped. 
+// skipped.
 //
 // When 'summarize' is set to 'true' it will print a summary of stats when
 // completed.

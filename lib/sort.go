@@ -52,7 +52,7 @@ func sortSummary(summarize bool) {
 // specified by 'action'.
 //
 // SortDir only scans media files listed in the mediaSuffixMap, other files are
-// skipped. 
+// skipped.
 //
 // When 'summarize' is set to 'true' it will print a summary of stats when
 // completed.

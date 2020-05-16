@@ -120,7 +120,7 @@ func (n *node) mediaAdd(path string) error {
 	return nil
 }
 
-// yearIndex will sort the paths by year. 
+// yearIndex will sort the paths by year.
 // It's node's have no children.
 type yearIndex struct {
 	n node
@@ -185,9 +185,9 @@ func (m *monthIndex) Put(path string, time time.Time) error {
 
 func (m *monthIndex) PathStr(time time.Time, base string) string {
 	return fmt.Sprintf("%04d/%04d_%02d/%s",
-			time.Year(), // Year label
-			time.Year(), time.Month(), // Month label
-			base)
+		time.Year(),               // Year label
+		time.Year(), time.Month(), // Month label
+		base)
 }
 
 func (m *monthIndex) Get(path string) (string, bool) {
@@ -197,7 +197,7 @@ func (m *monthIndex) Get(path string) (string, bool) {
 			for base := range monthNode.media {
 				if base == soughtBase {
 					time := time.Date(year,
-							time.Month(month),
+						time.Month(month),
 						1, 1, 1, 1, 1, time.Local)
 					return m.PathStr(time, base), true
 				}
@@ -246,10 +246,10 @@ func (d *dayIndex) Put(path string, time time.Time) error {
 
 func (d *dayIndex) PathStr(time time.Time, base string) string {
 	return fmt.Sprintf("%04d/%04d_%02d/%04d_%02d_%02d/%s",
-				time.Year(),
-				time.Year(), time.Month(),
-				time.Year(), time.Month(), time.Day(),
-				base)
+		time.Year(),
+		time.Year(), time.Month(),
+		time.Year(), time.Month(), time.Day(),
+		base)
 }
 
 func (d *dayIndex) Get(path string) (string, bool) {
