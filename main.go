@@ -19,8 +19,6 @@ import (
 	"github.com/matchstick/exifSort/cmd"
 )
 
-var filepathArg = ""
-
 func main() {
 	cmd.Execute()
 }

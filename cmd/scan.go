@@ -45,7 +45,7 @@ var scanCmd = &cobra.Command{
 
 		dirPath := args[0]
 		info, err := os.Stat(dirPath)
-		if err != nil || info.IsDir() == false {
+		if err != nil || !info.IsDir() {
 			fmt.Printf("Error with directory arg: %s\n", err.Error())
 			return
 		}

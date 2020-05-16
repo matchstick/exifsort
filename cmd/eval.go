@@ -25,10 +25,10 @@ import (
 
 func fileReadable(filename string) error {
 	file, err := os.OpenFile(filename, os.O_RDONLY, 0666)
-	defer file.Close()
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 	return nil
 }
 
@@ -52,7 +52,7 @@ var evalCmd = &cobra.Command{
 				fmt.Printf("%s, %q\n", path, err)
 				continue
 			}
-			timeStr, err := exifSort.ExtractExifTimeStr(path)
+			timeStr, err := exifSort.ExtractTimeStr(path)
 			if err != nil {
 				fmt.Printf("%s, %s\n", path, err)
 				continue

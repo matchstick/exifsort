@@ -63,7 +63,7 @@ var sortCmd = &cobra.Command{
 		actionArg := args[3]
 
 		info, err := os.Stat(srcDir)
-		if err != nil || info.IsDir() == false {
+		if err != nil || !info.IsDir() {
 			fmt.Printf("Input Directory \"%s\" has error (%s)\n", srcDir, err.Error())
 			return
 		}
