@@ -42,16 +42,6 @@ func (n *node) init(id int) {
 	n.id = id
 }
 
-// Return a sorted array of keys.
-func (n *node) childrenKeys() []int {
-	var keys []int
-	for k := range n.children {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	return keys
-}
-
 // Returns a _sorted_ key list. No technical reason to make it a receive
 // pointer.
 func (n *node) sortMediaKeys(m mediaMap) []string {
@@ -69,7 +59,7 @@ func (n *node) sortMediaKeys(m mediaMap) []string {
 func (n *node) getNode(id int) node {
 	var retNode node
 	retNode, present := n.children[id]
-	if present == false {
+	if !present {
 		retNode.init(id)
 		n.children[id] = retNode
 	}
@@ -94,7 +84,7 @@ func (n *node) mediaCollisionName(base string) string {
 	for counter := 0; true; counter++ {
 		newName = fmt.Sprintf("%s_%d.%s", name, counter, suffix)
 		_, present := n.media[newName]
-		if present == false {
+		if !present {
 			break
 		}
 	}
@@ -107,7 +97,7 @@ func (n *node) mediaAdd(path string) error {
 	storedPath, present := n.media[base]
 
 	// Common case, no duplicates or collisions.
-	if present == false {
+	if !present {
 		n.media[base] = path
 		return nil
 	}
@@ -148,7 +138,7 @@ func (y *yearIndex) Put(path string, time time.Time) error {
 func (y *yearIndex) Get(path string) (string, bool) {
 	soughtBase := filepath.Base(path)
 	for year, yearNode := range y.n.children {
-		for base, _ := range yearNode.media {
+		for base := range yearNode.media {
 			if base == soughtBase {
 				time := time.Date(year, 1, 1,
 					1, 1, 1, 1, time.Local)
@@ -204,7 +194,7 @@ func (m *monthIndex) Get(path string) (string, bool) {
 	soughtBase := filepath.Base(path)
 	for year, yearNode := range m.n.children {
 		for month, monthNode := range yearNode.children {
-			for base, _ := range monthNode.media {
+			for base := range monthNode.media {
 				if base == soughtBase {
 					time := time.Date(year,
 							time.Month(month),
@@ -267,7 +257,7 @@ func (d *dayIndex) Get(path string) (string, bool) {
 	for year, yearNode := range d.n.children {
 		for month, monthNode := range yearNode.children {
 			for day, dayNode := range monthNode.children {
-				for base, _ := range dayNode.media {
+				for base := range dayNode.media {
 					if base == soughtBase {
 						time := time.Date(year,
 							time.Month(month), day,

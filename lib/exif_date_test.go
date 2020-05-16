@@ -15,11 +15,6 @@ func TestFormatError(t *testing.T) {
 	}
 }
 
-type formError struct {
-	input    string
-	errLabel string
-}
-
 var formBadInput = map[string]string{
 	"Gobo":                  "Space Problem",
 	"Gobo a a a a":          "Space Problem",
@@ -86,13 +81,13 @@ func TestExtractExifTime(t *testing.T) {
 
 	invalidExifPath := "../data/no_exif.jpg"
 
-	time, err = ExtractTime(invalidExifPath)
+	_, err = ExtractTime(invalidExifPath)
 	if err == nil {
 		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 
 	nonePath := "../gobofragggle"
-	time, err = ExtractTime(nonePath)
+	_, err = ExtractTime(nonePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
 	}

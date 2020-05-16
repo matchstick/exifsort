@@ -10,14 +10,6 @@ import (
 	"time"
 )
 
-var ByYearInput = []string{
-	"IMG.jpg",
-	"c.jpg",
-	"c.jpg",
-	"a.jpg",
-	"c.jpg",
-}
-
 const exifFile = "../data/with_exif.jpg"
 const diffFile = "../data/diff_exif.jpg"
 const diff2File = "../data/diff2_exif.jpg"
@@ -133,8 +125,11 @@ func TestIndexDuplicates(t *testing.T) {
 		var exifPath = "../data/with_exif.jpg"
 		var idx = createIndex(method)
 		time, _ := ExtractTime(exifPath)
-		idx.Put(exifPath, time)
 		err := idx.Put(exifPath, time)
+		if err != nil {
+			t.Errorf("Unexpected Error %s\n", err.Error())
+		}
+		err = idx.Put(exifPath, time)
 		if err == nil {
 			t.Error("Expected Error with duplicate Put. Got nil\n")
 		}

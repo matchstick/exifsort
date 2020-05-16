@@ -35,7 +35,7 @@ func scanFunc(path string, info os.FileInfo, err error) error {
 }
 
 func scanSummary(summarize bool) {
-	if summarize == false {
+	if !summarize {
 		return
 	}
 	fmt.Printf("Scanned Valid: %d\n", walkState.valid())

@@ -59,12 +59,12 @@ func (w *walkStateType) init(walkDoPrint bool) {
 }
 
 func (w *walkStateType) walkPrintf(s string, params ...interface{}) {
-	if w.walkDoPrint == false {
+	if !w.walkDoPrint {
 		return
 	}
 
 	if len(params) == 0 {
-		fmt.Printf(s)
+		fmt.Print(s)
 	}
 
 	fmt.Printf(s, params...)

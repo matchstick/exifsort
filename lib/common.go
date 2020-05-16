@@ -77,11 +77,7 @@ func skipFileType(path string) bool {
 	}
 	suffix := pieces[numPieces-1]
 	_, inMediaMap := mediaSuffixMap[suffix]
-	if inMediaMap == false {
-		// skip
-		return true
-	}
-	return false
+	return !inMediaMap
 }
 
 // Methods to sort media files in nested directory structure.
@@ -96,14 +92,6 @@ var methodMap = map[int]string{
 	METHOD_YEAR:  "Year",
 	METHOD_MONTH: "Month",
 	METHOD_DAY:   "Day",
-}
-
-func methodLookup(method int) string {
-	str, present := methodMap[method]
-	if present == false {
-		return "unknown"
-	}
-	return str
 }
 
 func argChoices(argsMap map[int]string) string {

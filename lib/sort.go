@@ -32,12 +32,15 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 	}
 
 	walkState.storeValid()
-	sortIndex.Put(path, time)
+	err = sortIndex.Put(path, time)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func sortSummary(summarize bool) {
-	if summarize == false {
+	if !summarize {
 		return
 	}
 	fmt.Printf("Sort Summary\n")
