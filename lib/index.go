@@ -23,18 +23,18 @@ import (
 // value == original full path
 type mediaMap map[string]string
 
-// A node is the common "node" of the data structure.
-// It can optionally be a leaf (where it would populate it's media)
-// Or an intermediary where it would populate it's children.
-type nodeMap map[int]node
-
-const rootIndex = -1
-
+// Nodes can optionally be a leaf (where it would populate it's media)
+// or an intermediary where it would populate it's children.
 type node struct {
 	media    mediaMap
 	children nodeMap
 	id       int
 }
+
+// The root node has no id, so we have this sentinel value
+const rootIndex = -1
+
+type nodeMap map[int]node
 
 func (n *node) init(id int) {
 	n.media = make(mediaMap)
@@ -52,7 +52,8 @@ func (n *node) childrenKeys() []int {
 	return keys
 }
 
-// Returns a _sorted_ key list. No technical reason to make it a receive pointer.
+// Returns a _sorted_ key list. No technical reason to make it a receive
+// pointer.
 func (n *node) sortMediaKeys(m mediaMap) []string {
 	var keys []string
 	for k := range m {
@@ -112,15 +113,14 @@ func (n *node) mediaAdd(path string) error {
 	}
 
 	// Check for same contents
-	cmp := equalfile.New(nil, equalfile.Options{}) // compare using single mode
+	cmp := equalfile.New(nil, equalfile.Options{})
 	equal, err := cmp.CompareFile(path, storedPath)
 	if err != nil {
 		return err
 	}
 
 	if equal {
-		return fmt.Errorf("%s is a duplicate of the already stored media %s",
-			path, storedPath)
+		return fmt.Errorf("%s is a duplicate of the already stored media %s", path, storedPath)
 	}
 
 	// If it has the same name as is not the same file we should add it
@@ -130,8 +130,8 @@ func (n *node) mediaAdd(path string) error {
 	return nil
 }
 
-// yearIndex will sort the paths by year. Each of its node's have no
-// children.
+// yearIndex will sort the paths by year. 
+// It's node's have no children.
 type yearIndex struct {
 	n node
 }
@@ -203,7 +203,8 @@ func (m *monthIndex) Get(path string) (string, bool) {
 		for month, monthNode := range yearNode.children {
 			for base, _ := range monthNode.media {
 				if base == soughtBase {
-					time := time.Date(year, time.Month(month),
+					time := time.Date(year,
+							time.Month(month),
 						1, 1, 1, 1, 1, time.Local)
 					return m.PathStr(time, base), true
 				}

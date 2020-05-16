@@ -43,6 +43,18 @@ func sortSummary(summarize bool) {
 	fmt.Printf("Sort Summary\n")
 }
 
+// SortDir examines the contents of file with acceptable suffixes in the src
+// directory and transfer the file to the dst directory. The structure of
+// the dst directory is specifed by 'method'. The action of transfer is
+// specified by 'action'.
+//
+// SortDir only scans media files listed in the mediaSuffixMap, other files are
+// skipped. 
+//
+// When 'summarize' is set to 'true' it will print a summary of stats when
+// completed.
+//
+// If doPrint is set to false it will not print while scanning.
 func SortDir(src string, dst string, method int, action int, summarize bool, doPrint bool) {
 	walkState.init(doPrint)
 	sortIndex = createIndex(method)
