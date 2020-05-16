@@ -24,7 +24,7 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	time, err := ExtractExifTime(path)
+	time, err := ExtractTime(path)
 	if err != nil {
 		walkState.storeInvalid(path, err.Error())
 		walkState.walkPrintf("%s\n", walkErrMsg(path, err.Error()))

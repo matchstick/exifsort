@@ -132,7 +132,7 @@ func TestIndexDuplicates(t *testing.T) {
 	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
 		var exifPath = "../data/with_exif.jpg"
 		var idx = createIndex(METHOD_YEAR)
-		time, _ := ExtractExifTime(exifPath)
+		time, _ := ExtractTime(exifPath)
 		idx.Put(exifPath, time)
 		err := idx.Put(exifPath, time)
 		if err == nil {

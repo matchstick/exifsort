@@ -75,7 +75,7 @@ func TestExtractExifTime(t *testing.T) {
 	goodDateStr := "2020:04:28 14:12:21"
 	goodTime, _ := extractTimeFromStr(goodDateStr)
 
-	time, err := ExtractExifTime(validExifPath)
+	time, err := ExtractTime(validExifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
@@ -86,13 +86,13 @@ func TestExtractExifTime(t *testing.T) {
 
 	invalidExifPath := "../data/no_exif.jpg"
 
-	time, err = ExtractExifTime(invalidExifPath)
+	time, err = ExtractTime(invalidExifPath)
 	if err == nil {
 		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 
 	nonePath := "../gobofragggle"
-	time, err = ExtractExifTime(nonePath)
+	time, err = ExtractTime(nonePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
 	}

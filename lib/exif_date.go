@@ -86,11 +86,12 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	return t, nil
 }
 
-// The return value is subtle here. It is the difference between a broken exif
-// and having one that does not have the time tag.
-// return an err for an media file that breaks our exif engine on parse
-// return entry.Valid == false for one wit invalid data after being parsed.
-func ExtractExifTime(filepath string) (time.Time, error) {
+// ExtractTime accepts a filepath, reads the exifdata stored inside and
+// returns the 'Exif/DateTimeOriginal' value as a golang time.Time format.
+//
+// It returns an error if the file has no exif data, mangled exif data, or the
+// contents are unexpected.
+func ExtractTime(filepath string) (time.Time, error) {
 
 	var time time.Time
 	// Get the Exif Data and Ifd root
@@ -130,8 +131,13 @@ func ExtractExifTime(filepath string) (time.Time, error) {
 	return time, nil
 }
 
-func ExtractExifTimeStr(path string) (string, error) {
-	time, err := ExtractExifTime(path)
+// ExtractTimeStr accepts a filepath, reads the exifdata stored inside and
+// returns the 'Exif/DateTimeOriginal' value as a string.
+//
+// It returns an error if the file has no exif data, mangled exif data, or the
+// contents are unexpected.
+func ExtractTimeStr(path string) (string, error) {
+	time, err := ExtractTime(path)
 	if err != nil {
 		return "", err
 	}
