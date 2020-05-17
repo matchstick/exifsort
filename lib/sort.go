@@ -91,6 +91,7 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
+	walkState.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
 	walkState.storeValid()
 	err = sortIndex.Put(path, time)
 	if err != nil {
@@ -119,6 +120,7 @@ func sortTransfer(m mediaMap, dst string, action int) error {
 			walkState.storeTransferErr(oldPath, err.Error())
 			return err
 		}
+		walkState.walkPrintf("Transferred %s\n", newPath)
 	}
 	return nil
 }
