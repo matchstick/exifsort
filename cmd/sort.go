@@ -83,7 +83,11 @@ var sortCmd = &cobra.Command{
 			fmt.Printf("%s\n", err.Error())
 			return
 		}
-		exifSort.SortDir(srcDir, dstDir, method, action, summarize, !quiet)
+		err = exifSort.SortDir(srcDir, dstDir, method, action, summarize, !quiet)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			return
+		}
 	},
 }
 

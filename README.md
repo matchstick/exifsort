@@ -6,11 +6,6 @@ Program to sort and scan photos and movies for their Creation date using their E
 
 Huge thanks to dsoprea for his exif library and fast responses.
 
-Using the "powerwalk" pkg so this runs much faster on multi core system. So far
-we have seen linear improvements with number of CPUs. That said it needs to be
-run locally to see benefits. It is really slow over a network mount.
-
-
 Inputs:
 
 exifSort -> scan <in dir> --summarize --quiet
