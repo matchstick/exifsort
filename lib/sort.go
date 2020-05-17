@@ -13,29 +13,29 @@ func moveMedia(srcPath string, dstPath string) error {
 	return os.Rename(srcPath, dstPath)
 }
 
-func copyMedia(srcPath string, dstPath string) (int64, error) {
+func copyMedia(srcPath string, dstPath string) error {
 	srcStat, err := os.Stat(srcPath)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if !srcStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", srcPath)
+		return fmt.Errorf("%s is not a regular file", srcPath)
 	}
 
 	src, err := os.Open(srcPath)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer src.Close()
 
 	dst, err := os.Create(dstPath)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer dst.Close()
-	nBytes, err := io.Copy(dst, src)
-	return nBytes, err
+	_, err = io.Copy(dst, src)
+	return err
 }
 
 func ensureFullPath(path string) error {
@@ -47,7 +47,25 @@ func sortSummary(summarize bool) {
 	if !summarize {
 		return
 	}
-	fmt.Printf("Sort Summary\n")
+	fmt.Printf("Sorted Valid: %d\n", walkState.valid())
+	fmt.Printf("Sorted Invalid: %d\n", walkState.invalid())
+	fmt.Printf("Sorted Skipped: %d\n", walkState.skipped())
+	fmt.Printf("Sorted Total: %d\n", walkState.total())
+	if walkState.invalid() == 0 {
+		fmt.Println("No Files caused Errors")
+		return
+	}
+
+	fmt.Println("Walk Errors were:")
+	for path, msg := range walkState.walkErrs() {
+		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
+	}
+
+	fmt.Println("Transfer Errors were:")
+	for path, msg := range walkState.transferErrs() {
+		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
+	}
+
 }
 
 func sortFunc(path string, info os.FileInfo, err error) error {
@@ -82,25 +100,24 @@ func sortFunc(path string, info os.FileInfo, err error) error {
 }
 
 func sortTransfer(m mediaMap, dst string, action int) error {
+	var err error
 	for newPath, oldPath := range m {
 		newPath = fmt.Sprintf("%s/%s", dst, newPath)
-		err := ensureFullPath(newPath)
+		err = ensureFullPath(newPath)
 		if err != nil {
 			return err
 		}
 		switch action {
 		case ACTION_COPY:
-			_, err := copyMedia(oldPath, newPath)
-			if err != nil {
-				return err
-			}
+			err = copyMedia(oldPath, newPath)
 		case ACTION_MOVE:
-			err := moveMedia(oldPath, newPath)
-			if err != nil {
-				return err
-			}
+			err = moveMedia(oldPath, newPath)
 		default:
 			panic("Unknown action")
+		}
+		if err != nil {
+			walkState.storeTransferErr(oldPath, err.Error())
+			return err
 		}
 	}
 	return nil

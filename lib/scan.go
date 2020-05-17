@@ -48,7 +48,7 @@ func scanSummary(summarize bool) {
 	}
 
 	fmt.Println("Error Files were:")
-	for path, msg := range walkState.errs() {
+	for path, msg := range walkState.walkErrs() {
 		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
 	}
 }

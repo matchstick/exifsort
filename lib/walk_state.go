@@ -6,11 +6,13 @@ import (
 )
 
 type walkStateType struct {
-	skippedCount uint64
-	validCount   uint64
-	invalidCount uint64
-	walkDoPrint  bool
-	errMsgs      map[string]string
+	skippedCount     uint64
+	validCount       uint64
+	invalidCount     uint64
+	transferErrCount uint64
+	walkDoPrint      bool
+	walkErrMsgs      map[string]string
+	transferErrMsgs  map[string]string
 }
 
 func (w *walkStateType) skipped() uint64 {
@@ -25,8 +27,12 @@ func (w *walkStateType) invalid() uint64 {
 	return w.invalidCount
 }
 
-func (w *walkStateType) errs() map[string]string {
-	return w.errMsgs
+func (w *walkStateType) walkErrs() map[string]string {
+	return w.walkErrMsgs
+}
+
+func (w *walkStateType) transferErrs() map[string]string {
+	return w.transferErrMsgs
 }
 
 func (w *walkStateType) total() uint64 {
@@ -40,7 +46,13 @@ func (w *walkStateType) storeValid() {
 // We don't check if you have a path duplicate
 func (w *walkStateType) storeInvalid(path string, errStr string) {
 	atomic.AddUint64(&w.invalidCount, 1)
-	w.errMsgs[path] = errStr
+	w.walkErrMsgs[path] = errStr
+}
+
+// We don't check if you have a path duplicate
+func (w *walkStateType) storeTransferErr(path string, errStr string) {
+	atomic.AddUint64(&w.transferErrCount, 1)
+	w.transferErrMsgs[path] = errStr
 }
 
 func (w *walkStateType) storeSkipped() {
@@ -55,7 +67,8 @@ func (w *walkStateType) init(walkDoPrint bool) {
 	w.validCount = 0
 	w.invalidCount = 0
 	w.walkDoPrint = walkDoPrint
-	walkState.errMsgs = make(map[string]string)
+	walkState.walkErrMsgs = make(map[string]string)
+	walkState.transferErrMsgs = make(map[string]string)
 }
 
 func (w *walkStateType) walkPrintf(s string, params ...interface{}) {
