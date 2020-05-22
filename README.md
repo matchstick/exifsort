@@ -2,6 +2,13 @@
 
 This README is Under construction but for now here is some notes.
 
+TODOs include:
+* Clean up tests now that APIs are tighter
+* Clean up doc.go in lib now that APIS are changed.
+* Figure out git hooks
+* Write more complete sort tests.
+* Update this readme.
+
 Program to sort and scan photos and movies for their Creation date using their Exif info.
 
 Huge thanks to dsoprea for his exif library and fast responses.
