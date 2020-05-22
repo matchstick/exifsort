@@ -10,6 +10,14 @@ import (
 	"github.com/udhos/equalfile"
 )
 
+type indexError struct {
+	prob string
+}
+
+func (e indexError) Error() string {
+	return e.prob
+}
+
 // The goal of the index system is to be able to accept as input:
 // a) media pathname
 // b) time it should be sorted to
@@ -121,7 +129,9 @@ func (n *node) mediaAdd(path string) error {
 	}
 
 	if equal {
-		return fmt.Errorf("%s is a duplicate of the already stored media %s", path, storedPath)
+		errStr := fmt.Sprintf("%s is a duplicate of the already stored media %s",
+			path, storedPath)
+		return indexError{errStr}
 	}
 
 	// If it has the same name as is not the same file we should add it

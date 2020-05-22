@@ -10,24 +10,35 @@ import (
 	"github.com/dsoprea/go-exif/v2"
 )
 
-func formatError(label string, dateString string) error {
-	return fmt.Errorf("bad format for %s: %s Problem", dateString, label)
+type exifError struct {
+	prob string
+}
+
+func (e exifError) Error() string {
+	return e.prob
+}
+
+func newExifError(label string, dateString string) error {
+	var e exifError
+	e.prob = fmt.Sprintf("bad format for %s: %s Problem", dateString, label)
+
+	return e
 }
 
 // Seconds are funny. The format may be "<sec> <milli>"
 // or it may be with an extra decmial place such as <sec>.<hundredths>.
-func extractSecsFractionFromStr(secsStr string) (int, error) {
+func secsFractionFromStr(secsStr string) (int, error) {
 	minSplit := 2 // we expect at least two pieces
 
 	splitSecs := strings.Split(secsStr, ".")
 	if len(splitSecs) != minSplit {
-		return 0, fmt.Errorf("Not a fraction second")
+		return 0, &exifError{"Not a fraction second"}
 	}
 
 	// We only care about what is in front of the "."
 	secs, err := strconv.Atoi(splitSecs[0])
 	if err != nil {
-		return 0, fmt.Errorf("Not a convertaible second")
+		return 0, &exifError{"Not a convertaible second"}
 	}
 
 	return secs, nil
@@ -38,22 +49,22 @@ func dateFromStr(str string, exifDateTime string) (int, int, int, error) {
 
 	splitDate := strings.Split(str, ":")
 	if len(splitDate) != minDateSplit {
-		return 0, 0, 0, formatError("Date Split", exifDateTime)
+		return 0, 0, 0, newExifError("Date Split", exifDateTime)
 	}
 
 	year, err := strconv.Atoi(splitDate[0])
 	if err != nil {
-		return 0, 0, 0, formatError("Year", exifDateTime)
+		return 0, 0, 0, newExifError("Year", exifDateTime)
 	}
 
 	month, err := strconv.Atoi(splitDate[1])
 	if err != nil {
-		return 0, 0, 0, formatError("Month", exifDateTime)
+		return 0, 0, 0, newExifError("Month", exifDateTime)
 	}
 
 	day, err := strconv.Atoi(splitDate[2])
 	if err != nil {
-		return 0, 0, 0, formatError("Day", exifDateTime)
+		return 0, 0, 0, newExifError("Day", exifDateTime)
 	}
 
 	return year, month, day, nil
@@ -64,24 +75,24 @@ func timeFromStr(str string, exifDateTime string) (int, int, int, error) {
 
 	splitTime := strings.Split(str, ":")
 	if len(splitTime) != minTimeSplit {
-		return 0, 0, 0, formatError("Time Split", exifDateTime)
+		return 0, 0, 0, newExifError("Time Split", exifDateTime)
 	}
 
 	hour, err := strconv.Atoi(splitTime[0])
 	if err != nil {
-		return 0, 0, 0, formatError("Hour", exifDateTime)
+		return 0, 0, 0, newExifError("Hour", exifDateTime)
 	}
 
 	minute, err := strconv.Atoi(splitTime[1])
 	if err != nil {
-		return 0, 0, 0, formatError("Minute", exifDateTime)
+		return 0, 0, 0, newExifError("Minute", exifDateTime)
 	}
 
 	second, err := strconv.Atoi(splitTime[2])
 	if err != nil {
-		second, err = extractSecsFractionFromStr(splitTime[2])
+		second, err = secsFractionFromStr(splitTime[2])
 		if err != nil {
-			return 0, 0, 0, formatError("Sec", exifDateTime)
+			return 0, 0, 0, newExifError("Sec", exifDateTime)
 		}
 	}
 
@@ -95,7 +106,7 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 	splitDateTime := strings.Split(exifDateTime, " ")
 	if len(splitDateTime) != minDateTimeSplit {
-		return t, formatError("Space Problem", exifDateTime)
+		return t, newExifError("Space Problem", exifDateTime)
 	}
 
 	date := splitDateTime[0]
@@ -131,23 +142,23 @@ func ExtractTime(filepath string) (time.Time, error) {
 	}
 	// If the root is not there there is no exif data
 	if mc.RootIfd == nil {
-		return time, fmt.Errorf("root ifd not found")
+		return time, &exifError{"root ifd not found"}
 	}
 
 	// See if the EXIF info path is there. We want DateTimeOriginal
 	exifIfd, err := exif.FindIfdFromRootIfd(mc.RootIfd, "IFD/Exif")
 	if err != nil {
-		return time, fmt.Errorf("media IFD/Exif not found")
+		return time, &exifError{"media IFD/Exif not found"}
 	}
 
 	// Query for DateTimeOriginal
 	results, err := exifIfd.FindTagWithName("DateTimeOriginal")
 	if err != nil {
-		return time, fmt.Errorf("the DateTimeOriginal Tag was not found")
+		return time, &exifError{"the DateTimeOriginal Tag was not found"}
 	}
 
 	if len(results) != 1 {
-		return time, fmt.Errorf("too many DateTimeOriginal Tags found")
+		return time, &exifError{"too many DateTimeOriginal Tags found"}
 	}
 
 	// Found it, so extract value

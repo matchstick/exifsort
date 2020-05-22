@@ -1,8 +1,5 @@
 package exifsort
 
-// TODO this test file is a mess. But it found many bugs.
-// Now that we know what we want we will rewrite.
-
 import (
 	"fmt"
 	"io/ioutil"
@@ -19,6 +16,7 @@ func indexTmpDir(t *testing.T, parent string, name string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	return newDir
 }
 
@@ -27,6 +25,7 @@ func copyFile(t *testing.T, src string, dst string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	err = ioutil.WriteFile(dst, content, 0600)
 	if err != nil {
 		t.Fatal(err)
@@ -44,6 +43,7 @@ func PutFiles(t *testing.T, idx index, dir string, srcFile string,
 			0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("%s/IMG_%d.jpg", dir, ii)
 		copyFile(t, srcFile, name)
+
 		err := idx.Put(name, time)
 		if err != nil {
 			t.Error(err)
@@ -57,10 +57,12 @@ func GetFiles(t *testing.T, idx index, start uint, count uint,
 		testTime := time.Date(year, time.Month(month), day,
 			0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("IMG_%d.jpg", ii)
+
 		idxPath, present := idx.Get(name)
 		if present == false {
 			t.Fatalf("Cannot find %s\n", name)
 		}
+
 		testPath := idx.PathStr(testTime, name)
 		if idxPath != testPath {
 			t.Fatalf("Recvd paths (%s) != %s using time %s\n",
@@ -74,11 +76,14 @@ func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 	for ii := start; ii < start+count; ii++ {
 		testTime := time.Date(year, time.Month(month), day,
 			0, 0, 0, 0, time.Local)
+
 		name := fmt.Sprintf("IMG_%d_%d.jpg", ii, collisionCount)
+
 		idxPath, present := idx.Get(name)
 		if present == false {
 			t.Fatalf("Cannot find %s\n", name)
 		}
+
 		testPath := idx.PathStr(testTime, name)
 		if idxPath != testPath {
 			t.Fatalf("Recvd collison paths (%s) != %s using time %s\n",
@@ -88,6 +93,7 @@ func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 }
 func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 	idxMap := idx.GetAll()
+
 	mapSize := len(idxMap)
 	if mapSize != targetSize {
 		t.Errorf("Expecting to have index hold %d entries not %d\n", targetSize, mapSize)
@@ -97,6 +103,7 @@ func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 func TestIndexPutGet(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		var idx = newIndex(method)
+
 		testDir := indexTmpDir(t, "", "root")
 
 		PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
@@ -108,9 +115,10 @@ func TestIndexPutGet(t *testing.T) {
 func TestIndexCollisions(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		var idx = newIndex(method)
+
 		testDir := indexTmpDir(t, "", "root_")
-		testDir1 := indexTmpDir(t, "", "bobo_")
-		testDir2 := indexTmpDir(t, "", "gobo_")
+		testDir1 := indexTmpDir(t, testDir, "bobo_")
+		testDir2 := indexTmpDir(t, testDir, "gobo_")
 		PutFiles(t, idx, testDir, exifFile, 10, 10, 1, 2, 4)
 		PutFiles(t, idx, testDir1, diffFile, 10, 10, 1, 2, 4)
 		PutFiles(t, idx, testDir2, diff2File, 10, 10, 1, 2, 4)
@@ -123,16 +131,21 @@ func TestIndexCollisions(t *testing.T) {
 func TestIndexDuplicates(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		var exifPath = "../data/with_exif.jpg"
+
 		var idx = newIndex(method)
+
 		time, _ := ExtractTime(exifPath)
+
 		err := idx.Put(exifPath, time)
 		if err != nil {
 			t.Errorf("Unexpected Error %s\n", err.Error())
 		}
+
 		err = idx.Put(exifPath, time)
 		if err == nil {
 			t.Error("Expected Error with duplicate Put. Got nil\n")
 		}
+
 		indexSizeCheck(t, 1, idx)
 	}
 }

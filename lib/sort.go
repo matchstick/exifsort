@@ -43,7 +43,6 @@ func ensureFullPath(path string) error {
 }
 
 func sortFunc(idx index, w *WalkState) filepath.WalkFunc {
-
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("Error accessing path %s\n", path)
@@ -126,12 +125,12 @@ func SortDir(src string, dst string, method int, action int, doPrint bool) (Walk
 
 	err := os.Mkdir(dst, 0755)
 	if err != nil {
-		return w, fmt.Errorf("cannot make directory %s", dst)
+		return w, err
 	}
 
 	err = filepath.Walk(src, sortFunc(sortIndex, &w))
 	if err != nil {
-		return w, fmt.Errorf("sort Walk Error (%s)", err.Error())
+		return w, err
 	}
 
 	mediaMap := sortIndex.GetAll()

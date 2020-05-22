@@ -1,31 +1,18 @@
 package exifsort
 
 import (
-	"errors"
 	"strings"
 	"testing"
 	"time"
 )
 
 func TestFormatError(t *testing.T) {
-	testErr := errors.New("bad format for dingle: dangle Problem")
-	err := formatError("dangle", "dingle")
-	if err.Error() != testErr.Error() {
-		t.Errorf("Errors do not match: %s %s", err, testErr)
-	}
-}
+	testErrStr := "bad format for dingle: dangle Problem"
+	err := newExifError("dangle", "dingle")
 
-var formBadInput = map[string]string{
-	"Gobo":                  "Space Problem",
-	"Gobo a a a a":          "Space Problem",
-	"Gobo Hey":              "Date Split",
-	"Gobo:03:01 12:36:11":   "Year",
-	"2008:Gobo:01 12:36:11": "Month",
-	"2008:03:Gobo 12:36:11": "Day",
-	"2008:03:01 Gobo":       "Time Split",
-	"2008:03:01 Gobo:36:11": "Hour",
-	"2008:03:01 12:Gobo:11": "Minute",
-	"2008:03:01 12:36:Gobo": "Sec",
+	if err.Error() != testErrStr {
+		t.Errorf("Errors do not match: %s %s", err, testErrStr)
+	}
 }
 
 func TestGoodTimes(t *testing.T) {
@@ -37,6 +24,7 @@ func TestGoodTimes(t *testing.T) {
 	if testTime != goodTime {
 		t.Errorf("Return Time is incorrect %q\n", testTime)
 	}
+
 	if err != nil {
 		t.Errorf("Error is incorrectly not nil %q\n", err)
 	}
@@ -45,18 +33,32 @@ func TestGoodTimes(t *testing.T) {
 	if testTime != goodTime {
 		t.Errorf("Return Time is incorrect %q\n", testTime)
 	}
+
 	if err != nil {
 		t.Errorf("Error is incorrectly not nil %q\n", err)
 	}
-
 }
 
 func TestExtractBadTimeFromStr(t *testing.T) {
+	var formBadInput = map[string]string{
+		"Gobo":                  "Space Problem",
+		"Gobo a a a a":          "Space Problem",
+		"Gobo Hey":              "Date Split",
+		"Gobo:03:01 12:36:11":   "Year",
+		"2008:Gobo:01 12:36:11": "Month",
+		"2008:03:Gobo 12:36:11": "Day",
+		"2008:03:01 Gobo":       "Time Split",
+		"2008:03:01 Gobo:36:11": "Hour",
+		"2008:03:01 12:Gobo:11": "Minute",
+		"2008:03:01 12:36:Gobo": "Sec",
+	}
+
 	for input, errLabel := range formBadInput {
 		_, err := extractTimeFromStr(input)
 		if err == nil {
 			t.Fatalf("Expected error on input: %s\n", input)
 		}
+
 		if strings.Contains(err.Error(), errLabel) == false {
 			t.Errorf("Improper error reporting on input %s: %s\n",
 				input, err.Error())
@@ -65,7 +67,6 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 }
 
 func TestExtractExifTime(t *testing.T) {
-
 	validExifPath := "../data/with_exif.jpg"
 	goodDateStr := "2020:04:28 14:12:21"
 	goodTime, _ := extractTimeFromStr(goodDateStr)
@@ -87,9 +88,9 @@ func TestExtractExifTime(t *testing.T) {
 	}
 
 	nonePath := "../gobofragggle"
+
 	_, err = ExtractTime(nonePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
 	}
-
 }

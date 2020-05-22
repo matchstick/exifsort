@@ -7,7 +7,6 @@ import (
 )
 
 func scanFunc(w *WalkState) filepath.WalkFunc {
-
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("Error accessing path %s\n", path)
