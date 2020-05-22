@@ -2,11 +2,12 @@ package exifSort
 
 import (
 	"fmt"
-	"github.com/udhos/equalfile"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/udhos/equalfile"
 )
 
 // The goal of the index system is to be able to accept as input:
@@ -18,9 +19,11 @@ import (
 // directory structure. We need top handle collisions and duplicates. Hence the
 // data structure.
 
+// MediaMap:
 // key   == new name for file. It could be the same as old basename or modified
 //          for collision.
-// value == original full path
+// value == Holds the original full path.
+
 type mediaMap map[string]string
 
 // Nodes can optionally be a leaf (where it would populate it's media)
@@ -31,7 +34,7 @@ type node struct {
 	id       int
 }
 
-// The root node has no id, so we have this sentinel value
+// The root node has no id, so we have this sentinel value.
 const rootIndex = -1
 
 type nodeMap map[int]node

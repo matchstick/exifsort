@@ -17,9 +17,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/matchstick/exifSort/lib"
-	"github.com/spf13/cobra"
 	"os"
+
+	exifSort "github.com/matchstick/exifSort/lib"
+	"github.com/spf13/cobra"
 )
 
 // scanCmd represents the scan command

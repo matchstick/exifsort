@@ -2,11 +2,12 @@ package exifSort
 
 import (
 	"fmt"
-	"github.com/dsoprea/go-exif-knife"
-	"github.com/dsoprea/go-exif/v2"
 	"strconv"
 	"strings"
 	"time"
+
+	exifknife "github.com/dsoprea/go-exif-knife"
+	"github.com/dsoprea/go-exif/v2"
 )
 
 func formatError(label string, dateString string) (time.Time, error) {
@@ -15,7 +16,7 @@ func formatError(label string, dateString string) (time.Time, error) {
 }
 
 // Seconds are funny. The format may be "<sec> <milli>"
-// or it may be with an extra decmial place such as <sec>.<hundredths>
+// or it may be with an extra decmial place such as <sec>.<hundredths>.
 func extractSecsFractionFromStr(secsStr string) (int, error) {
 	splitSecs := strings.Split(secsStr, ".")
 	if len(splitSecs) != 2 {

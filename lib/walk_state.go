@@ -43,13 +43,13 @@ func (w *walkStateType) storeValid() {
 	atomic.AddUint64(&w.validCount, 1)
 }
 
-// We don't check if you have a path duplicate
+// We don't check if you have a path duplicate.
 func (w *walkStateType) storeInvalid(path string, errStr string) {
 	atomic.AddUint64(&w.invalidCount, 1)
 	w.walkErrMsgs[path] = errStr
 }
 
-// We don't check if you have a path duplicate
+// We don't check if you have a path duplicate.
 func (w *walkStateType) storeTransferErr(path string, errStr string) {
 	atomic.AddUint64(&w.transferErrCount, 1)
 	w.transferErrMsgs[path] = errStr
@@ -59,7 +59,7 @@ func (w *walkStateType) storeSkipped() {
 	atomic.AddUint64(&w.skippedCount, 1)
 }
 
-// has to be a global so it can be accessed via walk routines
+// This has to be a global so it can be accessed via walk routines.
 var walkState walkStateType
 
 func (w *walkStateType) init(walkDoPrint bool) {
