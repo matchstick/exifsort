@@ -14,7 +14,10 @@
 
 .PHONY: fix vet fmt lint test build tidy
 
+default: build
+
 GOBIN := $(shell go env GOPATH)/bin
+LINTREPO := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
 
 build:
 	go build -o $(GOBIN)/exifsort
@@ -26,12 +29,13 @@ fix:
 
 fmt:
 	go fmt ./...
+	goimports -w .
 
 tidy:
 	go mod tidy
 
 lint:
-	(which golangci-lint || go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2)
+	(which golangci-lint || go get $(GOLINTREPO))
 	$(GOBIN)/golangci-lint run ./... --enable-all
 
 
@@ -42,7 +46,7 @@ license-check:
 	$(GOBIN)/go-licenses check github.com/GoogleContainerTools/kpt
 
 test:
-	go test -cover ./...
+	go test -v -cover ./...
 
 vet:
 	go vet ./...
