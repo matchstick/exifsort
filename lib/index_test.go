@@ -27,7 +27,7 @@ func copyFile(t *testing.T, src string, dst string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ioutil.WriteFile(dst, content, 0644)
+	err = ioutil.WriteFile(dst, content, 0600)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,8 +95,8 @@ func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 }
 
 func TestIndexPutGet(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
-		var idx = createIndex(method)
+	for method := MethodYear; method < MethodNone; method++ {
+		var idx = newIndex(method)
 		testDir := indexTmpDir(t, "", "root")
 
 		PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
@@ -106,8 +106,8 @@ func TestIndexPutGet(t *testing.T) {
 }
 
 func TestIndexCollisions(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
-		var idx = createIndex(method)
+	for method := MethodYear; method < MethodNone; method++ {
+		var idx = newIndex(method)
 		testDir := indexTmpDir(t, "", "root_")
 		testDir1 := indexTmpDir(t, "", "bobo_")
 		testDir2 := indexTmpDir(t, "", "gobo_")
@@ -121,9 +121,9 @@ func TestIndexCollisions(t *testing.T) {
 }
 
 func TestIndexDuplicates(t *testing.T) {
-	for method := METHOD_YEAR; method < METHOD_NONE; method++ {
+	for method := MethodYear; method < MethodNone; method++ {
 		var exifPath = "../data/with_exif.jpg"
-		var idx = createIndex(method)
+		var idx = newIndex(method)
 		time, _ := ExtractTime(exifPath)
 		err := idx.Put(exifPath, time)
 		if err != nil {

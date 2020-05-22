@@ -11,14 +11,14 @@ import (
 func TestSkipFileType(t *testing.T) {
 
 	// Try just gobo.<suffix>
-	for suffix := range mediaSuffixMap {
+	for suffix := range mediaSuffixMap() {
 		goodInput := fmt.Sprintf("gobo.%s", suffix)
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
 		}
 	}
 	// Try a simple upper case just gobo.<suffix>
-	for suffix := range mediaSuffixMap {
+	for suffix := range mediaSuffixMap() {
 		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", suffix))
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
@@ -26,7 +26,7 @@ func TestSkipFileType(t *testing.T) {
 	}
 
 	// Try with many "." hey.gobo.<suffix>
-	for suffix := range mediaSuffixMap {
+	for suffix := range mediaSuffixMap() {
 		goodInput := fmt.Sprintf("hey.gobo.%s", suffix)
 		if skipFileType(goodInput) {
 			t.Errorf("Expected True for %s\n", goodInput)
@@ -43,7 +43,7 @@ func TestSkipFileType(t *testing.T) {
 	}
 
 	// Try ".." at the end.<suffix>
-	for suffix := range mediaSuffixMap {
+	for suffix := range mediaSuffixMap() {
 		badInput := fmt.Sprintf("gobo.%s..", suffix)
 		if skipFileType(badInput) == false {
 			t.Errorf("Expected False for %s\n", badInput)
@@ -67,7 +67,7 @@ func populateExifDir(t *testing.T, dir string, withExif bool, num int) {
 	for i := 0; i < num; i++ {
 		targetPath := fmt.Sprintf("%s/file%d.jpg", dir, uniqFileNo)
 		uniqFileNo++
-		err := ioutil.WriteFile(targetPath, content, 0644)
+		err := ioutil.WriteFile(targetPath, content, 0600)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,7 +96,7 @@ func buildTestDir(t *testing.T) string {
 	noExifDir := testTmpDir(t, rootDir, "no_exif")
 	mixedDir := testTmpDir(t, rootDir, "mixed_exif")
 
-	populateExifDir(t, exifDir, true, 25)
+	populateExifDir(t, exifDir, true, 50)
 	populateExifDir(t, noExifDir, false, 25)
 	populateExifDir(t, mixedDir, true, 25)
 	populateExifDir(t, mixedDir, false, 25)
@@ -108,16 +108,16 @@ func TestScanDir(t *testing.T) {
 	tmpPath := buildTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	ScanDir(tmpPath, false, false)
+	w := ScanDir(tmpPath, false)
 	const correctNumInvalid uint64 = 50
-	const correctNumValid uint64 = 75
+	const correctNumValid uint64 = 100
 
-	if correctNumInvalid != walkState.invalid() {
+	if correctNumInvalid != w.Invalid() {
 		t.Errorf("Expected %d Invalid Count. Got %d\n",
-			correctNumInvalid, walkState.invalid())
+			correctNumInvalid, w.Invalid())
 	}
-	if correctNumValid != walkState.valid() {
+	if correctNumValid != w.Valid() {
 		t.Errorf("Expected %d Valid Count. Got %d\n",
-			correctNumValid, walkState.valid())
+			correctNumValid, w.Valid())
 	}
 }

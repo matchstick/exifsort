@@ -23,7 +23,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// scanCmd represents the scan command
+func scanSummary(w *exifsort.WalkState) {
+	fmt.Printf("Scanned Valid: %d\n", w.Valid())
+	fmt.Printf("Scanned Invalid: %d\n", w.Invalid())
+	fmt.Printf("Scanned Skipped: %d\n", w.Skipped())
+	fmt.Printf("Scanned Total: %d\n", w.Total())
+
+	if w.Invalid() == 0 {
+		fmt.Println("No Files caused Errors")
+		return
+	}
+
+	fmt.Println("Error Files were:")
+
+	for path, msg := range w.WalkErrs() {
+		fmt.Printf("\t%s\n", w.ErrStr(path, msg))
+	}
+}
+
+// scanCmd represents the scan command.
 var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Scan directory for Exif Dates",
@@ -50,7 +68,10 @@ var scanCmd = &cobra.Command{
 			fmt.Printf("Error with directory arg: %s\n", err.Error())
 			return
 		}
-		exifsort.ScanDir(dirPath, summarize, !quiet)
+		w := exifsort.ScanDir(dirPath, !quiet)
+		if summarize {
+			scanSummary(&w)
+		}
 	},
 }
 

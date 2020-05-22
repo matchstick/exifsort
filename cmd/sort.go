@@ -23,7 +23,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// sortCmd represents the sort command
+const sortArgNum = 4
+
+func sortSummary(w *exifsort.WalkState) {
+	fmt.Printf("Sorted Valid: %d\n", w.Valid())
+	fmt.Printf("Sorted Invalid: %d\n", w.Invalid())
+	fmt.Printf("Sorted Skipped: %d\n", w.Skipped())
+	fmt.Printf("Sorted Total: %d\n", w.Total())
+
+	if w.Invalid() == 0 {
+		fmt.Println("No Files caused Errors")
+		return
+	}
+
+	fmt.Println("Walk Errors were:")
+
+	for path, msg := range w.WalkErrs() {
+		fmt.Printf("\t%s\n", w.ErrStr(path, msg))
+	}
+
+	fmt.Println("Transfer Errors were:")
+
+	for path, msg := range w.TransferErrs() {
+		fmt.Printf("\t%s\n", w.ErrStr(path, msg))
+	}
+}
+
+// sortCmd represents the sort command.
 var sortCmd = &cobra.Command{
 	Use:   "sort",
 	Short: "Accepts an input directory and will sort media by time created",
@@ -52,7 +78,7 @@ var sortCmd = &cobra.Command{
 
 	action
 	How the media is transferred from src to dst`,
-	Args: cobra.MinimumNArgs(4),
+	Args: cobra.MinimumNArgs(sortArgNum),
 	Run: func(cmd *cobra.Command, args []string) {
 
 		quiet, _ := cmd.Flags().GetBool("quiet")
@@ -84,11 +110,15 @@ var sortCmd = &cobra.Command{
 			fmt.Printf("%s\n", err.Error())
 			return
 		}
-		err = exifsort.SortDir(srcDir, dstDir, method, action, summarize, !quiet)
+		w, err := exifsort.SortDir(srcDir, dstDir, method, action, !quiet)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			return
 		}
+		if summarize {
+			sortSummary(&w)
+		}
+
 	},
 }
 

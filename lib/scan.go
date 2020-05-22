@@ -6,50 +6,36 @@ import (
 	"path/filepath"
 )
 
-func scanFunc(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		fmt.Printf("Error accessing path %s\n", path)
-		return err
-	}
+func scanFunc(w *WalkState) filepath.WalkFunc {
 
-	// Don't need to scan directories
-	if info.IsDir() {
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("Error accessing path %s\n", path)
+			return err
+		}
+
+		// Don't need to scan directories
+		if info.IsDir() {
+			return nil
+		}
+		// Only looking for media files that may have exif.
+		if skipFileType(path) {
+			w.storeSkipped()
+			return nil
+		}
+
+		time, err := ExtractTime(path)
+		if err != nil {
+			w.storeInvalid(path, err.Error())
+			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+
+			return nil
+		}
+
+		w.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
+		w.storeValid()
+
 		return nil
-	}
-	// Only looking for media files that may have exif.
-	if skipFileType(path) {
-		walkState.storeSkipped()
-		return nil
-	}
-
-	time, err := ExtractTime(path)
-	if err != nil {
-		walkState.storeInvalid(path, err.Error())
-		walkState.walkPrintf("%s\n", walkErrMsg(path, err.Error()))
-		return nil
-	}
-
-	walkState.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
-	walkState.storeValid()
-	return nil
-}
-
-func scanSummary(summarize bool) {
-	if !summarize {
-		return
-	}
-	fmt.Printf("Scanned Valid: %d\n", walkState.valid())
-	fmt.Printf("Scanned Invalid: %d\n", walkState.invalid())
-	fmt.Printf("Scanned Skipped: %d\n", walkState.skipped())
-	fmt.Printf("Scanned Total: %d\n", walkState.total())
-	if walkState.invalid() == 0 {
-		fmt.Println("No Files caused Errors")
-		return
-	}
-
-	fmt.Println("Error Files were:")
-	for path, msg := range walkState.walkErrs() {
-		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
 	}
 }
 
@@ -63,14 +49,14 @@ func scanSummary(summarize bool) {
 // completed.
 //
 // If doPrint is set to false it will not print while scanning.
-func ScanDir(src string, summarize bool, doPrint bool) {
-	walkState.init(doPrint)
+func ScanDir(src string, doPrint bool) WalkState {
+	w := newWalkState(doPrint)
 
-	err := filepath.Walk(src, scanFunc)
+	err := filepath.Walk(src, scanFunc(&w))
 
 	if err != nil {
 		fmt.Printf("Scan Error (%s)\n", err.Error())
 	}
 
-	scanSummary(summarize)
+	return w
 }

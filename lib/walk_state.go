@@ -5,74 +5,74 @@ import (
 	"sync/atomic"
 )
 
-type walkStateType struct {
+type WalkState struct {
 	skippedCount     uint64
 	validCount       uint64
 	invalidCount     uint64
 	transferErrCount uint64
-	walkDoPrint      bool
+	doPrint          bool
 	walkErrMsgs      map[string]string
 	transferErrMsgs  map[string]string
 }
 
-func (w *walkStateType) skipped() uint64 {
+func (w *WalkState) Skipped() uint64 {
 	return w.skippedCount
 }
 
-func (w *walkStateType) valid() uint64 {
+func (w *WalkState) Valid() uint64 {
 	return w.validCount
 }
 
-func (w *walkStateType) invalid() uint64 {
+func (w *WalkState) Invalid() uint64 {
 	return w.invalidCount
 }
 
-func (w *walkStateType) walkErrs() map[string]string {
+func (w *WalkState) WalkErrs() map[string]string {
 	return w.walkErrMsgs
 }
 
-func (w *walkStateType) transferErrs() map[string]string {
+func (w *WalkState) TransferErrs() map[string]string {
 	return w.transferErrMsgs
 }
 
-func (w *walkStateType) total() uint64 {
+func (w *WalkState) Total() uint64 {
 	return w.skippedCount + w.validCount + w.invalidCount
 }
 
-func (w *walkStateType) storeValid() {
+func (w *WalkState) storeValid() {
 	atomic.AddUint64(&w.validCount, 1)
 }
 
 // We don't check if you have a path duplicate.
-func (w *walkStateType) storeInvalid(path string, errStr string) {
+func (w *WalkState) storeInvalid(path string, errStr string) {
 	atomic.AddUint64(&w.invalidCount, 1)
 	w.walkErrMsgs[path] = errStr
 }
 
 // We don't check if you have a path duplicate.
-func (w *walkStateType) storeTransferErr(path string, errStr string) {
+func (w *WalkState) storeTransferErr(path string, errStr string) {
 	atomic.AddUint64(&w.transferErrCount, 1)
 	w.transferErrMsgs[path] = errStr
 }
 
-func (w *walkStateType) storeSkipped() {
+func (w *WalkState) storeSkipped() {
 	atomic.AddUint64(&w.skippedCount, 1)
 }
 
-// This has to be a global so it can be accessed via walk routines.
-var walkState walkStateType
-
-func (w *walkStateType) init(walkDoPrint bool) {
+func newWalkState(doPrint bool) WalkState {
+	var w WalkState
 	w.skippedCount = 0
 	w.validCount = 0
 	w.invalidCount = 0
-	w.walkDoPrint = walkDoPrint
-	walkState.walkErrMsgs = make(map[string]string)
-	walkState.transferErrMsgs = make(map[string]string)
+	w.doPrint = doPrint
+	w.walkErrMsgs = make(map[string]string)
+	w.transferErrMsgs = make(map[string]string)
+
+	return w
 }
 
-func (w *walkStateType) walkPrintf(s string, params ...interface{}) {
-	if !w.walkDoPrint {
+func (w *WalkState) walkPrintf(s string, params ...interface{}) {
+	if !w.doPrint {
 		return
 	}
 
@@ -83,6 +83,6 @@ func (w *walkStateType) walkPrintf(s string, params ...interface{}) {
 	fmt.Printf(s, params...)
 }
 
-func walkErrMsg(path string, errMsg string) string {
+func (w *WalkState) ErrStr(path string, errMsg string) string {
 	return fmt.Sprintf("%s with (%s)", path, errMsg)
 }

@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 )
 
-var sortIndex index
-
 func moveMedia(srcPath string, dstPath string) error {
 	return os.Rename(srcPath, dstPath)
 }
@@ -35,6 +33,7 @@ func copyMedia(srcPath string, dstPath string) error {
 	}
 	defer dst.Close()
 	_, err = io.Copy(dst, src)
+
 	return err
 }
 
@@ -43,91 +42,78 @@ func ensureFullPath(path string) error {
 	return os.MkdirAll(dirPath, 0755)
 }
 
-func sortSummary(summarize bool) {
-	if !summarize {
-		return
-	}
-	fmt.Printf("Sorted Valid: %d\n", walkState.valid())
-	fmt.Printf("Sorted Invalid: %d\n", walkState.invalid())
-	fmt.Printf("Sorted Skipped: %d\n", walkState.skipped())
-	fmt.Printf("Sorted Total: %d\n", walkState.total())
-	if walkState.invalid() == 0 {
-		fmt.Println("No Files caused Errors")
-		return
-	}
+func sortFunc(idx index, w *WalkState) filepath.WalkFunc {
 
-	fmt.Println("Walk Errors were:")
-	for path, msg := range walkState.walkErrs() {
-		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
-	}
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("Error accessing path %s\n", path)
+			return err
+		}
 
-	fmt.Println("Transfer Errors were:")
-	for path, msg := range walkState.transferErrs() {
-		fmt.Printf("\t%s\n", walkErrMsg(path, msg))
-	}
+		// Don't need to scan directories
+		if info.IsDir() {
+			return nil
+		}
+		// Only looking for media files that may have exif.
+		if skipFileType(path) {
+			w.storeSkipped()
+			return nil
+		}
 
+		time, err := ExtractTime(path)
+		if err != nil {
+			w.storeInvalid(path, err.Error())
+			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+
+			return nil
+		}
+
+		w.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
+		w.storeValid()
+
+		err = idx.Put(path, time)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 }
 
-func sortFunc(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		fmt.Printf("Error accessing path %s\n", path)
-		return err
-	}
-
-	// Don't need to scan directories
-	if info.IsDir() {
-		return nil
-	}
-	// Only looking for media files that may have exif.
-	if skipFileType(path) {
-		walkState.storeSkipped()
-		return nil
-	}
-
-	time, err := ExtractTime(path)
-	if err != nil {
-		walkState.storeInvalid(path, err.Error())
-		walkState.walkPrintf("%s\n", walkErrMsg(path, err.Error()))
-		return nil
-	}
-
-	walkState.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
-	walkState.storeValid()
-	err = sortIndex.Put(path, time)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func sortTransfer(m mediaMap, dst string, action int) error {
+func sortTransfer(w *WalkState, m mediaMap, dst string, action int) error {
 	var err error
+
 	for newPath, oldPath := range m {
 		newPath = fmt.Sprintf("%s/%s", dst, newPath)
+
 		err = ensureFullPath(newPath)
 		if err != nil {
 			return err
 		}
+
 		switch action {
-		case ACTION_COPY:
+		case ActionCopy:
 			err = copyMedia(oldPath, newPath)
-		case ACTION_MOVE:
+		case ActionMove:
 			err = moveMedia(oldPath, newPath)
 		default:
 			panic("Unknown action")
 		}
+
 		if err != nil {
-			walkState.storeTransferErr(oldPath, err.Error())
+			w.storeTransferErr(oldPath, err.Error())
 			return err
 		}
-		walkState.walkPrintf("Transferred %s\n", newPath)
+
+		w.walkPrintf("Transferred %s\n", newPath)
 	}
+
 	return nil
 }
 
 // SortDir examines the contents of file with acceptable suffixes in the src
 // directory and transfer the file to the dst directory. The structure of
-// the dst directory is specifed by 'method'. The action of transfer is
+// the dst directory is specified by 'method'. The action of transfer is
 // specified by 'action'.
 //
 // SortDir only scans media files listed in the mediaSuffixMap, other files are
@@ -137,25 +123,26 @@ func sortTransfer(m mediaMap, dst string, action int) error {
 // completed.
 //
 // If doPrint is set to false it will not print while scanning.
-func SortDir(src string, dst string, method int, action int, summarize bool, doPrint bool) error {
-	walkState.init(doPrint)
-	sortIndex = createIndex(method)
+func SortDir(src string, dst string, method int, action int, doPrint bool) (WalkState, error) {
+	w := newWalkState(doPrint)
+	sortIndex := newIndex(method)
 
 	err := os.Mkdir(dst, 0755)
 	if err != nil {
-		return fmt.Errorf("Cannot make directory %s\n", dst)
+		return w, fmt.Errorf("cannot make directory %s", dst)
 	}
 
-	err = filepath.Walk(src, sortFunc)
+	err = filepath.Walk(src, sortFunc(sortIndex, &w))
 	if err != nil {
-		return fmt.Errorf("Sort Walk Error (%s)\n", err.Error())
+		return w, fmt.Errorf("sort Walk Error (%s)", err.Error())
 	}
 
 	mediaMap := sortIndex.GetAll()
-	err = sortTransfer(mediaMap, dst, action)
+
+	err = sortTransfer(&w, mediaMap, dst, action)
 	if err != nil {
-		return err
+		return w, err
 	}
-	sortSummary(summarize)
-	return nil
+
+	return w, nil
 }

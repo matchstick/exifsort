@@ -8,8 +8,8 @@ import (
 )
 
 func TestFormatError(t *testing.T) {
-	testErr := errors.New("Bad Format for dingle: dangle Problem\n")
-	_, err := formatError("dangle", "dingle")
+	testErr := errors.New("bad format for dingle: dangle Problem")
+	err := formatError("dangle", "dingle")
 	if err.Error() != testErr.Error() {
 		t.Errorf("Errors do not match: %s %s", err, testErr)
 	}

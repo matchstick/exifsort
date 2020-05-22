@@ -30,10 +30,10 @@ func fileReadable(filename string) error {
 		return err
 	}
 	defer file.Close()
+
 	return nil
 }
 
-// evalCmd represents the eval command
 var evalCmd = &cobra.Command{
 	Use:   "eval",
 	Short: "Evals exif date data for files",

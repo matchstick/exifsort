@@ -48,12 +48,13 @@ func (n *node) init(id int) {
 // Returns a _sorted_ key list. No technical reason to make it a receive
 // pointer.
 func (n *node) sortMediaKeys(m mediaMap) []string {
-	var keys []string
+	var keys = make([]string, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
 
 	sort.Strings(keys)
+
 	return keys
 }
 
@@ -61,11 +62,13 @@ func (n *node) sortMediaKeys(m mediaMap) []string {
 // it will create one.
 func (n *node) getNode(id int) node {
 	var retNode node
+
 	retNode, present := n.children[id]
 	if !present {
 		retNode.init(id)
 		n.children[id] = retNode
 	}
+
 	return retNode
 }
 
@@ -74,7 +77,9 @@ func (n *node) getNode(id int) node {
 // multiple collisions.
 func (n *node) mediaCollisionName(base string) string {
 	var name string
+
 	var newName string
+
 	pieces := strings.Split(base, ".")
 	numPieces := len(pieces)
 	// get the suffx
@@ -86,11 +91,13 @@ func (n *node) mediaCollisionName(base string) string {
 	// Now we keep trying until we create a name that won't collide
 	for counter := 0; true; counter++ {
 		newName = fmt.Sprintf("%s_%d.%s", name, counter, suffix)
+
 		_, present := n.media[newName]
 		if !present {
 			break
 		}
 	}
+
 	return newName
 }
 
@@ -107,6 +114,7 @@ func (n *node) mediaAdd(path string) error {
 
 	// Check for same contents
 	cmp := equalfile.New(nil, equalfile.Options{})
+
 	equal, err := cmp.CompareFile(path, storedPath)
 	if err != nil {
 		return err
@@ -120,6 +128,7 @@ func (n *node) mediaAdd(path string) error {
 	// with a new base name to not collide.
 	base = n.mediaCollisionName(base)
 	n.media[base] = path
+
 	return nil
 }
 
@@ -140,6 +149,7 @@ func (y *yearIndex) Put(path string, time time.Time) error {
 
 func (y *yearIndex) Get(path string) (string, bool) {
 	soughtBase := filepath.Base(path)
+
 	for year, yearNode := range y.n.children {
 		for base := range yearNode.media {
 			if base == soughtBase {
@@ -149,11 +159,13 @@ func (y *yearIndex) Get(path string) (string, bool) {
 			}
 		}
 	}
+
 	return "", false
 }
 
 func (y *yearIndex) GetAll() mediaMap {
 	var retMap = make(mediaMap)
+
 	for year, yearNode := range y.n.children {
 		media := yearNode.media
 		for base, oldPath := range media {
@@ -162,17 +174,21 @@ func (y *yearIndex) GetAll() mediaMap {
 			retMap[path] = oldPath
 		}
 	}
+
 	return retMap
 }
 
 func (y yearIndex) String() string {
 	var retStr string
+
 	media := y.GetAll()
+
 	keys := y.n.sortMediaKeys(media)
 	for _, newPath := range keys {
 		oldPath := media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
+
 	return retStr
 }
 
@@ -183,6 +199,7 @@ type monthIndex struct {
 func (m *monthIndex) Put(path string, time time.Time) error {
 	yearNode := m.n.getNode(time.Year())
 	monthNode := yearNode.getNode(int(time.Month()))
+
 	return monthNode.mediaAdd(path)
 }
 
@@ -195,6 +212,7 @@ func (m *monthIndex) PathStr(time time.Time, base string) string {
 
 func (m *monthIndex) Get(path string) (string, bool) {
 	soughtBase := filepath.Base(path)
+
 	for year, yearNode := range m.n.children {
 		for month, monthNode := range yearNode.children {
 			for base := range monthNode.media {
@@ -202,16 +220,19 @@ func (m *monthIndex) Get(path string) (string, bool) {
 					time := time.Date(year,
 						time.Month(month),
 						1, 1, 1, 1, 1, time.Local)
+
 					return m.PathStr(time, base), true
 				}
 			}
 		}
 	}
+
 	return "", false
 }
 
 func (m *monthIndex) GetAll() mediaMap {
 	var retMap = make(mediaMap)
+
 	for year, yearNode := range m.n.children {
 		for month, monthNode := range yearNode.children {
 			media := monthNode.media
@@ -222,17 +243,21 @@ func (m *monthIndex) GetAll() mediaMap {
 			}
 		}
 	}
+
 	return retMap
 }
 
 func (m monthIndex) String() string {
 	var retStr string
+
 	media := m.GetAll()
+
 	keys := m.n.sortMediaKeys(media)
 	for _, newPath := range keys {
 		oldPath := media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
+
 	return retStr
 }
 
@@ -244,6 +269,7 @@ func (d *dayIndex) Put(path string, time time.Time) error {
 	yearNode := d.n.getNode(time.Year())
 	monthNode := yearNode.getNode(int(time.Month()))
 	dayNode := monthNode.getNode(time.Day())
+
 	return dayNode.mediaAdd(path)
 }
 
@@ -257,6 +283,7 @@ func (d *dayIndex) PathStr(time time.Time, base string) string {
 
 func (d *dayIndex) Get(path string) (string, bool) {
 	soughtBase := filepath.Base(path)
+
 	for year, yearNode := range d.n.children {
 		for month, monthNode := range yearNode.children {
 			for day, dayNode := range monthNode.children {
@@ -266,17 +293,20 @@ func (d *dayIndex) Get(path string) (string, bool) {
 							time.Month(month), day,
 							1, 1, 1, 1,
 							time.Local)
+
 						return d.PathStr(time, base), true
 					}
 				}
 			}
 		}
 	}
+
 	return "", false
 }
 
 func (d *dayIndex) GetAll() mediaMap {
 	var retMap = make(mediaMap)
+
 	for year, yearNode := range d.n.children {
 		for month, monthNode := range yearNode.children {
 			for day, dayNode := range monthNode.children {
@@ -289,17 +319,21 @@ func (d *dayIndex) GetAll() mediaMap {
 			}
 		}
 	}
+
 	return retMap
 }
 
 func (d dayIndex) String() string {
 	var retStr string
+
 	media := d.GetAll()
+
 	keys := d.n.sortMediaKeys(media)
 	for _, newPath := range keys {
 		oldPath := media[newPath]
 		retStr += fmt.Sprintf("%s => %s\n", oldPath, newPath)
 	}
+
 	return retStr
 }
 
@@ -310,19 +344,25 @@ type index interface {
 	PathStr(time.Time, string) string
 }
 
-func createIndex(method int) index {
+func newIndex(method int) index {
 	switch method {
-	case METHOD_YEAR:
+	case MethodYear:
 		var y yearIndex
+
 		y.n.init(rootIndex)
+
 		return &y
-	case METHOD_MONTH:
+	case MethodMonth:
 		var m monthIndex
+
 		m.n.init(rootIndex)
+
 		return &m
-	case METHOD_DAY:
+	case MethodDay:
 		var d dayIndex
+
 		d.n.init(rootIndex)
+
 		return &d
 	default:
 		panic("Unknown method")
