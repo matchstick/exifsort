@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	exifSort "github.com/matchstick/exifSort/lib"
+	exifsort "github.com/matchstick/exifsort/lib"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +29,9 @@ var scanCmd = &cobra.Command{
 	Short: "Scan directory for Exif Dates",
 	Long: `Scan directory for Exif Date Info. 
 
-	exifSort scan [<options>...] <dir>
+	exifsort scan [<options>...] <dir>
 
-	exifSort will recursively check every file in an input directory and
+	exifsort will recursively check every file in an input directory and
         then print it's exifData to stdout if possible.
 
 	ARGUMENTS
@@ -50,7 +50,7 @@ var scanCmd = &cobra.Command{
 			fmt.Printf("Error with directory arg: %s\n", err.Error())
 			return
 		}
-		exifSort.ScanDir(dirPath, summarize, !quiet)
+		exifsort.ScanDir(dirPath, summarize, !quiet)
 	},
 }
 

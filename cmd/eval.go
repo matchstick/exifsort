@@ -20,7 +20,7 @@ import (
 
 	"os"
 
-	exifSort "github.com/matchstick/exifSort/lib"
+	exifsort "github.com/matchstick/exifsort/lib"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ var evalCmd = &cobra.Command{
 	Short: "Evals exif date data for files",
 	Long: `Report time for files not directories
 
-	exifSort eval <files>...
+	exifsort eval <files>...
 
 	ARGUMENTS
 
@@ -53,7 +53,7 @@ var evalCmd = &cobra.Command{
 				fmt.Printf("%s, %q\n", path, err)
 				continue
 			}
-			timeStr, err := exifSort.ExtractTimeStr(path)
+			timeStr, err := exifsort.ExtractTimeStr(path)
 			if err != nil {
 				fmt.Printf("%s, %s\n", path, err)
 				continue

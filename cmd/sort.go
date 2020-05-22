@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	exifSort "github.com/matchstick/exifSort/lib"
+	exifsort "github.com/matchstick/exifsort/lib"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +29,9 @@ var sortCmd = &cobra.Command{
 	Short: "Accepts an input directory and will sort media by time created",
 	Long: `Sort directory by Exif Date Info. 
 
-	exifSort sort [<options>...] <src> <dst> <method> <action>
+	exifsort sort [<options>...] <src> <dst> <method> <action>
 
-	exifSort will recursively check every file in an input directory and
+	exifsort will recursively check every file in an input directory and
 	then create antoher directory structure organized by time to either
 	move or copy the files into
 
@@ -74,17 +74,17 @@ var sortCmd = &cobra.Command{
 			fmt.Printf("Output directory \"%s\" must not exist\n", dstDir)
 			return
 		}
-		method, err := exifSort.ParseMethod(methodArg)
+		method, err := exifsort.ParseMethod(methodArg)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			return
 		}
-		action, err := exifSort.ParseAction(actionArg)
+		action, err := exifsort.ParseAction(actionArg)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			return
 		}
-		err = exifSort.SortDir(srcDir, dstDir, method, action, summarize, !quiet)
+		err = exifsort.SortDir(srcDir, dstDir, method, action, summarize, !quiet)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			return

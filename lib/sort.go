@@ -1,4 +1,4 @@
-package exifSort
+package exifsort
 
 import (
 	"fmt"

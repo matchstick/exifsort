@@ -1,4 +1,4 @@
-package exifSort
+package exifsort
 
 // TODO this test file is a mess. But it found many bugs.
 // Now that we know what we want we will rewrite.

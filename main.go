@@ -16,7 +16,7 @@ limitations under the License.
 package main
 
 import (
-	"github.com/matchstick/exifSort/cmd"
+	"github.com/matchstick/exifsort/cmd"
 )
 
 func main() {

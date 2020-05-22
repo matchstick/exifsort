@@ -29,9 +29,9 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "exifSort",
+	Use:   "exifsort",
 	Short: "Sorting media by date using the exif information",
-	Long: `exifSort is a program to sort media in nested directories 
+	Long: `exifsort is a program to sort media in nested directories 
 by accessing the exif information. Media wihtout exif information is 
 moved to a designated directory.
 
@@ -57,7 +57,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.exifSort.yaml)")
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.exifsort.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -77,9 +77,9 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".exifSort" (without extension).
+		// Search config in home directory with name ".exifsort" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".exifSort")
+		viper.SetConfigName(".exifsort")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
