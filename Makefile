@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: fix vet fmt lint test build tidy
+.PHONY: fix vet fmt test build tidy lint
 
 default: build
 
@@ -22,7 +22,7 @@ LINTREPO := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
 build:
 	go build -o $(GOBIN)/exifsort
 
-all: fix vet fmt lint test build tidy
+all: fix vet fmt test build tidy lint
 
 fix:
 	go fix ./...
@@ -34,19 +34,17 @@ fmt:
 tidy:
 	go mod tidy
 
-lint:
-	(which golangci-lint || go get $(GOLINTREPO))
-	$(GOBIN)/golangci-lint run ./... --enable-all
-
-
-# TODO: enable this as part of `all` target when it works for go-errors
-# https://github.com/google/go-licenses/issues/15
-license-check:
-	(which go-licensesscs || go get https://github.com/google/go-licenses)
-	$(GOBIN)/go-licenses check github.com/GoogleContainerTools/kpt
-
 test:
 	go test -v -cover ./...
 
 vet:
 	go vet ./...
+
+lint:
+	# Lint: Doing white box testing so disabling testpackage.
+	# Lint: But we enable _ALL_ of the others
+	(which golangci-lint || go get $(GOLINTREPO))
+	$(GOBIN)/golangci-lint run ./... --enable-all -D testpackage 
+
+
+

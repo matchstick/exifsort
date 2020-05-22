@@ -7,6 +7,14 @@ import (
 	"path/filepath"
 )
 
+type sortError struct {
+	prob string
+}
+
+func (e sortError) Error() string {
+	return e.prob
+}
+
 func moveMedia(srcPath string, dstPath string) error {
 	return os.Rename(srcPath, dstPath)
 }
@@ -18,7 +26,8 @@ func copyMedia(srcPath string, dstPath string) error {
 	}
 
 	if !srcStat.Mode().IsRegular() {
-		return fmt.Errorf("%s is not a regular file", srcPath)
+		errStr := fmt.Sprintf("%s is not a regular file", srcPath)
+		return sortError{errStr}
 	}
 
 	src, err := os.Open(srcPath)
