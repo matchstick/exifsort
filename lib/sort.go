@@ -114,13 +114,10 @@ func sortTransfer(w *WalkState, m mediaMap, dst string, action int) error {
 // SortDir examines the contents of file with acceptable suffixes in the src
 // directory and transfer the file to the dst directory. The structure of
 // the dst directory is specified by 'method'. The action of transfer is
-// specified by 'action'.
+// specified by 'action'. It returns WalkState gathered as a return value.
 //
-// SortDir only scans media files listed in the mediaSuffixMap, other files are
-// skipped.
-//
-// When 'summarize' is set to 'true' it will print a summary of stats when
-// completed.
+// SortDir only scans media files listed as constants as documented, other
+// files are skipped.
 //
 // If doPrint is set to false it will not print while scanning.
 func SortDir(src string, dst string, method int, action int, doPrint bool) (WalkState, error) {

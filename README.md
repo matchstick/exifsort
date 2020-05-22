@@ -6,6 +6,10 @@ TODOs include:
 * Clean up tests now that APIs are tighter
 * Clean up doc.go in lib now that APIS are changed.
 * Figure out git hooks
+	gofmt -w -s
+	goimports -w 
+	golangci-lint run --enable-all
+
 * Write more complete sort tests.
 * Update this readme.
 

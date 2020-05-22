@@ -5,6 +5,8 @@ import (
 	"sync/atomic"
 )
 
+// WalkState holds all the data gathered as exifstort scans the src directories
+// and if sorting transfers media.
 type WalkState struct {
 	skippedCount     uint64
 	validCount       uint64
@@ -15,26 +17,32 @@ type WalkState struct {
 	transferErrMsgs  map[string]string
 }
 
+// Returns how many files were skipped.
 func (w *WalkState) Skipped() uint64 {
 	return w.skippedCount
 }
 
+// Returns how many files had valid exif DateTimeOriginal data.
 func (w *WalkState) Valid() uint64 {
 	return w.validCount
 }
 
+// Returns how many files had invalid exif DateTimeOriginal data.
 func (w *WalkState) Invalid() uint64 {
 	return w.invalidCount
 }
 
+// Returns a map from path to error scanning.
 func (w *WalkState) WalkErrs() map[string]string {
 	return w.walkErrMsgs
 }
 
+// Returns a map from path to error transferring.
 func (w *WalkState) TransferErrs() map[string]string {
 	return w.transferErrMsgs
 }
 
+// Returns the total number of files skipped and scanned.
 func (w *WalkState) Total() uint64 {
 	return w.skippedCount + w.validCount + w.invalidCount
 }

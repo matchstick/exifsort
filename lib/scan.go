@@ -40,13 +40,11 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 }
 
 // ScanDir will examine the contents of every file in the src directory and
-// print it's time of creation as stored by exifdata as it scans.
+// print it's time of creation as stored by exifdata as it scans. It returns
+// WalkState gathered as a return value.
 //
-// ScanDir only scans media files listed in the mediaSuffixMap, other files are
-// skipped.
-//
-// When 'summarize' is set to 'true' it will print a summary of stats when
-// completed.
+// ScanDir only scans media files listed as constants as documented, other
+// files are skipped.
 //
 // If doPrint is set to false it will not print while scanning.
 func ScanDir(src string, doPrint bool) WalkState {
