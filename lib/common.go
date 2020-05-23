@@ -33,7 +33,7 @@ const (
 // useless media files. We want to skip them.
 func isSynologyFile(path string) bool {
 	switch {
-	case strings.Contains(path, "@eaDir"):
+	case strings.Contains(path, "@eadir"):
 		return true
 	case strings.Contains(path, "@syno"):
 		return true

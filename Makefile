@@ -47,4 +47,7 @@ lint:
 	$(GOBIN)/golangci-lint run ./... --enable-all -D testpackage 
 
 
+cov:
+	go test ./... -coverprofile=cov.out
+	go tool cover -html=cov.out
 
