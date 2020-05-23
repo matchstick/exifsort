@@ -20,7 +20,7 @@ GOBIN := $(shell go env GOPATH)/bin
 LINTREPO := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
 
 build:
-	go build -o $(GOBIN)/exifsort
+	go build
 
 all: fix vet fmt test build tidy lint
 

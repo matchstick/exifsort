@@ -34,10 +34,11 @@ func fileReadable(filename string) error {
 	return nil
 }
 
-var evalCmd = &cobra.Command{
-	Use:   "eval",
-	Short: "Evals exif date data for files",
-	Long: `Report time for files not directories
+func newEvalCmd() *cobra.Command {
+	var evalCmd = &cobra.Command{
+		Use:   "eval",
+		Short: "Evals exif date data for files",
+		Long: `Report time for files not directories
 
 	exifsort eval <files>...
 
@@ -45,24 +46,23 @@ var evalCmd = &cobra.Command{
 
 	files
 	file list (expanded by shell) that will have their exifDate reported`,
-	Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		for _, path := range args {
-			err := fileReadable(path)
-			if err != nil {
-				fmt.Printf("%s, %q\n", path, err)
-				continue
+		Args: cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			for _, path := range args {
+				err := fileReadable(path)
+				if err != nil {
+					fmt.Printf("%s, %q\n", path, err)
+					continue
+				}
+				timeStr, err := exifsort.ExtractTimeStr(path)
+				if err != nil {
+					fmt.Printf("%s, %s\n", path, err)
+					continue
+				}
+				fmt.Printf("%s, %s\n", path, timeStr)
 			}
-			timeStr, err := exifsort.ExtractTimeStr(path)
-			if err != nil {
-				fmt.Printf("%s, %s\n", path, err)
-				continue
-			}
-			fmt.Printf("%s, %s\n", path, timeStr)
-		}
-	},
-}
+		},
+	}
 
-func init() {
-	rootCmd.AddCommand(evalCmd)
+	return evalCmd
 }

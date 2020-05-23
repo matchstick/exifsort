@@ -19,43 +19,45 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-
-// rootCmd represents the base command when called without any subcommands.
-var rootCmd = &cobra.Command{
-	Use:   "exifsort",
-	Short: "Sorting media by date using the exif information",
-	Long: `exifsort is a program to sort media in nested directories 
+func newRootCmd() *cobra.Command {
+	// rootCmd represents the base command when called without any subcommands.
+	return &cobra.Command{
+		Use:   "exifsort",
+		Short: "Sorting media by date using the exif information",
+		Long: `exifsort is a program to sort media in nested directories 
 by accessing the exif information. Media wihtout exif information is 
 moved to a designated directory.
 
 TODO: Add examples of use. `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	}
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd := newRootCmd()
+	evalCmd := newEvalCmd()
+	scanCmd := newScanCmd()
+	sortCmd := newSortCmd()
+
+	rootCmd.AddCommand(scanCmd)
+	rootCmd.AddCommand(evalCmd)
+	rootCmd.AddCommand(sortCmd)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func init() {
-	cobra.OnInitialize(initConfig)
-}
-
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	var cfgFile string
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)

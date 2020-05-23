@@ -49,11 +49,29 @@ func sortSummary(w *exifsort.WalkState) {
 	}
 }
 
-// sortCmd represents the sort command.
-var sortCmd = &cobra.Command{
-	Use:   "sort",
-	Short: "Accepts an input directory and will sort media by time created",
-	Long: `Sort directory by Exif Date Info. 
+func srcCheck(srcDir string) bool {
+	info, err := os.Stat(srcDir)
+	if err != nil || !info.IsDir() {
+		fmt.Printf("Input Directory \"%s\" has error (%s)\n", srcDir, err.Error())
+		return false
+	}
+
+	return true
+}
+
+func dstCheck(dstDir string) bool {
+	// dstDir must not be created yet
+	_, err := os.Stat(dstDir)
+	if err == nil || os.IsExist(err) {
+		fmt.Printf("Output directory \"%s\" must not exist\n", dstDir)
+		return false
+	}
+
+	return true
+}
+
+func sortLongHelp() string {
+	return `Sort directory by Exif Date Info. 
 
 	exifsort sort [<options>...] <src> <dst> <method> <action>
 
@@ -77,55 +95,59 @@ var sortCmd = &cobra.Command{
 		Day  : dst -> year-> month -> day -> media
 
 	action
-	How the media is transferred from src to dst`,
-	Args: cobra.MinimumNArgs(sortArgNum),
-	Run: func(cmd *cobra.Command, args []string) {
-
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		summarize, _ := cmd.Flags().GetBool("summarize")
-
-		srcDir := args[0]
-		dstDir := args[1]
-		methodArg := args[2]
-		actionArg := args[3]
-
-		info, err := os.Stat(srcDir)
-		if err != nil || !info.IsDir() {
-			fmt.Printf("Input Directory \"%s\" has error (%s)\n", srcDir, err.Error())
-			return
-		}
-		// dstDir must not be created yet
-		_, err = os.Stat(dstDir)
-		if err == nil || os.IsExist(err) {
-			fmt.Printf("Output directory \"%s\" must not exist\n", dstDir)
-			return
-		}
-		method, err := exifsort.ParseMethod(methodArg)
-		if err != nil {
-			fmt.Printf("%s\n", err.Error())
-			return
-		}
-		action, err := exifsort.ParseAction(actionArg)
-		if err != nil {
-			fmt.Printf("%s\n", err.Error())
-			return
-		}
-		w, err := exifsort.SortDir(srcDir, dstDir, method, action, !quiet)
-		if err != nil {
-			fmt.Printf("%s\n", err.Error())
-			return
-		}
-		if summarize {
-			sortSummary(&w)
-		}
-
-	},
+	How the media is transferred from src to dst`
 }
 
-func init() {
-	rootCmd.AddCommand(sortCmd)
+func newSortCmd() *cobra.Command {
+	// sortCmd represents the sort command.
+	var sortCmd = &cobra.Command{
+		Use:   "sort",
+		Short: "Accepts an input directory and will sort media by time created",
+		// Very long help message so we moved it to a func.
+		Long: sortLongHelp(),
+		Args: cobra.MinimumNArgs(sortArgNum),
+		Run: func(cmd *cobra.Command, args []string) {
+			quiet, _ := cmd.Flags().GetBool("quiet")
+			summarize, _ := cmd.Flags().GetBool("summarize")
+
+			srcDir := args[0]
+			dstDir := args[1]
+			methodArg := args[2]
+			actionArg := args[3]
+
+			if !srcCheck(args[0]) {
+				return
+			}
+
+			if !dstCheck(args[1]) {
+				return
+			}
+
+			method, err := exifsort.ParseMethod(methodArg)
+			if err != nil {
+				fmt.Printf("%s\n", err.Error())
+				return
+			}
+			action, err := exifsort.ParseAction(actionArg)
+			if err != nil {
+				fmt.Printf("%s\n", err.Error())
+				return
+			}
+			w, err := exifsort.SortDir(srcDir, dstDir, method, action, !quiet)
+			if err != nil {
+				fmt.Printf("%s\n", err.Error())
+				return
+			}
+			if summarize {
+				sortSummary(&w)
+			}
+		},
+	}
+
 	sortCmd.Flags().BoolP("quiet", "q", false,
 		"Suppress line by line printing.")
 	sortCmd.Flags().BoolP("summarize", "s", false,
 		"Print a summary of stats when done.")
+
+	return sortCmd
 }
