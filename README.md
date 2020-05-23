@@ -1,16 +1,6 @@
 # exifsort
 
-This README and program is Under construction but for now here is some notes.
-
-TODOs include:
-* Clean up tests now that APIs are tighter
-* Clean up doc.go in lib now that APIS are changed.
-* Redo the cobra pieces so that lint does not complain.
-* Write more complete tests. coverage is not high enough and for sort it is 0%.
-* Update this readme.
-* Transfer invalid phnotos to an unsorted directoryin src
-* Write a merge step to merge two sorted directories.
-* Set up CI on github.
+This README and program are both under construction but for now here are some notes.
 
 Main motivation for this was to get my hands dirty writing golang again.
 Program to sort and scan photos and movies for their Creation date using their
@@ -36,3 +26,15 @@ exifsort -> eval <file>
  TODO (check for duplciate files, first checktimestamp, then check contents)
 
 exifsort -> merge is coming
+
+TODOs include:
+* Clean up tests now that APIs are tighter
+* Clean up doc.go in lib now that APIS are changed.
+* Redo the cobra pieces so that lint does not complain.
+* Write more complete tests. coverage is not high enough and for sort it is 0%.
+* Update this readme.
+* Transfer invalid phnotos to an unsorted directoryin src
+* Write a merge step to merge two sorted directories.
+* Set up CI on github.
+
+
