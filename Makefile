@@ -51,3 +51,5 @@ cov:
 	go test ./... -coverprofile=cov.out
 	go tool cover -html=cov.out
 
+clean:
+	rm -f exifsort cov.out
