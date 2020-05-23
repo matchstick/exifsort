@@ -59,9 +59,9 @@ func TestSkipSynologyTypes(t *testing.T) {
 	if skipFileType(badInput) == false {
 		t.Errorf("Expected False for %s\n", badInput)
 	}
+
 	badInput = "synofile_thumb"
 	if skipFileType(badInput) == false {
 		t.Errorf("Expected False for %s\n", badInput)
 	}
 }
-
