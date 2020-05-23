@@ -30,7 +30,6 @@ exifsort -> merge is coming
 TODOs include:
 * Clean up tests now that APIs are tighter
 * Clean up doc.go in lib now that APIS are changed.
-* Redo the cobra pieces so that lint does not complain.
 * Write more complete tests. coverage is not high enough and for sort it is 0%.
 * Update this readme.
 * Transfer invalid phnotos to an unsorted directoryin src
