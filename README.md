@@ -6,10 +6,10 @@ Program are both under construction but for now here are some notes.
 
 exifsort
 ========
-Libraries and CLI to sort to sort media by date using exif information.
+Libraries and CLI to sort to sort media by date using EXIF information.
 
 This is for folks who have a closet full of hard drives and network drives full
-of photos and want to centralzie them in one folder structure.
+of photos and want to centralize them in one folder structure.
 
 The functionality and API live in the lib directory. Check out
 [godocs](https://godoc.org/github.com/matchstick/exifsort/lib) for details.
