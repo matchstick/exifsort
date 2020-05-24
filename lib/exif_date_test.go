@@ -67,10 +67,14 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 	}
 }
 
-func TestExtractExifTime(t *testing.T) {
-	validExifPath := "../data/with_exif.jpg"
-	goodDateStr := "2020:04:28 14:12:21"
-	goodTime, _ := extractTimeFromStr(goodDateStr)
+const validExifPath = "../data/with_exif.jpg"
+const invalidExifPath = "../data/no_exif.jpg"
+const noRootExifPath = "../data/no_root_ifd.jpg"
+const goodDateExifStr = "2020:04:28 14:12:21"
+const goodDateStr = "2020/04/28 14:12:21"
+
+func TestExtractTime(t *testing.T) {
+	goodTime, _ := extractTimeFromStr(goodDateExifStr)
 
 	time, err := ExtractTime(validExifPath)
 	if err != nil {
@@ -81,9 +85,12 @@ func TestExtractExifTime(t *testing.T) {
 		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
 	}
 
-	invalidExifPath := "../data/no_exif.jpg"
-
 	_, err = ExtractTime(invalidExifPath)
+	if err == nil {
+		t.Errorf("Unexpected success with invalid Exif file.\n")
+	}
+
+	_, err = ExtractTime(noRootExifPath)
 	if err == nil {
 		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
@@ -93,5 +100,21 @@ func TestExtractExifTime(t *testing.T) {
 	_, err = ExtractTime(nonePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
+	}
+}
+
+func TestExtractTimeStr(t *testing.T) {
+	str, err := ExtractTimeStr(validExifPath)
+	if err != nil {
+		t.Errorf("Unexpected Error with good input file\n")
+	}
+
+	if str != goodDateStr {
+		t.Errorf("Expected String %s but got %s\n", goodDateStr, str)
+	}
+
+	_, err = ExtractTimeStr(invalidExifPath)
+	if err == nil {
+		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 }
