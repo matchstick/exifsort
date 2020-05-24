@@ -24,7 +24,7 @@ REPO_GOIMPORTS := golang.org/x/tools/cmd/goimports
 # exists on Linux so we need this ugly flag.
 
 ifeq ($(shell uname -s),Linux)
-DISABLE_PACKAGESET="-D packageset"
+DISABLE_PACKAGESET=-D testpackage
 endif
 
 
