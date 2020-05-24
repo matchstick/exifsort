@@ -63,6 +63,8 @@ func mediaSuffixMap() map[string]int {
 	}
 }
 
+const minSplitLen = 2 // We expect there to be at least two pieces
+
 func skipFileType(path string) bool {
 	// All comparisons are lower case as case don't matter
 	path = strings.ToLower(path)
@@ -72,7 +74,6 @@ func skipFileType(path string) bool {
 	}
 
 	pieces := strings.Split(path, ".")
-	minSplitLen := 2 // We expect there to be at least two pieces
 
 	numPieces := len(pieces)
 	if numPieces < minSplitLen {

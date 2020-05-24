@@ -37,6 +37,8 @@ TODO: Add examples of use. `,
 	}
 }
 
+const exitErr = 1
+
 func Execute() {
 	cobra.OnInitialize(initConfig)
 
@@ -51,7 +53,7 @@ func Execute() {
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(exitErr)
 	}
 }
 
@@ -66,7 +68,7 @@ func initConfig() {
 		home, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(exitErr)
 		}
 
 		// Search config in home directory with name ".exifsort" (without extension).

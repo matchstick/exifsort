@@ -34,6 +34,8 @@ func fileReadable(filename string) error {
 	return nil
 }
 
+const numEvalArgs = 1
+
 func newEvalCmd() *cobra.Command {
 	var evalCmd = &cobra.Command{
 		Use:   "eval",
@@ -46,7 +48,7 @@ func newEvalCmd() *cobra.Command {
 
 	files
 	file list (expanded by shell) that will have their exifDate reported`,
-		Args: cobra.MinimumNArgs(1),
+		Args: cobra.MinimumNArgs(numEvalArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			for _, path := range args {
 				err := fileReadable(path)

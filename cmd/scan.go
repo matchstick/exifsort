@@ -41,6 +41,8 @@ func scanSummary(w *exifsort.WalkState) {
 	}
 }
 
+const numScanArgs = 1
+
 func newScanCmd() *cobra.Command {
 	// scanCmd represents the scan command.
 	var scanCmd = &cobra.Command{
@@ -57,7 +59,7 @@ func newScanCmd() *cobra.Command {
 
 	src
 	Input directory of media files`,
-		Args: cobra.MinimumNArgs(1),
+		Args: cobra.MinimumNArgs(numScanArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			summarize, _ := cmd.Flags().GetBool("summarize")

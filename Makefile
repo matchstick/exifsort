@@ -17,7 +17,16 @@
 default: build
 
 GOBIN := $(shell go env GOPATH)/bin
-LINTREPO := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
+REPO_GOLINT := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
+REPO_GOIMPORTS := golang.org/x/tools/cmd/goimports
+
+# We are doing whitebox testing, so we have to disable packageset. But it only
+# exists on Linux so we need this ugly flag.
+
+ifeq ($(shell uname -s),Linux)
+DISABLE_PACKAGESET="-D packageset"
+endif
+
 
 build:
 	go build
@@ -29,7 +38,8 @@ fix:
 
 fmt:
 	go fmt ./...
-	goimports -w .
+	(which goimports || go get $(REPO_GOIMPORTS))
+	$(GOBIN)/goimports -w .
 
 tidy:
 	go mod tidy
@@ -41,10 +51,8 @@ vet:
 	go vet ./...
 
 lint:
-	# Lint: Doing white box testing so disabling testpackage.
-	# Lint: But we enable _ALL_ of the others
-	(which golangci-lint || go get $(GOLINTREPO))
-	$(GOBIN)/golangci-lint run ./... --enable-all -D testpackage 
+	(which golangci-lint || go get $(REPO_GOLINT))
+	$(GOBIN)/golangci-lint run ./... --enable-all $(DISABLE_PACKAGESET)
 
 
 cov:

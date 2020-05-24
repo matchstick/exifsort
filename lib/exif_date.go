@@ -25,13 +25,13 @@ func newExifError(label string, dateString string) error {
 	return e
 }
 
+const numSecsSplit = 2 // we expect two pieces
+
 // Seconds are funny. The format may be "<sec> <milli>"
 // or it may be with an extra decmial place such as <sec>.<hundredths>.
 func secsFractionFromStr(secsStr string) (int, error) {
-	minSplit := 2 // we expect at least two pieces
-
 	splitSecs := strings.Split(secsStr, ".")
-	if len(splitSecs) != minSplit {
+	if len(splitSecs) != numSecsSplit {
 		return 0, &exifError{"Not a fraction second"}
 	}
 
@@ -44,11 +44,11 @@ func secsFractionFromStr(secsStr string) (int, error) {
 	return secs, nil
 }
 
-func dateFromStr(str string, exifDateTime string) (int, int, int, error) {
-	minDateSplit := 3 // We expect the date to be X:X:X
+const numDateSplit = 3 // We expect the date to be X:X:X
 
+func dateFromStr(str string, exifDateTime string) (int, int, int, error) {
 	splitDate := strings.Split(str, ":")
-	if len(splitDate) != minDateSplit {
+	if len(splitDate) != numDateSplit {
 		return 0, 0, 0, newExifError("Date Split", exifDateTime)
 	}
 
@@ -70,11 +70,11 @@ func dateFromStr(str string, exifDateTime string) (int, int, int, error) {
 	return year, month, day, nil
 }
 
-func timeFromStr(str string, exifDateTime string) (int, int, int, error) {
-	minTimeSplit := 3 // We expect time to be X:X:X
+const numTimeSplit = 3 // We expect time to be X:X:X
 
+func timeFromStr(str string, exifDateTime string) (int, int, int, error) {
 	splitTime := strings.Split(str, ":")
-	if len(splitTime) != minTimeSplit {
+	if len(splitTime) != numTimeSplit {
 		return 0, 0, 0, newExifError("Time Split", exifDateTime)
 	}
 
@@ -99,13 +99,13 @@ func timeFromStr(str string, exifDateTime string) (int, int, int, error) {
 	return hour, minute, second, nil
 }
 
+const numDateTimeSplit = 2 // We expect DateTime to be "Date Time"
+
 func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	var t time.Time
 
-	minDateTimeSplit := 2 // We expect DateTime to be "Date Time"
-
 	splitDateTime := strings.Split(exifDateTime, " ")
-	if len(splitDateTime) != minDateTimeSplit {
+	if len(splitDateTime) != numDateTimeSplit {
 		return t, newExifError("Space Problem", exifDateTime)
 	}
 
@@ -127,6 +127,8 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 	return t, nil
 }
+
+const validDateTimeOrigninalTagNum = 1
 
 // ExtractTime accepts a filepath, reads the exifdata stored inside and
 // returns the 'Exif/DateTimeOriginal' value as a golang time.Time format.
@@ -157,7 +159,7 @@ func ExtractTime(filepath string) (time.Time, error) {
 		return time, &exifError{"the DateTimeOriginal Tag was not found"}
 	}
 
-	if len(results) != 1 {
+	if len(results) != validDateTimeOrigninalTagNum {
 		return time, &exifError{"too many DateTimeOriginal Tags found"}
 	}
 

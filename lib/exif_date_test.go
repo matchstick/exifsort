@@ -18,7 +18,8 @@ func TestFormatError(t *testing.T) {
 func TestGoodTimes(t *testing.T) {
 	good1String := "2008:03:01 12:36:01"
 	good2String := "2008:03:01 12:36:01.34"
-	goodTime := time.Date(2008, time.Month(3), 1, 12, 36, 1, 0, time.Local)
+	testMonth := 3
+	goodTime := time.Date(2008, time.Month(testMonth), 1, 12, 36, 1, 0, time.Local)
 
 	testTime, err := extractTimeFromStr(good1String)
 	if testTime != goodTime {

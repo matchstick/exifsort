@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const sortArgNum = 4
+const numSortArgs = 4
 
 func sortSummary(w *exifsort.WalkState) {
 	fmt.Printf("Sorted Valid: %d\n", w.Valid())
@@ -105,7 +105,7 @@ func newSortCmd() *cobra.Command {
 		Short: "Accepts an input directory and will sort media by time created",
 		// Very long help message so we moved it to a func.
 		Long: sortLongHelp(),
-		Args: cobra.MinimumNArgs(sortArgNum),
+		Args: cobra.MinimumNArgs(numSortArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			summarize, _ := cmd.Flags().GetBool("summarize")
