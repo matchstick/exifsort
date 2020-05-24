@@ -38,7 +38,7 @@ func secsFractionFromStr(secsStr string) (int, error) {
 	// We only care about what is in front of the "."
 	secs, err := strconv.Atoi(splitSecs[0])
 	if err != nil {
-		return 0, &exifError{"Not a convertaible second"}
+		return 0, &exifError{"Not a convertable second"}
 	}
 
 	return secs, nil

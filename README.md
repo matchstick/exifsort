@@ -24,16 +24,16 @@ Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif library](http
 Commands
 ========
 
-exifsort -> scan <srcDir> --summarize --quiet
+`exifsort -> scan <srcDir> --summarize --quiet`
  * walk a directory report of exif state and number of files. Useful to test that exif library will be fine.
 
-exifsort -> sort <srcDir> <dstDir> <year | month | day>  <copy | move>
+`exifsort -> sort <srcDir> <dstDir> <year | month | day>  <copy | move>`
  * walk a directory and then transfer files to a target directory of nested 
 
-exifsort -> merge is coming
+`exifsort -> merge is coming`
 * Take a dstDir then merge it with a pre-existing one.
 
-exifsort -> eval <files>
+`exifsort -> eval <files>`
  * Prints the date information of files specified. 
 
 TODOs include:
