@@ -16,6 +16,7 @@ const (
 	correctNumInvalid = 75
 	correctNumValid   = 100
 	correctNumSkipped = 25
+	correctNumTotal   = 200
 )
 
 func stampFileNo(path string, fileno *int) string {
@@ -111,8 +112,19 @@ func TestScanDir(t *testing.T) {
 			correctNumInvalid, w.Invalid())
 	}
 
+	walkErrs := w.WalkErrs()
+	if len(walkErrs) != correctNumInvalid {
+		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
+			correctNumInvalid, len(walkErrs))
+	}
+
 	if correctNumValid != w.Valid() {
 		t.Errorf("Expected %d Valid Count. Got %d\n",
 			correctNumValid, w.Valid())
+	}
+
+	if correctNumTotal != w.Total() {
+		t.Errorf("Expected %d Total Count. Got %d\n",
+			correctNumTotal, w.Total())
 	}
 }
