@@ -1,38 +1,46 @@
 # exifsort
 
-This README and program are both under construction but for now here are some notes.
+![Under Construction](data/construction.jpg) 
 
-Main motivation for this was to get my hands dirty writing golang again.
-Program to sort and scan photos and movies for their Creation date using their
-Exif info.  The main motivation is to have a program that can handle all the
-100K of photos nestled in the terabyes of hard drives I have been finding in my
-closet. 
+Program are both under construction but for now here are some notes.
 
-The program is written to use several stages to let the user verify the steps.
-as these are photos it cannot hurt to be careful.
+exifsort
+========
+Libraries and CLI to sort to sort media by date using exif information.
 
-Huge thanks to dsoprea for his exif library and fast responses.
+This is for folks who have a closet full of hard drives and network drives full
+of photos and want to centralzie them in one folder structure.
 
-Inputs:
+The functionality and API live in the lib directory. Check out
+[godocs](https://godoc.org/github.com/matchstick/exifsort/lib) for details.
 
-exifsort -> scan <in dir> --summarize --quiet
- * walk a directory report of exif state and number of files
+Overview
+========
+The program is written to employ several stages to let the user verify the
+step results as they organize their photos. It cannot hurt to be careful.
 
-exifsort -> sort <in dir> <out dir> <year | month | day> 
- * walk a directory and then process files to a target directory of nested 
+Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif library](https://github.com/dsoprea/go-exif) and fast responses.
 
-exifsort -> eval <file>
- * Prints the date information of one file specified. TODO needs glob support.
- TODO (check for duplciate files, first checktimestamp, then check contents)
+Commands
+========
+
+exifsort -> scan <srcDir> --summarize --quiet
+ * walk a directory report of exif state and number of files. Useful to test that exif library will be fine.
+
+exifsort -> sort <srcDir> <dstDir> <year | month | day>  <copy | move>
+ * walk a directory and then transfer files to a target directory of nested 
 
 exifsort -> merge is coming
+* Take a dstDir then merge it with a pre-existing one.
+
+exifsort -> eval <files>
+ * Prints the date information of files specified. 
 
 TODOs include:
 * Clean up tests now that APIs are tighter
 * Clean up doc.go in lib now that APIS are changed.
 * Write more complete tests. coverage is not high enough and for sort it is 0%.
-* Update this readme.
-* Transfer invalid phnotos to an unsorted directoryin src
+* Transfer invalid photos to an unsorted directory
 * Write a merge step to merge two sorted directories.
 * Set up CI on github.
 
