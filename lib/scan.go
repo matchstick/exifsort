@@ -1,7 +1,6 @@
 package exifsort
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -9,8 +8,10 @@ import (
 func scanFunc(w *WalkState) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("Error accessing path %s\n", path)
-			return err
+			w.storeInvalid(path, err.Error())
+			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+
+			return nil
 		}
 
 		// Don't need to scan directories
@@ -49,11 +50,10 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 func ScanDir(src string, doPrint bool) WalkState {
 	w := newWalkState(doPrint)
 
-	err := filepath.Walk(src, scanFunc(&w))
-
-	if err != nil {
-		fmt.Printf("Scan Error (%s)\n", err.Error())
-	}
+	// scanFunc never returns an error
+	// We don't want to walk for an hour and then fail on one error.
+	// Consult the walkstate for errors.
+	_ = filepath.Walk(src, scanFunc(&w))
 
 	return w
 }

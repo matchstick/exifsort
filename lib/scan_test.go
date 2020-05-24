@@ -4,27 +4,38 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
-func populateExifDir(t *testing.T, dir string, withExif bool, num int, fileno *int) {
-	var readPath string
+const (
+	scanExifPath      = "../data/with_exif.jpg"
+	scanNoExifPath    = "../data/no_exif.jpg"
+	scanSkipPath      = "../README.md"
+	correctNumInvalid = 75
+	correctNumValid   = 100
+	correctNumSkipped = 25
+)
 
-	if withExif {
-		readPath = "../data/with_exif.jpg"
-	} else {
-		readPath = "../data/no_exif.jpg"
-	}
+func stampFileNo(path string, fileno *int) string {
+	basename := filepath.Base(path)
+	pieces := strings.Split(basename, ".")
+	newPath := fmt.Sprintf("%s_%d.%s", pieces[0], *fileno, pieces[1])
+	*fileno++
 
+	return newPath
+}
+
+func populateExifDir(t *testing.T, dir string, readPath string, num int, fileno *int) {
 	content, err := ioutil.ReadFile(readPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for i := 0; i < num; i++ {
-		targetPath := fmt.Sprintf("%s/file%d.jpg", dir, *fileno)
-
-		*fileno++
+		newBase := stampFileNo(readPath, fileno)
+		targetPath := fmt.Sprintf("%s/%s", dir, newBase)
 
 		err := ioutil.WriteFile(targetPath, content, 0600)
 		if err != nil {
@@ -42,6 +53,18 @@ func testTmpDir(t *testing.T, parent string, name string) string {
 	return newDir
 }
 
+func setDirPerms(t *testing.T, dirPath string, perms os.FileMode) {
+	infos, _ := ioutil.ReadDir(dirPath)
+	for _, info := range infos {
+		targetPath := fmt.Sprintf("%s/%s", dirPath, info.Name())
+
+		err := os.Chmod(targetPath, perms)
+		if err != nil {
+			t.Errorf("Chmod failed on %s with %s\n", info.Name(), err.Error())
+		}
+	}
+}
+
 /*
 	Root
 	-with_exif
@@ -53,15 +76,21 @@ func buildTestDir(t *testing.T) string {
 	fileNo := 0
 	rootDir := testTmpDir(t, "", "root")
 	exifDir := testTmpDir(t, rootDir, "with_exif")
+	badDir := testTmpDir(t, rootDir, "badPerms")
+	skipDir := testTmpDir(t, rootDir, "skip")
 	nestedDir := testTmpDir(t, exifDir, "nested_exif")
 	noExifDir := testTmpDir(t, rootDir, "no_exif")
 	mixedDir := testTmpDir(t, rootDir, "mixed_exif")
 
-	populateExifDir(t, exifDir, true, 50, &fileNo)
-	populateExifDir(t, noExifDir, false, 25, &fileNo)
-	populateExifDir(t, mixedDir, true, 25, &fileNo)
-	populateExifDir(t, mixedDir, false, 25, &fileNo)
-	populateExifDir(t, nestedDir, true, 25, &fileNo)
+	populateExifDir(t, exifDir, scanExifPath, 50, &fileNo)
+	populateExifDir(t, badDir, scanExifPath, 25, &fileNo)
+	populateExifDir(t, noExifDir, scanNoExifPath, 25, &fileNo)
+	populateExifDir(t, mixedDir, scanExifPath, 25, &fileNo)
+	populateExifDir(t, mixedDir, scanNoExifPath, 25, &fileNo)
+	populateExifDir(t, nestedDir, scanExifPath, 25, &fileNo)
+	populateExifDir(t, skipDir, scanSkipPath, 25, &fileNo)
+
+	setDirPerms(t, badDir, 0000)
 
 	return rootDir
 }
@@ -72,9 +101,10 @@ func TestScanDir(t *testing.T) {
 
 	w := ScanDir(tmpPath, false)
 
-	const correctNumInvalid uint64 = 50
-
-	const correctNumValid uint64 = 100
+	if correctNumSkipped != w.Skipped() {
+		t.Errorf("Expected %d Skipped Count. Got %d\n",
+			correctNumSkipped, w.Skipped())
+	}
 
 	if correctNumInvalid != w.Invalid() {
 		t.Errorf("Expected %d Invalid Count. Got %d\n",
