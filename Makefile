@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: fix vet fmt test build tidy lint
+.PHONY: fix vet fmt test build tidy lint build_linux build_darwin
 
 default: build
 
@@ -29,7 +29,15 @@ endif
 
 
 build:
-	go build
+	go build -v
+
+build_linux:
+	env GOOS=linux GOARCH=amd64 go build -v -o exifsort.linux
+
+build_darwin:
+	env GOOS=darwin GOARCH=amd64 go build -v -o exifsort.darwin
+
+
 
 all: fix vet fmt test build tidy lint
 

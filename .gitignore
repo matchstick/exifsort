@@ -1,3 +1,5 @@
 *.swp
 cov.out
 exifsort
+exifsort.linux
+exifsort.darwin
