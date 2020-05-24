@@ -348,33 +348,34 @@ func (d dayIndex) String() string {
 }
 
 type index interface {
-	Put(string, time.Time) error
 	Get(string) (string, bool)
 	GetAll() mediaMap
 	PathStr(time.Time, string) string
+	Put(string, time.Time) error
+	String() string
 }
 
-func newIndex(method int) index {
+func newIndex(method int) (index, error) {
 	switch method {
 	case MethodYear:
 		var y yearIndex
 
 		y.n.init(rootIndex)
 
-		return &y
+		return &y, nil
 	case MethodMonth:
 		var m monthIndex
 
 		m.n.init(rootIndex)
 
-		return &m
+		return &m, nil
 	case MethodDay:
 		var d dayIndex
 
 		d.n.init(rootIndex)
 
-		return &d
+		return &d, nil
 	default:
-		panic("Unknown method")
+		return nil, &indexError{"Invalid Method"}
 	}
 }

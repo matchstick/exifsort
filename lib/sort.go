@@ -130,9 +130,13 @@ func sortTransfer(w *WalkState, m mediaMap, dst string, action int) error {
 // If doPrint is set to false it will not print while scanning.
 func SortDir(src string, dst string, method int, action int, doPrint bool) (WalkState, error) {
 	w := newWalkState(doPrint)
-	sortIndex := newIndex(method)
 
-	err := os.Mkdir(dst, 0755)
+	sortIndex, err := newIndex(method)
+	if err != nil {
+		return w, err
+	}
+
+	err = os.Mkdir(dst, 0755)
 	if err != nil {
 		return w, err
 	}

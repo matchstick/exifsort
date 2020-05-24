@@ -3,6 +3,7 @@ package exifsort
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
 )
@@ -91,6 +92,7 @@ func GetCollisionFiles(t *testing.T, idx index, start uint, count uint,
 		}
 	}
 }
+
 func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 	idxMap := idx.GetAll()
 
@@ -100,21 +102,31 @@ func indexSizeCheck(t *testing.T, targetSize int, idx index) {
 	}
 }
 
+func indexStringCheck(t *testing.T, targetSize int, idx index) {
+	idxStr := idx.String()
+
+	numLines := strings.Count(idxStr, "\n")
+	if numLines != targetSize*2 {
+		t.Errorf("Expecting to have index.String() hold %d lines not %d\n", targetSize, numLines)
+	}
+}
+
 func TestIndexPutGet(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		var idx = newIndex(method)
+		var idx, _ = newIndex(method)
 
 		testDir := indexTmpDir(t, "", "root")
 
 		PutFiles(t, idx, testDir, exifFile, 10, 10, 2020, 1, 1)
 		GetFiles(t, idx, 10, 10, 2020, 1, 1)
 		indexSizeCheck(t, 10, idx)
+		indexStringCheck(t, 10, idx)
 	}
 }
 
 func TestIndexCollisions(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		var idx = newIndex(method)
+		var idx, _ = newIndex(method)
 
 		testDir := indexTmpDir(t, "", "root_")
 		testDir1 := indexTmpDir(t, testDir, "bobo_")
@@ -125,6 +137,7 @@ func TestIndexCollisions(t *testing.T) {
 		GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 0)
 		GetCollisionFiles(t, idx, 10, 10, 1, 2, 4, 1)
 		indexSizeCheck(t, 30, idx)
+		indexStringCheck(t, 30, idx)
 	}
 }
 
@@ -132,7 +145,7 @@ func TestIndexDuplicates(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		var exifPath = "../data/with_exif.jpg"
 
-		var idx = newIndex(method)
+		var idx, _ = newIndex(method)
 
 		time, _ := ExtractTime(exifPath)
 
@@ -147,5 +160,37 @@ func TestIndexDuplicates(t *testing.T) {
 		}
 
 		indexSizeCheck(t, 1, idx)
+		indexStringCheck(t, 1, idx)
+	}
+}
+
+func TestIndexBadMethod(t *testing.T) {
+	var idx, err = newIndex(MethodNone)
+	if err == nil {
+		t.Errorf("Expected non nil return\n")
+	}
+
+	if err.Error() != "Invalid Method" {
+		t.Errorf("Expected Different Method message\n")
+	}
+
+	if idx != nil {
+		t.Errorf("Expected nil index\n")
+	}
+}
+
+func TestIndexBadGet(t *testing.T) {
+	for method := MethodYear; method < MethodNone; method++ {
+		idx, _ := newIndex(method)
+		badPath := "invalidPath"
+
+		retStr, present := idx.Get(badPath)
+		if retStr != "" {
+			t.Errorf("Expected empty string.")
+		}
+
+		if present {
+			t.Errorf("Unexpected present in index.")
+		}
 	}
 }
