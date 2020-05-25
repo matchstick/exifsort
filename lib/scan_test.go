@@ -68,10 +68,10 @@ func setDirPerms(t *testing.T, dirPath string, perms os.FileMode) {
 
 /*
 	Root
-	-with_exif
-	  -nested_exif
-	-no_exif
-	-mixed_exif
+	-with_exif // valid exif
+	  -nested_exif // nested dir with valid exit
+	-no_exif // no exif
+	-mixed_exif // mix of both
 */
 func buildTestDir(t *testing.T) string {
 	fileNo := 0
@@ -91,7 +91,7 @@ func buildTestDir(t *testing.T) string {
 	populateExifDir(t, nestedDir, scanExifPath, 25, &fileNo)
 	populateExifDir(t, skipDir, scanSkipPath, 25, &fileNo)
 
-	setDirPerms(t, badDir, 0000)
+	setDirPerms(t, badDir, 0)
 
 	return rootDir
 }

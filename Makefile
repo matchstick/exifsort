@@ -68,4 +68,4 @@ cov:
 	go tool cover -html=cov.out
 
 clean:
-	rm -f exifsort cov.out *.bak
+	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin

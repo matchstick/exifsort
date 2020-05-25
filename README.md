@@ -37,6 +37,10 @@ Commands
  * Prints the date information of files specified. 
 
 TODOs include:
+* Add movie formats to suffix
+* Sort file formats?
+* concurrency
+* marshal to json after scan, load sort from json
 * Clean up tests now that APIs are tighter
 * Clean up doc.go in lib now that APIS are changed.
 * Write more complete tests. coverage is not high enough and for sort it is 0%.
