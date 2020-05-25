@@ -77,7 +77,7 @@ func sortFunc(idx index, w *WalkState) filepath.WalkFunc {
 		}
 
 		w.Printf("%s, %s\n", path, exifTimeToStr(time))
-		w.storeValid()
+		w.storeValid(path, time)
 
 		err = idx.Put(path, time)
 		if err != nil {

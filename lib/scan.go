@@ -34,7 +34,7 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 		}
 
 		w.Printf("%s, %s\n", path, exifTimeToStr(time))
-		w.storeValid()
+		w.storeValid(path, time)
 
 		return nil
 	}
