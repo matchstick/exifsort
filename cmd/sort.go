@@ -133,7 +133,7 @@ func newSortCmd() *cobra.Command {
 				fmt.Printf("%s\n", err.Error())
 				return
 			}
-			w, err := exifsort.SortDir(srcDir, dstDir, method, action, !quiet)
+			w, err := exifsort.SortDir(srcDir, dstDir, method, action, ioWriter(quiet))
 			if err != nil {
 				fmt.Printf("%s\n", err.Error())
 				return

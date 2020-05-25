@@ -71,12 +71,12 @@ func sortFunc(idx index, w *WalkState) filepath.WalkFunc {
 		time, err := ExtractTime(path)
 		if err != nil {
 			w.storeInvalid(path, err.Error())
-			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+			w.Printf("%s\n", w.ErrStr(path, err.Error()))
 
 			return nil
 		}
 
-		w.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
+		w.Printf("%s, %s\n", path, exifTimeToStr(time))
 		w.storeValid()
 
 		err = idx.Put(path, time)
@@ -113,7 +113,7 @@ func sortTransfer(w *WalkState, m mediaMap, dst string, action int) error {
 			return err
 		}
 
-		w.walkPrintf("Transferred %s\n", newPath)
+		w.Printf("Transferred %s\n", newPath)
 	}
 
 	return nil
@@ -127,9 +127,9 @@ func sortTransfer(w *WalkState, m mediaMap, dst string, action int) error {
 // SortDir only scans media files listed as constants as documented, other
 // files are skipped.
 //
-// If doPrint is set to false it will not print while scanning.
-func SortDir(src string, dst string, method int, action int, doPrint bool) (WalkState, error) {
-	w := newWalkState(doPrint)
+// writer is where to write output while scanning. nil for none.
+func SortDir(src string, dst string, method int, action int, writer io.Writer) (WalkState, error) {
+	w := newWalkState(writer)
 
 	sortIndex, err := newIndex(method)
 	if err != nil {

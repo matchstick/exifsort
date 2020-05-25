@@ -1,6 +1,7 @@
 package exifsort
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -100,7 +101,7 @@ func TestScanDir(t *testing.T) {
 	tmpPath := buildTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	w := ScanDir(tmpPath, false)
+	w := ScanDir(tmpPath, nil)
 
 	if correctNumSkipped != w.Skipped() {
 		t.Errorf("Expected %d Skipped Count. Got %d\n",
@@ -126,5 +127,22 @@ func TestScanDir(t *testing.T) {
 	if correctNumTotal != w.Total() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
 			correctNumTotal, w.Total())
+	}
+}
+
+func TestWalkPrint(t *testing.T) {
+	tmpPath := buildTestDir(t)
+	defer os.RemoveAll(tmpPath)
+
+	var buf bytes.Buffer
+	_ = ScanDir(tmpPath, &buf)
+	str := buf.String()
+
+	correctNumNewLines := correctNumTotal - correctNumSkipped
+
+	numNewLines := strings.Count(str, "\n")
+	if numNewLines != correctNumNewLines {
+		t.Errorf("Expected number of prints to be %d. Got %d\n",
+			correctNumNewLines, numNewLines)
 	}
 }

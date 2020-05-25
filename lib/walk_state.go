@@ -2,6 +2,7 @@ package exifsort
 
 import (
 	"fmt"
+	"io"
 	"sync/atomic"
 )
 
@@ -12,7 +13,7 @@ type WalkState struct {
 	validCount       uint64
 	invalidCount     uint64
 	transferErrCount uint64
-	doPrint          bool
+	printer          io.Writer
 	walkErrMsgs      map[string]string
 	transferErrMsgs  map[string]string
 }
@@ -67,28 +68,28 @@ func (w *WalkState) storeSkipped() {
 	atomic.AddUint64(&w.skippedCount, 1)
 }
 
-func newWalkState(doPrint bool) WalkState {
+func newWalkState(printer io.Writer) WalkState {
 	var w WalkState
 	w.skippedCount = 0
 	w.validCount = 0
 	w.invalidCount = 0
-	w.doPrint = doPrint
 	w.walkErrMsgs = make(map[string]string)
 	w.transferErrMsgs = make(map[string]string)
+	w.printer = printer
 
 	return w
 }
 
-func (w *WalkState) walkPrintf(s string, params ...interface{}) {
-	if !w.doPrint {
+func (w *WalkState) Printf(s string, params ...interface{}) {
+	if w.printer == nil {
 		return
 	}
 
 	if len(params) == 0 {
-		fmt.Print(s)
+		fmt.Fprintf(w.printer, "%s", s)
 	}
 
-	fmt.Printf(s, params...)
+	fmt.Fprintf(w.printer, s, params...)
 }
 
 func (w *WalkState) ErrStr(path string, errMsg string) string {

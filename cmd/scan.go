@@ -70,7 +70,7 @@ func newScanCmd() *cobra.Command {
 				fmt.Printf("Error with directory arg: %s\n", err.Error())
 				return
 			}
-			w := exifsort.ScanDir(dirPath, !quiet)
+			w := exifsort.ScanDir(dirPath, ioWriter(quiet))
 			if summarize {
 				scanSummary(&w)
 			}

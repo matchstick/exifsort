@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -82,4 +83,13 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+// common routine to select writer from command line.
+func ioWriter(quiet bool) io.Writer {
+	if quiet {
+		return nil
+	}
+
+	return os.Stdout
 }

@@ -1,6 +1,7 @@
 package exifsort
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -9,7 +10,7 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			w.storeInvalid(path, err.Error())
-			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+			w.Printf("%s\n", w.ErrStr(path, err.Error()))
 
 			return nil
 		}
@@ -27,12 +28,12 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 		time, err := ExtractTime(path)
 		if err != nil {
 			w.storeInvalid(path, err.Error())
-			w.walkPrintf("%s\n", w.ErrStr(path, err.Error()))
+			w.Printf("%s\n", w.ErrStr(path, err.Error()))
 
 			return nil
 		}
 
-		w.walkPrintf("%s, %s\n", path, exifTimeToStr(time))
+		w.Printf("%s, %s\n", path, exifTimeToStr(time))
 		w.storeValid()
 
 		return nil
@@ -46,9 +47,9 @@ func scanFunc(w *WalkState) filepath.WalkFunc {
 // ScanDir only scans media files listed as constants as documented, other
 // files are skipped.
 //
-// If doPrint is set to false it will not print while scanning.
-func ScanDir(src string, doPrint bool) WalkState {
-	w := newWalkState(doPrint)
+// writer is where to write output while scanning. nil for none.
+func ScanDir(src string, writer io.Writer) WalkState {
+	w := newWalkState(writer)
 
 	// scanFunc never returns an error
 	// We don't want to walk for an hour and then fail on one error.
