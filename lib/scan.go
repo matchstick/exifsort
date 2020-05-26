@@ -105,6 +105,7 @@ func (s *Scanner) ScanDir(src string, logger io.Writer) {
 	_ = filepath.Walk(src, s.scanFunc(logger))
 }
 
+// Save Scanner to a json file.
 func (s *Scanner) Save(jsonPath string) error {
 	json, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
@@ -119,6 +120,7 @@ func (s *Scanner) Save(jsonPath string) error {
 	return nil
 }
 
+// Load Scanner from a json file.
 func (s *Scanner) Load(jsonPath string) error {
 	content, err := ioutil.ReadFile(jsonPath)
 	if err != nil {
