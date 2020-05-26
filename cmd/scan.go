@@ -23,21 +23,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func scanSummary(w *exifsort.WalkState) {
-	fmt.Printf("Scanned Valid: %d\n", w.Valid())
-	fmt.Printf("Scanned Invalid: %d\n", w.Invalid())
-	fmt.Printf("Scanned Skipped: %d\n", w.Skipped())
-	fmt.Printf("Scanned Total: %d\n", w.Total())
+func scanSummary(s *exifsort.Scanner) {
+	fmt.Printf("Scanned Valid: %d\n", s.Valid())
+	fmt.Printf("Scanned Invalid: %d\n", s.Invalid())
+	fmt.Printf("Scanned Skipped: %d\n", s.Skipped())
+	fmt.Printf("Scanned Total: %d\n", s.Total())
 
-	if w.Invalid() == 0 {
+	if s.Invalid() == 0 {
 		fmt.Println("No Files caused Errors")
 		return
 	}
 
 	fmt.Println("Error Files were:")
 
-	for path, err := range w.Errors() {
-		fmt.Printf("\t%s\n", w.ErrStr(path, err))
+	for path, err := range s.Errors() {
+		fmt.Printf("\t%s\n", s.ErrStr(path, err))
 	}
 }
 
@@ -60,9 +60,10 @@ func newScanCmd() *cobra.Command {
 				fmt.Printf("Error with directory arg: %s\n", err.Error())
 				return
 			}
-			w := exifsort.ScanDir(dirPath, ioWriter(quiet))
+			scanner := exifsort.NewScanner()
+			scanner.ScanDir(dirPath, ioWriter(quiet))
 			if summarize {
-				scanSummary(&w)
+				scanSummary(&scanner)
 			}
 		},
 	}

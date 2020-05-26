@@ -35,33 +35,34 @@ type sortCmd struct {
 	cobraCmd  *cobra.Command
 }
 
-func (s *sortCmd) sortSummary(w *exifsort.WalkState, sorter *exifsort.Sorter) {
-	fmt.Printf("Sorted Valid: %d\n", w.Valid())
-	fmt.Printf("Sorted Invalid: %d\n", w.Invalid())
-	fmt.Printf("Sorted Skipped: %d\n", w.Skipped())
-	fmt.Printf("Sorted Total: %d\n", w.Total())
+func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
+	sorter *exifsort.Sorter) {
+	fmt.Printf("Sorted Valid: %d\n", scanner.Valid())
+	fmt.Printf("Sorted Invalid: %d\n", scanner.Invalid())
+	fmt.Printf("Sorted Skipped: %d\n", scanner.Skipped())
+	fmt.Printf("Sorted Total: %d\n", scanner.Total())
 
-	if w.Invalid() == 0 {
+	if scanner.Invalid() == 0 {
 		fmt.Println("No Files caused Errors")
 		return
 	}
 
 	fmt.Println("Walk Errors were:")
 
-	for path, err := range w.Errors() {
-		fmt.Printf("\t%s\n", w.ErrStr(path, err))
+	for path, err := range scanner.Errors() {
+		fmt.Printf("\t%s\n", scanner.ErrStr(path, err))
 	}
 
 	fmt.Println("Index Errors were:")
 
 	for path, err := range sorter.IndexErrors() {
-		fmt.Printf("\t%s\n", w.ErrStr(path, err))
+		fmt.Printf("\t%s\n", scanner.ErrStr(path, err))
 	}
 
 	fmt.Println("Transfer Errors were:")
 
 	for path, err := range sorter.TransferErrors() {
-		fmt.Printf("\t%s\n", w.ErrStr(path, err))
+		fmt.Printf("\t%s\n", scanner.ErrStr(path, err))
 	}
 }
 
@@ -102,10 +103,11 @@ func (s *sortCmd) sortLongHelp() string {
 func (s *sortCmd) sortExecute() {
 	writer := ioWriter(s.quiet)
 	// Here we walk the directory and get stats
-	w := exifsort.ScanDir(s.src, writer)
+	scanner := exifsort.NewScanner()
+	scanner.ScanDir(s.src, writer)
 
 	// Now we take those stats and Sort them.
-	sorter, err := exifsort.NewSorter(w, s.method)
+	sorter, err := exifsort.NewSorter(scanner, s.method)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		return
@@ -119,7 +121,7 @@ func (s *sortCmd) sortExecute() {
 	}
 
 	if s.summarize {
-		s.sortSummary(&w, sorter)
+		s.sortSummary(&scanner, sorter)
 	}
 }
 
