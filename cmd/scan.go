@@ -36,8 +36,8 @@ func scanSummary(w *exifsort.WalkState) {
 
 	fmt.Println("Error Files were:")
 
-	for path, msg := range w.WalkErrs() {
-		fmt.Printf("\t%s\n", w.ErrStr(path, msg))
+	for path, err := range w.Errors() {
+		fmt.Printf("\t%s\n", w.ErrStr(path, err))
 	}
 }
 
