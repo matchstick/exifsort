@@ -36,7 +36,7 @@ func scanSummary(s *exifsort.Scanner) {
 
 	fmt.Println("Error Files were:")
 
-	for path, err := range s.Errors() {
+	for path, err := range s.Errors {
 		fmt.Printf("\t%s\n", s.ErrStr(path, err))
 	}
 }

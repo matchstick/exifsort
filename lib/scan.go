@@ -1,8 +1,10 @@
 package exifsort
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -12,64 +14,54 @@ import (
 //
 // It holds errors and data results of the scan after scanning.
 type Scanner struct {
-	skippedCount int
-	data         map[string]time.Time
-	errors       map[string]error
+	SkippedCount int
+	Data         map[string]time.Time
+	Errors       map[string]string
 }
 
 // Returns how many files were skipped.
 func (s *Scanner) Skipped() int {
-	return s.skippedCount
+	return s.SkippedCount
 }
 
 // Returns how many files had valid exif DateTimeOriginal data.
 func (s *Scanner) Valid() int {
-	return len(s.data)
+	return len(s.Data)
 }
 
 // Returns how many files had invalid exif DateTimeOriginal data.
 func (s *Scanner) Invalid() int {
-	return len(s.errors)
-}
-
-// Returns a map from path to error scanning.
-func (s *Scanner) Errors() map[string]error {
-	return s.errors
-}
-
-// Returns a map from path to time of valid media
-func (s *Scanner) Data() map[string]time.Time {
-	return s.data
+	return len(s.Errors)
 }
 
 // Returns the total number of files skipped and scanned.
 func (s *Scanner) Total() int {
-	return s.skippedCount + s.Valid() + s.Invalid()
+	return s.SkippedCount + s.Valid() + s.Invalid()
 }
 
 // We don't check if you have a path duplicate.
 func (s *Scanner) storeValid(path string, time time.Time) {
-	s.data[path] = time
+	s.Data[path] = time
 }
 
 // We don't check if you have a path duplicate.
 func (s *Scanner) storeInvalid(path string, err error) {
-	s.errors[path] = err
+	s.Errors[path] = err.Error()
 }
 
 func (s *Scanner) storeSkipped() {
-	s.skippedCount++
+	s.SkippedCount++
 }
 
-func (s *Scanner) ErrStr(path string, err error) string {
-	return fmt.Sprintf("%s with (%s)", path, err.Error())
+func (s *Scanner) ErrStr(path string, errStr string) string {
+	return fmt.Sprintf("%s with (%s)", path, errStr)
 }
 
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			s.storeInvalid(path, err)
-			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err))
+			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err.Error()))
 
 			return nil
 		}
@@ -87,7 +79,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		time, err := ExtractTime(path)
 		if err != nil {
 			s.storeInvalid(path, err)
-			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err))
+			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err.Error()))
 
 			return nil
 		}
@@ -113,11 +105,39 @@ func (s *Scanner) ScanDir(src string, logger io.Writer) {
 	_ = filepath.Walk(src, s.scanFunc(logger))
 }
 
+func (s *Scanner) Save(jsonPath string) error {
+	json, err := json.MarshalIndent(s, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(jsonPath, json, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Scanner) Load(jsonPath string) error {
+	content, err := ioutil.ReadFile(jsonPath)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(content, &s)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Clears data so scanner can be reused.
 func (s *Scanner) Reset() {
-	s.skippedCount = 0
-	s.data = make(map[string]time.Time)
-	s.errors = make(map[string]error)
+	s.SkippedCount = 0
+	s.Data = make(map[string]time.Time)
+	s.Errors = make(map[string]string)
 }
 
 // Allocates a new Scanner.

@@ -24,9 +24,9 @@ func (e sortError) Error() string {
 // It holds the index of sorted media and errors found in constructing or
 // transferring it.
 type Sorter struct {
-	idx       index
-	idxErrors map[string]error
-	xfrErrors map[string]error
+	idx            index
+	IndexErrors    map[string]string
+	TransferErrors map[string]string
 }
 
 func (s *Sorter) moveMedia(srcPath string, dstPath string) error {
@@ -67,22 +67,12 @@ func (s *Sorter) ensureFullPath(path string) error {
 
 // We don't check if you have a path duplicate.
 func (s *Sorter) storeIndexError(path string, err error) {
-	s.idxErrors[path] = err
+	s.IndexErrors[path] = err.Error()
 }
 
 // We don't check if you have a path duplicate.
 func (s *Sorter) storeTransferError(path string, err error) {
-	s.xfrErrors[path] = err
-}
-
-// Returns Error during the indexing process.
-func (s *Sorter) IndexErrors() map[string]error {
-	return s.idxErrors
-}
-
-// Returns Error during the transfer process.
-func (s *Sorter) TransferErrors() map[string]error {
-	return s.xfrErrors
+	s.TransferErrors[path] = err.Error()
 }
 
 // Performs the transfer after indexing.
@@ -123,8 +113,8 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 }
 
 func (s *Sorter) Reset(scanner Scanner, method int) error {
-	s.xfrErrors = make(map[string]error)
-	s.idxErrors = make(map[string]error)
+	s.IndexErrors = make(map[string]string)
+	s.TransferErrors = make(map[string]string)
 
 	idx, err := newIndex(method)
 	if err != nil {
@@ -133,7 +123,7 @@ func (s *Sorter) Reset(scanner Scanner, method int) error {
 
 	s.idx = idx
 
-	for path, time := range scanner.Data() {
+	for path, time := range scanner.Data {
 		err = s.idx.Put(path, time)
 		if err != nil {
 			s.storeIndexError(path, err)

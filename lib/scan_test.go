@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
@@ -118,13 +120,13 @@ func TestScanDir(t *testing.T) {
 			correctNumInvalid, s.Invalid())
 	}
 
-	walkData := s.Data()
+	walkData := s.Data
 	if len(walkData) != correctNumValid {
 		t.Errorf("Expected number of data to be %d. Got %d\n",
 			correctNumValid, len(walkData))
 	}
 
-	walkErrs := s.Errors()
+	walkErrs := s.Errors
 	if len(walkErrs) != correctNumInvalid {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
 			correctNumInvalid, len(walkErrs))
@@ -138,5 +140,34 @@ func TestScanDir(t *testing.T) {
 	if correctNumTotal != s.Total() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
 			correctNumTotal, s.Total())
+	}
+}
+
+func TestScanSaveLoad(t *testing.T) {
+	tmpPath := buildTestDir(t)
+	defer os.RemoveAll(tmpPath)
+
+	jsonDir := testTmpDir(t, "", "jsonDir")
+	defer os.RemoveAll(jsonDir)
+
+	s := NewScanner()
+	s.ScanDir(tmpPath, ioutil.Discard)
+
+	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+
+	err := s.Save(jsonPath)
+	if err != nil {
+		t.Errorf("Unexpected Error %s from Save\n", err.Error())
+	}
+
+	newScanner := NewScanner()
+
+	err = newScanner.Load(jsonPath)
+	if err != nil {
+		t.Errorf("Unexpected Error %s from Load\n", err.Error())
+	}
+
+	if !cmp.Equal(s, newScanner) {
+		t.Errorf("Saved and Loaded Scanner do not match\n")
 	}
 }
