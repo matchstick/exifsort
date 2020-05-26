@@ -64,6 +64,7 @@ func setDirPerms(t *testing.T, dirPath string, perms os.FileMode) {
 			t.Errorf("Chmod failed on %s with %s\n", info.Name(), err.Error())
 		}
 	}
+
 	err := os.Chmod(dirPath, perms)
 	if err != nil {
 		t.Errorf("Chmod failed on %s with %s\n", dirPath, err.Error())
