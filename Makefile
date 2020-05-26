@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: fix vet fmt test build tidy lint build_linux build_darwin
+.PHONY: fix vet fmt test build tidy lint build_linux build_darwin docs
 
 default: build
 
 GOBIN := $(shell go env GOPATH)/bin
 REPO_GOLINT := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
 REPO_GOIMPORTS := golang.org/x/tools/cmd/goimports
+REPO_GODOC := golang.org/x/tools/cmd/godoc
 
 # We are doing whitebox testing, so we have to disable packageset. But it only
 # exists on Linux so we need this ugly flag.
@@ -61,6 +62,11 @@ vet:
 lint:
 	(which golangci-lint || go get $(REPO_GOLINT))
 	$(GOBIN)/golangci-lint run ./... --enable-all $(DISABLE_PACKAGESET)
+
+docs:
+	(which godoc || go get $(REPO_GODOC))
+	$(GOBIN)/godoc -http=localhost:6060
+
 
 
 cov:

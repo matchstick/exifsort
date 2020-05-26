@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-// WalkState holds all the data gathered as exifstort scans the src directories
-// and if sorting transfers media.
+// WalkState holds all the data gathered during a scan of the src directories
 type WalkState struct {
 	skippedCount int
 	data         map[string]time.Time

@@ -48,7 +48,7 @@ func scanFunc(w *WalkState, logger io.Writer) filepath.WalkFunc {
 // ScanDir only scans media files listed as constants as documented, other
 // files are skipped.
 //
-// writer is where to write output while scanning. nil for none.
+// logger specifies where to send output while scanning.
 func ScanDir(src string, logger io.Writer) WalkState {
 	w := newWalkState()
 

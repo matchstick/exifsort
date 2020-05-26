@@ -50,7 +50,7 @@ func (e *parseError) Error() string {
 	return fmt.Sprintf("must be one of [%s] (case insensitive)", e.argChoices())
 }
 
-// ParseMethod returns the constant value of the str
+// ParseMethod returns the constant value of the str.
 // Input is case insensitive.
 func ParseMethod(str string) (int, error) {
 	var methodMap = map[int]string{
@@ -75,7 +75,7 @@ const (
 	ActionNone
 )
 
-// ParseAction returns the constant value of the str
+// ParseAction returns the constant value of the str.
 // Input is case insensitive.
 func ParseAction(str string) (int, error) {
 	var actionMap = map[int]string{
