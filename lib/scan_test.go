@@ -13,10 +13,10 @@ const (
 	scanExifPath      = "../data/with_exif.jpg"
 	scanNoExifPath    = "../data/no_exif.jpg"
 	scanSkipPath      = "../README.md"
-	correctNumInvalid = 75
+	correctNumInvalid = 51
 	correctNumValid   = 100
 	correctNumSkipped = 25
-	correctNumTotal   = 200
+	correctNumTotal   = 176
 )
 
 func stampFileNo(path string, fileno *int) string {
@@ -63,6 +63,10 @@ func setDirPerms(t *testing.T, dirPath string, perms os.FileMode) {
 		if err != nil {
 			t.Errorf("Chmod failed on %s with %s\n", info.Name(), err.Error())
 		}
+	}
+	err := os.Chmod(dirPath, perms)
+	if err != nil {
+		t.Errorf("Chmod failed on %s with %s\n", dirPath, err.Error())
 	}
 }
 
