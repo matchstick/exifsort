@@ -20,23 +20,23 @@ type Scanner struct {
 }
 
 // Returns how many files were skipped.
-func (s *Scanner) Skipped() int {
+func (s *Scanner) NumSkipped() int {
 	return s.SkippedCount
 }
 
 // Returns how many files had valid exif DateTimeOriginal data.
-func (s *Scanner) Valid() int {
+func (s *Scanner) NumValid() int {
 	return len(s.Data)
 }
 
 // Returns how many files had invalid exif DateTimeOriginal data.
-func (s *Scanner) Invalid() int {
+func (s *Scanner) NumInvalid() int {
 	return len(s.Errors)
 }
 
 // Returns the total number of files skipped and scanned.
-func (s *Scanner) Total() int {
-	return s.SkippedCount + s.Valid() + s.Invalid()
+func (s *Scanner) NumTotal() int {
+	return s.SkippedCount + s.NumValid() + s.NumInvalid()
 }
 
 // We don't check if you have a path duplicate.

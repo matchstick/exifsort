@@ -37,12 +37,12 @@ type sortCmd struct {
 
 func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	sorter *exifsort.Sorter) {
-	fmt.Printf("Sorted Valid: %d\n", scanner.Valid())
-	fmt.Printf("Sorted Invalid: %d\n", scanner.Invalid())
-	fmt.Printf("Sorted Skipped: %d\n", scanner.Skipped())
-	fmt.Printf("Sorted Total: %d\n", scanner.Total())
+	fmt.Printf("Sorted Valid: %d\n", scanner.NumValid())
+	fmt.Printf("Sorted Invalid: %d\n", scanner.NumInvalid())
+	fmt.Printf("Sorted Skipped: %d\n", scanner.NumSkipped())
+	fmt.Printf("Sorted Total: %d\n", scanner.NumTotal())
 
-	if scanner.Invalid() == 0 {
+	if scanner.NumInvalid() == 0 {
 		fmt.Println("No Files caused Errors")
 		return
 	}

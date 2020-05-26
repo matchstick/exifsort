@@ -110,14 +110,14 @@ func TestScanDir(t *testing.T) {
 	s := NewScanner()
 	s.ScanDir(tmpPath, ioutil.Discard)
 
-	if correctNumSkipped != s.Skipped() {
+	if correctNumSkipped != s.NumSkipped() {
 		t.Errorf("Expected %d Skipped Count. Got %d\n",
-			correctNumSkipped, s.Skipped())
+			correctNumSkipped, s.NumSkipped())
 	}
 
-	if correctNumInvalid != s.Invalid() {
+	if correctNumInvalid != s.NumInvalid() {
 		t.Errorf("Expected %d Invalid Count. Got %d\n",
-			correctNumInvalid, s.Invalid())
+			correctNumInvalid, s.NumInvalid())
 	}
 
 	walkData := s.Data
@@ -132,14 +132,14 @@ func TestScanDir(t *testing.T) {
 			correctNumInvalid, len(walkErrs))
 	}
 
-	if correctNumValid != s.Valid() {
+	if correctNumValid != s.NumValid() {
 		t.Errorf("Expected %d Valid Count. Got %d\n",
-			correctNumValid, s.Valid())
+			correctNumValid, s.NumValid())
 	}
 
-	if correctNumTotal != s.Total() {
+	if correctNumTotal != s.NumTotal() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
-			correctNumTotal, s.Total())
+			correctNumTotal, s.NumTotal())
 	}
 }
 

@@ -24,12 +24,12 @@ import (
 )
 
 func scanSummary(s *exifsort.Scanner) {
-	fmt.Printf("Scanned Valid: %d\n", s.Valid())
-	fmt.Printf("Scanned Invalid: %d\n", s.Invalid())
-	fmt.Printf("Scanned Skipped: %d\n", s.Skipped())
-	fmt.Printf("Scanned Total: %d\n", s.Total())
+	fmt.Printf("Scanned Valid: %d\n", s.NumValid())
+	fmt.Printf("Scanned Invalid: %d\n", s.NumInvalid())
+	fmt.Printf("Scanned Skipped: %d\n", s.NumSkipped())
+	fmt.Printf("Scanned Total: %d\n", s.NumTotal())
 
-	if s.Invalid() == 0 {
+	if s.NumInvalid() == 0 {
 		fmt.Println("No Files caused Errors")
 		return
 	}
