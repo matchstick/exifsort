@@ -41,8 +41,6 @@ func scanSummary(w *exifsort.WalkState) {
 	}
 }
 
-const numScanArgs = 1
-
 func newScanCmd() *cobra.Command {
 	// scanCmd represents the scan command.
 	var scanCmd = &cobra.Command{
@@ -50,21 +48,13 @@ func newScanCmd() *cobra.Command {
 		Short: "Scan directory for Exif Dates",
 		Long: `Scan directory for Exif Date Info. 
 
-	exifsort scan [<options>...] <dir>
-
-	exifsort will recursively check every file in an input directory and
-        then print it's exifData to stdout if possible.
-
-	ARGUMENTS
-
-	src
-	Input directory of media files`,
-		Args: cobra.MinimumNArgs(numScanArgs),
+	exifsort scan [<options>...] <dir> `,
+		Args: cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			summarize, _ := cmd.Flags().GetBool("summarize")
 
-			dirPath := args[0]
+			dirPath, _ := cmd.Flags().GetString("input")
 			info, err := os.Stat(dirPath)
 			if err != nil || !info.IsDir() {
 				fmt.Printf("Error with directory arg: %s\n", err.Error())
@@ -77,10 +67,16 @@ func newScanCmd() *cobra.Command {
 		},
 	}
 
+	var scanFlags = []cmdStringFlag{
+		{"i", "input", "Input Directory to scan media."},
+	}
+
 	scanCmd.Flags().BoolP("quiet", "q", false,
 		"Suppress line by line printing.")
 	scanCmd.Flags().BoolP("summarize", "s", false,
 		"Print a summary of stats when done.")
+
+	setRequiredFlags(scanCmd, scanFlags)
 
 	return scanCmd
 }

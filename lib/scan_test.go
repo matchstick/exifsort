@@ -112,6 +112,12 @@ func TestScanDir(t *testing.T) {
 			correctNumInvalid, w.Invalid())
 	}
 
+	walkData := w.Data()
+	if len(walkData) != correctNumValid {
+		t.Errorf("Expected number of data to be %d. Got %d\n",
+			correctNumValid, len(walkData))
+	}
+
 	walkErrs := w.Errors()
 	if len(walkErrs) != correctNumInvalid {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",

@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -72,7 +71,8 @@ func initConfig() {
 			os.Exit(exitErr)
 		}
 
-		// Search config in home directory with name ".exifsort" (without extension).
+		// Search config in home directory with name ".exifsort"
+		// (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".exifsort")
 	}
@@ -83,13 +83,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
-
-// common routine to select writer from command line.
-func ioWriter(quiet bool) io.Writer {
-	if quiet {
-		return nil
-	}
-
-	return os.Stdout
 }

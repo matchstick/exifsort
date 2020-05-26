@@ -90,29 +90,12 @@ func dstCheck(dst string) bool {
 func (s *sortCmd) sortLongHelp() string {
 	return `Sort directory by Exif Date Info. 
 
-	exifsort sort [<options>...] <src> <dst> <method> <action>
+	exifsort sort <options>
 
 	exifsort will recursively check every file in an input directory and
 	then create antoher directory structure organized by time to either
 	move or copy the files into
-
-	ARGUMENTS
-
-	src
-	Input directory of media files
-
-	dst
-	Directory to create for output cannot exist
-
-	method
-	How to sort the media. It can be by "Year", "Month", or "Day"
-
-		Year : dst -> year-> media
-		Month: dst -> year-> month -> media
-		Day  : dst -> year-> month -> day -> media
-
-	action
-	How the media is transferred from src to dst`
+	`
 }
 
 // Here we finally do the work.
@@ -152,10 +135,10 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 			s.quiet, _ = cmd.Flags().GetBool("quiet")
 			s.summarize, _ = cmd.Flags().GetBool("summarize")
 
-			s.src = args[0]
-			s.dst = args[1]
-			methodArg := args[2]
-			actionArg := args[3]
+			s.src, _ = cmd.Flags().GetString("input")
+			s.dst, _ = cmd.Flags().GetString("output")
+			methodArg, _ := cmd.Flags().GetString("method")
+			actionArg, _ := cmd.Flags().GetString("action")
 
 			if !srcCheck(s.src) {
 				return
@@ -183,6 +166,13 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 }
 
 func newSortCmd() *cobra.Command {
+	var sortFlags = []cmdStringFlag{
+		{"i", "input", "Input Directory to scan media."},
+		{"o", "output", "Output Directory to transfer media. (Must not exist.)"},
+		{"m", "method", "Method to index media in output directory. <year|month|day>"},
+		{"a", "action", "Transfer Action: <copy|move>"},
+	}
+
 	// sortCmd represents the sort command.
 	var cmd sortCmd
 	cmd.cobraCmd = newCobraCmd(&cmd)
@@ -191,6 +181,8 @@ func newSortCmd() *cobra.Command {
 		"Suppress line by line printing.")
 	cmd.cobraCmd.Flags().BoolP("summarize", "s", false,
 		"Print a summary of stats when done.")
+
+	setRequiredFlags(cmd.cobraCmd, sortFlags)
 
 	return cmd.cobraCmd
 }
