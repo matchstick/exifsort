@@ -70,6 +70,7 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 		"2008:03:01 Gobo:36:11": "Hour",
 		"2008:03:01 12:Gobo:11": "Minute",
 		"2008:03:01 12:36:Gobo": "Sec",
+		"2008:03:01 12:36:Gobo.2": "Sec",
 	}
 
 	for input, errLabel := range formBadInput {
@@ -271,5 +272,50 @@ func TestScanSaveLoad(t *testing.T) {
 
 	if !cmp.Equal(s, newScanner) {
 		t.Errorf("Saved and Loaded Scanner do not match\n")
+	}
+}
+
+func TestScanBadSave(t *testing.T) {
+	tmpPath := buildTestDir(t)
+	defer os.RemoveAll(tmpPath)
+
+	jsonDir := testTmpDir(t, "", "jsonDir")
+	defer os.RemoveAll(jsonDir)
+
+	s := NewScanner()
+	s.ScanDir(tmpPath, ioutil.Discard)
+
+	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+
+	_ = os.Chmod(jsonDir, 0)
+
+	err := s.Save(jsonPath)
+	if err == nil {
+		t.Errorf("Unexpected Success from Save\n")
+	}
+}
+
+func TestScanBadLoad(t *testing.T) {
+	tmpPath := buildTestDir(t)
+	defer os.RemoveAll(tmpPath)
+
+	jsonDir := testTmpDir(t, "", "jsonDir")
+	defer os.RemoveAll(jsonDir)
+
+	s := NewScanner()
+	s.ScanDir(tmpPath, ioutil.Discard)
+
+	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+
+	err := s.Save(jsonPath)
+	if err != nil {
+		t.Errorf("Unexpected Error %s from Save\n", err.Error())
+	}
+
+	newScanner := NewScanner()
+	os.Truncate(jsonPath, 2)
+	err = newScanner.Load(jsonPath)
+	if err == nil {
+		t.Errorf("Unexpected Success from Load\n")
 	}
 }
