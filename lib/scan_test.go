@@ -60,16 +60,16 @@ func TestGoodTimes(t *testing.T) {
 
 func TestExtractBadTimeFromStr(t *testing.T) {
 	var formBadInput = map[string]string{
-		"Gobo":                  "Space Problem",
-		"Gobo a a a a":          "Space Problem",
-		"Gobo Hey":              "Date Split",
-		"Gobo:03:01 12:36:11":   "Year",
-		"2008:Gobo:01 12:36:11": "Month",
-		"2008:03:Gobo 12:36:11": "Day",
-		"2008:03:01 Gobo":       "Time Split",
-		"2008:03:01 Gobo:36:11": "Hour",
-		"2008:03:01 12:Gobo:11": "Minute",
-		"2008:03:01 12:36:Gobo": "Sec",
+		"Gobo":                    "Space Problem",
+		"Gobo a a a a":            "Space Problem",
+		"Gobo Hey":                "Date Split",
+		"Gobo:03:01 12:36:11":     "Year",
+		"2008:Gobo:01 12:36:11":   "Month",
+		"2008:03:Gobo 12:36:11":   "Day",
+		"2008:03:01 Gobo":         "Time Split",
+		"2008:03:01 Gobo:36:11":   "Hour",
+		"2008:03:01 12:Gobo:11":   "Minute",
+		"2008:03:01 12:36:Gobo":   "Sec",
 		"2008:03:01 12:36:Gobo.2": "Sec",
 	}
 
@@ -313,7 +313,8 @@ func TestScanBadLoad(t *testing.T) {
 	}
 
 	newScanner := NewScanner()
-	os.Truncate(jsonPath, 2)
+	_ = os.Truncate(jsonPath, 2)
+
 	err = newScanner.Load(jsonPath)
 	if err == nil {
 		t.Errorf("Unexpected Success from Load\n")

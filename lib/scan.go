@@ -73,7 +73,7 @@ func (s *Scanner) storeSkipped() {
 	s.SkippedCount++
 }
 
-func (s *Scanner) ErrStr(path string, errStr string) string {
+func ErrStr(path string, errStr string) string {
 	return fmt.Sprintf("%s with (%s)", path, errStr)
 }
 
@@ -231,7 +231,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			s.storeInvalid(path, err)
-			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err.Error()))
+			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
 
 			return nil
 		}
@@ -249,7 +249,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		time, err := s.ScanFile(path)
 		if err != nil {
 			s.storeInvalid(path, err)
-			fmt.Fprintf(logger, "%s\n", s.ErrStr(path, err.Error()))
+			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
 
 			return nil
 		}
