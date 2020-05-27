@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	exifsort "github.com/matchstick/exifsort/lib"
 	"github.com/spf13/cobra"
@@ -42,6 +41,18 @@ func scanSummary(s *exifsort.Scanner) {
 	}
 }
 
+func scanSave(s *exifsort.Scanner, json string) {
+	if json == "" {
+		return
+	}
+
+	err := s.Save(json)
+	if err != nil {
+		fmt.Printf("json file %s Error:%s\n", json, err.Error())
+		return
+	}
+}
+
 func newScanCmd() *cobra.Command {
 	// scanCmd represents the scan command.
 	var scanCmd = &cobra.Command{
@@ -54,23 +65,26 @@ func newScanCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			summarize, _ := cmd.Flags().GetBool("summarize")
-
 			dirPath, _ := cmd.Flags().GetString("input")
-			info, err := os.Stat(dirPath)
-			if err != nil || !info.IsDir() {
-				fmt.Printf("Error with directory arg: %s\n", err.Error())
+			json, _ := cmd.Flags().GetString("json")
+
+			scanner := exifsort.NewScanner()
+			err := scanner.ScanDir(dirPath, ioWriter(quiet))
+			if err != nil {
+				fmt.Printf("Scan error %s\n", err.Error())
 				return
 			}
-			scanner := exifsort.NewScanner()
-			scanner.ScanDir(dirPath, ioWriter(quiet))
+
 			if summarize {
 				scanSummary(&scanner)
 			}
+			scanSave(&scanner, json)
 		},
 	}
 
 	var scanFlags = []cmdStringFlag{
-		{"i", "input", "Input Directory to scan media."},
+		{"i", "input", true, "Input Directory to scan media."},
+		{"j", "json", false, "json file to save output to."},
 	}
 
 	scanCmd.Flags().BoolP("quiet", "q", false,
@@ -78,7 +92,7 @@ func newScanCmd() *cobra.Command {
 	scanCmd.Flags().BoolP("summarize", "s", false,
 		"Print a summary of stats when done.")
 
-	setRequiredFlags(scanCmd, scanFlags)
+	setStringFlags(scanCmd, scanFlags)
 
 	return scanCmd
 }

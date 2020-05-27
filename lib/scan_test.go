@@ -211,7 +211,7 @@ func TestScanDir(t *testing.T) {
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
-	s.ScanDir(tmpPath, ioutil.Discard)
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
 	if correctNumSkipped != s.NumSkipped() {
 		t.Errorf("Expected %d Skipped Count. Got %d\n",
@@ -254,7 +254,7 @@ func TestScanSaveLoad(t *testing.T) {
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
-	s.ScanDir(tmpPath, ioutil.Discard)
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
 	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
 
@@ -283,7 +283,7 @@ func TestScanBadSave(t *testing.T) {
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
-	s.ScanDir(tmpPath, ioutil.Discard)
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
 	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
 
@@ -303,7 +303,7 @@ func TestScanBadLoad(t *testing.T) {
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
-	s.ScanDir(tmpPath, ioutil.Discard)
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
 	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
 

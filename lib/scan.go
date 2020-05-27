@@ -268,11 +268,18 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 // files are skipped.
 //
 // logger specifies where to send output while scanning.
-func (s *Scanner) ScanDir(src string, logger io.Writer) {
+func (s *Scanner) ScanDir(src string, logger io.Writer) error {
+	info, err := os.Stat(src)
+	if err != nil || !info.IsDir() {
+		return err
+	}
+
 	// scanFunc never returns an error
 	// We don't want to walk for an hour and then fail on one error.
 	// Consult the walkstate for errors.
 	_ = filepath.Walk(src, s.scanFunc(logger))
+
+	return nil
 }
 
 // Save Scanner to a json file.

@@ -24,11 +24,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const numSortArgs = 4
-
 type sortCmd struct {
 	src       string
 	dst       string
+	json      string
 	method    int
 	action    int
 	quiet     bool
@@ -38,20 +37,8 @@ type sortCmd struct {
 
 func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	sorter *exifsort.Sorter) {
-	fmt.Printf("Sorted Valid: %d\n", scanner.NumValid())
-	fmt.Printf("Sorted Invalid: %d\n", scanner.NumInvalid())
-	fmt.Printf("Sorted Skipped: %d\n", scanner.NumSkipped())
-	fmt.Printf("Sorted Total: %d\n", scanner.NumTotal())
-
-	if scanner.NumInvalid() == 0 {
-		fmt.Println("No Files caused Errors")
-		return
-	}
-
-	fmt.Println("Walk Errors were:")
-
-	for path, err := range scanner.Errors {
-		fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+	if s.src != "" {
+		scanSummary(scanner)
 	}
 
 	fmt.Println("Index Errors were:")
@@ -67,18 +54,7 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	}
 }
 
-func srcCheck(src string) bool {
-	info, err := os.Stat(src)
-	if err != nil || !info.IsDir() {
-		fmt.Printf("Input Directory \"%s\" has error (%s)\n",
-			src, err.Error())
-		return false
-	}
-
-	return true
-}
-
-func dstCheck(dst string) bool {
+func outputCheck(dst string) bool {
 	// dst must not be created yet
 	_, err := os.Stat(dst)
 	if err == nil || os.IsExist(err) {
@@ -103,9 +79,30 @@ func (s *sortCmd) sortLongHelp() string {
 // Here we finally do the work.
 func (s *sortCmd) sortExecute() {
 	writer := ioWriter(s.quiet)
-	// Here we walk the directory and get stats
+
 	scanner := exifsort.NewScanner()
-	scanner.ScanDir(s.src, writer)
+
+	switch {
+	case s.src != "":
+		// Here we walk the directory and get stats
+		err := scanner.ScanDir(s.src, writer)
+		if err != nil {
+			fmt.Printf("Input Directory \"%s\" has error (%s)\n",
+				s.src, err.Error())
+			return
+		}
+	case s.json != "":
+		// Or we get stats from a json file
+		err := scanner.Load(s.json)
+		if err != nil {
+			fmt.Printf("Load of \"%s\" has error (%s)\n",
+				s.json, err.Error())
+			return
+		}
+	default:
+		fmt.Printf("Inputs were not chosen\n")
+		return
+	}
 
 	// Now we take those stats and Sort them.
 	sorter, err := exifsort.NewSorter(scanner, s.method)
@@ -132,7 +129,6 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 		Short: "Accepts an input directory and will sort media by time created",
 		// Very long help message so we moved it to a func.
 		Long: s.sortLongHelp(),
-		Args: cobra.MinimumNArgs(numSortArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			s.quiet, _ = cmd.Flags().GetBool("quiet")
@@ -140,14 +136,25 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 
 			s.src, _ = cmd.Flags().GetString("input")
 			s.dst, _ = cmd.Flags().GetString("output")
+			s.json, _ = cmd.Flags().GetString("json")
 			methodArg, _ := cmd.Flags().GetString("method")
 			actionArg, _ := cmd.Flags().GetString("action")
 
-			if !srcCheck(s.src) {
+			// User needs to set either json or src, but not both.
+
+			// Has the user not set any inputs?
+			if s.json == "" && s.src == "" {
+				fmt.Printf("Must set input with either -j or -i.\n")
 				return
 			}
 
-			if !dstCheck(s.dst) {
+			// Has the user set both?
+			if s.json != "" && s.src != "" {
+				fmt.Printf("Cannot use both -j and -i for input.\n")
+				return
+			}
+
+			if !outputCheck(s.dst) {
 				return
 			}
 
@@ -170,10 +177,16 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 
 func newSortCmd() *cobra.Command {
 	var sortFlags = []cmdStringFlag{
-		{"i", "input", "Input Directory to scan media."},
-		{"o", "output", "Output Directory to transfer media. (Must not exist.)"},
-		{"m", "method", "Method to index media in output directory. <year|month|day>"},
-		{"a", "action", "Transfer Action: <copy|move>"},
+		{"a", "action", true,
+			"Transfer Action: <copy|move>"},
+		{"i", "input", false,
+			"Input Directory to scan media."},
+		{"j", "json", false,
+			"Json File input to load media."},
+		{"m", "method", true,
+			"Method to index media in output directory. <year|month|day>"},
+		{"o", "output", true,
+			"Output Directory to transfer media. (Must not exist.)"},
 	}
 
 	// sortCmd represents the sort command.
@@ -185,7 +198,7 @@ func newSortCmd() *cobra.Command {
 	cmd.cobraCmd.Flags().BoolP("summarize", "s", false,
 		"Print a summary of stats when done.")
 
-	setRequiredFlags(cmd.cobraCmd, sortFlags)
+	setStringFlags(cmd.cobraCmd, sortFlags)
 
 	return cmd.cobraCmd
 }

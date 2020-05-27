@@ -36,12 +36,16 @@ func ioWriter(quiet bool) io.Writer {
 type cmdStringFlag struct {
 	shorthand string
 	name      string
+	required  bool
 	usage     string
 }
 
-func setRequiredFlags(cmd *cobra.Command, flags []cmdStringFlag) {
+func setStringFlags(cmd *cobra.Command, flags []cmdStringFlag) {
 	for _, f := range flags {
 		cmd.Flags().StringP(f.name, f.shorthand, "", f.usage)
-		_ = cmd.MarkFlagRequired(f.name)
+
+		if f.required {
+			_ = cmd.MarkFlagRequired(f.name)
+		}
 	}
 }
