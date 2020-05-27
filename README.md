@@ -63,10 +63,7 @@ TODOs
 =====
 * Sort out file formats?
 * concurrency
-* marshal to json after scan, load sort from json
-* Clean up tests now that APIs are tighter
-* Clean up doc.go in lib now that APIS are changed.
-* Write more complete tests. coverage is not high enough and for sort it is 0%.
+* sort tests are not started.
 * Transfer invalid photos to an unsorted directory
 * Write a merge step to merge two sorted directories.
 * Set up CI on github.
