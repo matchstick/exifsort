@@ -29,13 +29,23 @@ library](https://github.com/dsoprea/go-exif) and fast responses.
 Scanning is when exifsort will read the data from the directory of files,
 filter for media and retrieve time. Useful to test that exif library will be fine.
 
-`exifsort scan -input <dir> --summarize --quiet`
+`exifsort scan input -i <src> [--summarize --quiet]`
+
+You can save data to a json file too:
+
+`exifsort scan input -i <src> -j <json file> [--summarize --quiet]`
 
 ## sort
 
 Walk an input directory, index the data and then transfer files to an output  directory.
 
-`exifsort sort -input <dir> -output <dir> -method <year | month | day> -action <copy | move>`
+`exifsort sort -i <src> -o <dst> -m <year | month | day> -a <copy | move>`
+
+or load from json file:
+
+`exifsort sort -j <json> -o <dst> -m <year | month | day> -a <copy | move>`
+
+Sort supports -s and -q also.
 
 ### Methods
 
@@ -49,9 +59,15 @@ Walk an input directory, index the data and then transfer files to an output  di
 
 An action specifies whether to move or copy the files from input to output 
 
+| Action | Transfer By |
+| ------ | --------- |
+| Copy   | copy file from src to dst |
+| Move   | move file from src to dst |
+
+
 ## eval
 
-Just useful for debugging and looking at files. Prints the date information of files specified. 
+scans by file not directory. Prints the date information of files specified. 
 
 `exifsort eval <files>`
 
