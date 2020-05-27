@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-
 package cmd
 
 import (
@@ -59,7 +57,8 @@ func newEvalCmd() *cobra.Command {
 					fmt.Printf("%s, %q\n", path, err)
 					continue
 				}
-				timeStr, err := exifsort.ExtractTimeStr(path)
+				s := exifsort.NewScanner()
+				timeStr, err := s.ScanFile(path)
 				if err != nil {
 					fmt.Printf("%s, %s\n", path, err)
 					continue

@@ -147,7 +147,8 @@ func TestIndexDuplicates(t *testing.T) {
 
 		var idx, _ = newIndex(method)
 
-		time, _ := ExtractTime(exifPath)
+		s := NewScanner()
+		time, _ := s.ScanFile(exifPath)
 
 		err := idx.Put(exifPath, time)
 		if err != nil {
