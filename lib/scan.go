@@ -289,7 +289,7 @@ func (s *Scanner) Save(jsonPath string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(jsonPath, json, 0644)
+	err = ioutil.WriteFile(jsonPath, json, 0600)
 	if err != nil {
 		return err
 	}
