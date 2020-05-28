@@ -34,9 +34,11 @@ func newScanError(label string, dateString string) error {
 //
 // It holds errors and data results of the scan after scanning.
 type Scanner struct {
-	SkippedCount int
-	Data         map[string]time.Time
-	Errors       map[string]string
+	SkippedCount  int
+	Data          map[string]time.Time
+	NumDataTypes  map[string]int
+	Errors        map[string]string
+	NumErrorTypes map[string]int
 }
 
 // Returns how many files were skipped.
@@ -60,13 +62,27 @@ func (s *Scanner) NumTotal() int {
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeValid(path string, time time.Time) {
+func (s *Scanner) storeValid(path string, suffix string, time time.Time) {
 	s.Data[path] = time
+
+	_, present := s.NumDataTypes[suffix]
+	if present {
+		s.NumDataTypes[suffix]++
+	} else {
+		s.NumDataTypes[suffix] = 1
+	}
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeInvalid(path string, err error) {
+func (s *Scanner) storeInvalid(path string, suffix string, err error) {
 	s.Errors[path] = err.Error()
+
+	_, present := s.NumErrorTypes[suffix]
+	if present {
+		s.NumErrorTypes[suffix]++
+	} else {
+		s.NumErrorTypes[suffix] = 1
+	}
 }
 
 func (s *Scanner) storeSkipped() {
@@ -75,6 +91,87 @@ func (s *Scanner) storeSkipped() {
 
 func ErrStr(path string, errStr string) string {
 	return fmt.Sprintf("%s with (%s)", path, errStr)
+}
+
+func exifTimeToStr(t time.Time) string {
+	return fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+}
+
+// Files suffixes that are processed and not skipped.
+const (
+	SuffixBMP = iota
+	SuffixCR2
+	SuffixDNG
+	SuffixGIF
+	SuffixJPEG
+	SuffixJPG
+	SuffixNEF
+	SuffixPNG
+	SuffixPSD
+	SuffixRAF
+	SuffixRAW
+	SuffixTIF
+	SuffixTIFF
+)
+
+// Running this on a synology results in the file server creating all these
+// useless media files. We want to skip them.
+func (s *Scanner) isSynologyFile(path string) bool {
+	switch {
+	case strings.Contains(path, "@eadir"):
+		return true
+	case strings.Contains(path, "@syno"):
+		return true
+	case strings.Contains(path, "synofile_thumb"):
+		return true
+	}
+
+	return false
+}
+
+func (s *Scanner) mediaSuffixMap() map[string]int {
+	// We are going to do this check a lot so let's use a map.
+	return map[string]int{
+		"bmp":  SuffixBMP,
+		"cr2":  SuffixCR2,
+		"dng":  SuffixDNG,
+		"gif":  SuffixGIF,
+		"jpeg": SuffixJPEG,
+		"jpg":  SuffixJPG,
+		"nef":  SuffixNEF,
+		"png":  SuffixPNG,
+		"psd":  SuffixPSD,
+		"raf":  SuffixRAF,
+		"raw":  SuffixRAW,
+		"tif":  SuffixTIF,
+		"tiff": SuffixTIFF,
+	}
+}
+
+const minSplitLen = 2 // We expect there to be at least two pieces
+
+func (s *Scanner) skipFileType(path string) (string, bool) {
+	// All comparisons are lower case as case don't matter
+	path = strings.ToLower(path)
+	if s.isSynologyFile(path) {
+		// skip
+		return "", true
+	}
+
+	pieces := strings.Split(path, ".")
+
+	numPieces := len(pieces)
+	if numPieces < minSplitLen {
+		// skip
+		return "", true
+	}
+
+	suffix := pieces[numPieces-1]
+	_, inMediaMap := s.mediaSuffixMap()[suffix]
+
+	return suffix, !inMediaMap
 }
 
 const numSecsSplit = 2 // we expect two pieces
@@ -230,7 +327,7 @@ func (s *Scanner) ScanFile(filepath string) (time.Time, error) {
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			s.storeInvalid(path, err)
+			s.storeInvalid(path, "", err)
 			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
 
 			return nil
@@ -241,21 +338,22 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 			return nil
 		}
 		// Only looking for media files that may have exif.
-		if skipFileType(path) {
+		suffix, skipFile := s.skipFileType(path)
+		if skipFile {
 			s.storeSkipped()
 			return nil
 		}
 
 		time, err := s.ScanFile(path)
 		if err != nil {
-			s.storeInvalid(path, err)
+			s.storeInvalid(path, suffix, err)
 			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
 
 			return nil
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-		s.storeValid(path, time)
+		s.storeValid(path, suffix, time)
 
 		return nil
 	}
@@ -316,7 +414,9 @@ func (s *Scanner) Load(jsonPath string) error {
 func (s *Scanner) Reset() {
 	s.SkippedCount = 0
 	s.Data = make(map[string]time.Time)
+	s.NumDataTypes = make(map[string]int)
 	s.Errors = make(map[string]string)
+	s.NumErrorTypes = make(map[string]int)
 }
 
 // Allocates a new Scanner.

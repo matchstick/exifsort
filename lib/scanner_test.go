@@ -22,6 +22,87 @@ const (
 	correctNumTotal   = 176
 )
 
+func TestSkipFileType(t *testing.T) {
+	s := NewScanner()
+	// Try just gobo.<suffix>
+	for suffix := range s.mediaSuffixMap() {
+		goodInput := fmt.Sprintf("gobo.%s", suffix)
+
+		_, skip := s.skipFileType(goodInput)
+		if skip {
+			t.Errorf("Expected False for %s\n", goodInput)
+		}
+	}
+	// Try a simple upper case just gobo.<suffix>
+	for suffix := range s.mediaSuffixMap() {
+		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", suffix))
+
+		_, skip := s.skipFileType(goodInput)
+		if skip {
+			t.Errorf("Expected False for %s\n", goodInput)
+		}
+	}
+
+	// Try with many "." hey.gobo.<suffix>
+	for suffix := range s.mediaSuffixMap() {
+		goodInput := fmt.Sprintf("hey.gobo.%s", suffix)
+
+		_, skip := s.skipFileType(goodInput)
+		if skip {
+			t.Errorf("Expected False for %s\n", goodInput)
+		}
+	}
+
+	badInput := "gobobob.."
+
+	_, skip := s.skipFileType(badInput)
+	if !skip {
+		t.Errorf("Expected True for %s\n", badInput)
+	}
+
+	badInput = "gobo"
+
+	_, skip = s.skipFileType(badInput)
+	if !skip {
+		t.Errorf("Expected True for %s\n", badInput)
+	}
+
+	// Try ".." at the end.<suffix>
+	for suffix := range s.mediaSuffixMap() {
+		badInput := fmt.Sprintf("gobo.%s..", suffix)
+
+		_, skip := s.skipFileType(badInput)
+		if !skip {
+			t.Errorf("Expected True for %s\n", badInput)
+		}
+	}
+}
+
+func TestSkipSynologyTypes(t *testing.T) {
+	s := NewScanner()
+
+	badInput := "@eaDir"
+
+	_, skip := s.skipFileType(badInput)
+	if !skip {
+		t.Errorf("Expected True for %s\n", badInput)
+	}
+
+	badInput = "@syno"
+
+	_, skip = s.skipFileType(badInput)
+	if !skip {
+		t.Errorf("Expected True for %s\n", badInput)
+	}
+
+	badInput = "synofile_thumb"
+
+	_, skip = s.skipFileType(badInput)
+	if !skip {
+		t.Errorf("Expected True for %s\n", badInput)
+	}
+}
+
 func TestFormatError(t *testing.T) {
 	testErrStr := "bad format for dingle: dangle Problem"
 	err := newScanError("dangle", "dingle")
