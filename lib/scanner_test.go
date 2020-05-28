@@ -4,22 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-)
-
-const (
-	scanExifPath      = "../data/with_exif.jpg"
-	scanNoExifPath    = "../data/no_exif.jpg"
-	scanSkipPath      = "../README.md"
-	correctNumInvalid = 51
-	correctNumValid   = 100
-	correctNumSkipped = 25
-	correctNumTotal   = 176
+	"github.com/matchstick/exifsort/testdir"
 )
 
 func TestSkipFileType(t *testing.T) {
@@ -169,16 +159,13 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 	}
 }
 
-const validExifPath = "../data/with_exif.jpg"
-const invalidExifPath = "../data/no_exif.jpg"
-const noRootExifPath = "../data/no_root_ifd.jpg"
 const goodDateExifStr = "2020:04:28 14:12:21"
 
-func TestExtractTime(t *testing.T) {
+func TestScanFile(t *testing.T) {
 	s := NewScanner()
 	goodTime, _ := s.extractTimeFromStr(goodDateExifStr)
 
-	time, err := s.ScanFile(validExifPath)
+	time, err := s.ScanFile(testdir.ExifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
@@ -187,151 +174,67 @@ func TestExtractTime(t *testing.T) {
 		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
 	}
 
-	_, err = s.ScanFile(invalidExifPath)
+	_, err = s.ScanFile(testdir.NoExifPath)
 	if err == nil {
 		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 
-	_, err = s.ScanFile(noRootExifPath)
+	_, err = s.ScanFile(testdir.NoRootExifPath)
 	if err == nil {
 		t.Errorf("Unexpected success with invalid Exif file.\n")
 	}
 
-	nonePath := "../gobofragggle"
-
-	_, err = s.ScanFile(nonePath)
+	_, err = s.ScanFile(testdir.NonesensePath)
 	if err == nil {
 		t.Errorf("Unexpected success with nonsense path\n")
 	}
 }
 
-func stampFileNo(path string, fileno *int) string {
-	basename := filepath.Base(path)
-	pieces := strings.Split(basename, ".")
-	newPath := fmt.Sprintf("%s_%d.%s", pieces[0], *fileno, pieces[1])
-	*fileno++
-
-	return newPath
-}
-
-func populateExifDir(t *testing.T, dir string, readPath string, num int, fileno *int) {
-	content, err := ioutil.ReadFile(readPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for i := 0; i < num; i++ {
-		newBase := stampFileNo(readPath, fileno)
-		targetPath := fmt.Sprintf("%s/%s", dir, newBase)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func testTmpDir(t *testing.T, parent string, name string) string {
-	newDir, err := ioutil.TempDir(parent, name)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return newDir
-}
-
-func setDirPerms(t *testing.T, dirPath string, perms os.FileMode) {
-	infos, _ := ioutil.ReadDir(dirPath)
-	for _, info := range infos {
-		targetPath := fmt.Sprintf("%s/%s", dirPath, info.Name())
-
-		err := os.Chmod(targetPath, perms)
-		if err != nil {
-			t.Errorf("Chmod failed on %s with %s\n", info.Name(), err.Error())
-		}
-	}
-
-	err := os.Chmod(dirPath, perms)
-	if err != nil {
-		t.Errorf("Chmod failed on %s with %s\n", dirPath, err.Error())
-	}
-}
-
-/*
-	Root
-	-with_exif // valid exif
-	  -nested_exif // nested dir with valid exit
-	-no_exif // no exif
-	-mixed_exif // mix of both
-*/
-func buildTestDir(t *testing.T) string {
-	fileNo := 0
-	rootDir := testTmpDir(t, "", "root")
-	exifDir := testTmpDir(t, rootDir, "with_exif")
-	badDir := testTmpDir(t, rootDir, "badPerms")
-	skipDir := testTmpDir(t, rootDir, "skip")
-	nestedDir := testTmpDir(t, exifDir, "nested_exif")
-	noExifDir := testTmpDir(t, rootDir, "no_exif")
-	mixedDir := testTmpDir(t, rootDir, "mixed_exif")
-
-	populateExifDir(t, exifDir, scanExifPath, 50, &fileNo)
-	populateExifDir(t, badDir, scanExifPath, 25, &fileNo)
-	populateExifDir(t, noExifDir, scanNoExifPath, 25, &fileNo)
-	populateExifDir(t, mixedDir, scanExifPath, 25, &fileNo)
-	populateExifDir(t, mixedDir, scanNoExifPath, 25, &fileNo)
-	populateExifDir(t, nestedDir, scanExifPath, 25, &fileNo)
-	populateExifDir(t, skipDir, scanSkipPath, 25, &fileNo)
-
-	setDirPerms(t, badDir, 0)
-
-	return rootDir
-}
-
 func TestScanDir(t *testing.T) {
-	tmpPath := buildTestDir(t)
+	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	if correctNumSkipped != s.NumSkipped() {
+	if testdir.CorrectNumSkipped != s.NumSkipped() {
 		t.Errorf("Expected %d Skipped Count. Got %d\n",
-			correctNumSkipped, s.NumSkipped())
+			testdir.CorrectNumSkipped, s.NumSkipped())
 	}
 
-	if correctNumInvalid != s.NumInvalid() {
+	if testdir.CorrectNumInvalid != s.NumInvalid() {
 		t.Errorf("Expected %d Invalid Count. Got %d\n",
-			correctNumInvalid, s.NumInvalid())
+			testdir.CorrectNumInvalid, s.NumInvalid())
 	}
 
 	walkData := s.Data
-	if len(walkData) != correctNumValid {
+	if len(walkData) != testdir.CorrectNumValid {
 		t.Errorf("Expected number of data to be %d. Got %d\n",
-			correctNumValid, len(walkData))
+			testdir.CorrectNumValid, len(walkData))
 	}
 
 	walkErrs := s.Errors
-	if len(walkErrs) != correctNumInvalid {
+	if len(walkErrs) != testdir.CorrectNumInvalid {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
-			correctNumInvalid, len(walkErrs))
+			testdir.CorrectNumInvalid, len(walkErrs))
 	}
 
-	if correctNumValid != s.NumValid() {
+	if testdir.CorrectNumValid != s.NumValid() {
 		t.Errorf("Expected %d Valid Count. Got %d\n",
-			correctNumValid, s.NumValid())
+			testdir.CorrectNumValid, s.NumValid())
 	}
 
-	if correctNumTotal != s.NumTotal() {
+	if testdir.CorrectNumTotal != s.NumTotal() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
-			correctNumTotal, s.NumTotal())
+			testdir.CorrectNumTotal, s.NumTotal())
 	}
 }
 
 func TestScanSaveLoad(t *testing.T) {
-	tmpPath := buildTestDir(t)
+	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	jsonDir := testTmpDir(t, "", "jsonDir")
+	jsonDir := testdir.TmpDir("", "jsonDir")
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
@@ -357,10 +260,10 @@ func TestScanSaveLoad(t *testing.T) {
 }
 
 func TestScanBadSave(t *testing.T) {
-	tmpPath := buildTestDir(t)
+	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	jsonDir := testTmpDir(t, "", "jsonDir")
+	jsonDir := testdir.TmpDir("", "jsonDir")
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
@@ -377,10 +280,10 @@ func TestScanBadSave(t *testing.T) {
 }
 
 func TestScanBadLoad(t *testing.T) {
-	tmpPath := buildTestDir(t)
+	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	jsonDir := testTmpDir(t, "", "jsonDir")
+	jsonDir := testdir.TmpDir("", "jsonDir")
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()

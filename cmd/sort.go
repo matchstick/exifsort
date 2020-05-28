@@ -41,16 +41,20 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 		scanSummary(scanner)
 	}
 
-	fmt.Println("Index Errors were:")
+	if len(sorter.IndexErrors) != 0 {
+		fmt.Println("Index Errors were:")
 
-	for path, err := range sorter.IndexErrors {
-		fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		for path, err := range sorter.IndexErrors {
+			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		}
 	}
 
-	fmt.Println("Transfer Errors were:")
+	if len(sorter.TransferErrors) != 0 {
+		fmt.Println("Transfer Errors were:")
 
-	for path, err := range sorter.TransferErrors {
-		fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		for path, err := range sorter.TransferErrors {
+			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		}
 	}
 }
 
