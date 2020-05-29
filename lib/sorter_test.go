@@ -43,7 +43,7 @@ func testTransfer(t *testing.T, method int, action int) {
 	scanner := NewScanner()
 	_ = scanner.ScanDir(src, ioutil.Discard)
 
-	const dst = "/tmp/dst"
+	dst, _ := ioutil.TempDir("", "sort_dst_")
 	defer os.RemoveAll(dst)
 
 	sorter, _ := NewSorter(scanner, method)
@@ -52,6 +52,7 @@ func testTransfer(t *testing.T, method int, action int) {
 	if err != nil {
 		t.Errorf("Sort failed. Action: %d, Method: %d, Err: %s\n",
 			action, method, err.Error())
+		return
 	}
 
 	countFiles(t, dst, testdir.CorrectNumValid)

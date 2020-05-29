@@ -58,15 +58,13 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	}
 }
 
-func outputCheck(dst string) bool {
-	// dst must not be created yet
-	_, err := os.Stat(dst)
-	if err == nil || os.IsExist(err) {
-		fmt.Printf("Output directory \"%s\" must not exist\n", dst)
-		return false
+func outputCreate(dst string) error {
+	err := os.Mkdir(dst, 0755)
+	if err != nil {
+		return err
 	}
 
-	return true
+	return nil
 }
 
 func (s *sortCmd) sortLongHelp() string {
@@ -158,7 +156,12 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 				return
 			}
 
-			if !outputCheck(s.dst) {
+			// We create directory before executing.
+			// It would not be cool to spend a lot of time
+			// then fail due to perms or previous output
+			// directory.
+			err = outputCreate(s.dst)
+			if err != nil {
 				return
 			}
 

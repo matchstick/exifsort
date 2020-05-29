@@ -76,10 +76,12 @@ func (s *Sorter) storeTransferError(path string, err error) {
 }
 
 // Performs the transfer after indexing.
+// Transfer will fail if dst directory does not exist and is not accessible.
 func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
-	err := os.Mkdir(dst, 0755)
-	if err != nil {
-		return err
+	info, err := os.Stat(dst)
+	if err != nil || !info.IsDir() {
+		errStr := fmt.Sprintf("Error: No Output dir: %s", dst)
+		return &sortError{errStr}
 	}
 
 	mediaMap := s.idx.GetAll()
