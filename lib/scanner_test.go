@@ -234,7 +234,7 @@ func TestScanSaveLoad(t *testing.T) {
 	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	jsonDir,_ := ioutil.TempDir("", "jsonDir")
+	jsonDir, _ := ioutil.TempDir("", "jsonDir")
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()
@@ -263,7 +263,7 @@ func TestScanBadSave(t *testing.T) {
 	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
 
-	jsonDir,_ := ioutil.TempDir("", "jsonDir")
+	jsonDir, _ := ioutil.TempDir("", "jsonDir")
 	defer os.RemoveAll(jsonDir)
 
 	s := NewScanner()

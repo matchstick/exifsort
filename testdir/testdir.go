@@ -74,19 +74,21 @@ func (td *testdir) setDirPerms(dirPath string, perms os.FileMode) {
 // structures. This is only intended for test code. Some of the media has
 // exifdata some does not, some are not even media files. All of the files and
 // directories were created as golang tmp files or directories.
+//
+// The bult directory even has a subdir with perms 0 for testing errorn
+// handling.
 func NewTestDir(t *testing.T) string {
-
 	var td testdir
 	td.fileNo = 0
 	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t
 
-	exifDir, _   := ioutil.TempDir(td.root, "with_exif")
-	badDir, _    := ioutil.TempDir(td.root, "badPerms")
-	skipDir, _   := ioutil.TempDir(td.root, "skip")
+	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
+	badDir, _ := ioutil.TempDir(td.root, "badPerms")
+	skipDir, _ := ioutil.TempDir(td.root, "skip")
 	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	mixedDir, _  := ioutil.TempDir(td.root, "mixed_exif")
+	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
 
 	td.populateExifDir(exifDir, ExifPath, 50)
 	td.populateExifDir(noExifDir, NoExifPath, 25)
