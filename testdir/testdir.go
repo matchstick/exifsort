@@ -70,34 +70,23 @@ func (td *testdir) setDirPerms(dirPath string, perms os.FileMode) {
 	}
 }
 
-func TmpDir(parent string, name string) string {
-	newDir, err := ioutil.TempDir(parent, name)
-	if err != nil {
-		panic("cannot create tmp dir")
-	}
-
-	return newDir
-}
-
-/*
-	Root
-	-with_exif // valid exif
-	  -nested_exif // nested dir with valid exit
-	-no_exif // no exif
-	-mixed_exif // mix of both
-*/
+// Returns the path to the root of a directory full of files and nested
+// structures. This is only intended for test code. Some of the media has
+// exifdata some does not, some are not even media files. All of the files and
+// directories were created as golang tmp files or directories.
 func NewTestDir(t *testing.T) string {
+
 	var td testdir
 	td.fileNo = 0
-	td.root = TmpDir("", "root")
+	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t
 
-	exifDir := TmpDir(td.root, "with_exif")
-	badDir := TmpDir(td.root, "badPerms")
-	skipDir := TmpDir(td.root, "skip")
-	nestedDir := TmpDir(exifDir, "nested_exif")
-	noExifDir := TmpDir(td.root, "no_exif")
-	mixedDir := TmpDir(td.root, "mixed_exif")
+	exifDir, _   := ioutil.TempDir(td.root, "with_exif")
+	badDir, _    := ioutil.TempDir(td.root, "badPerms")
+	skipDir, _   := ioutil.TempDir(td.root, "skip")
+	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
+	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
+	mixedDir, _  := ioutil.TempDir(td.root, "mixed_exif")
 
 	td.populateExifDir(exifDir, ExifPath, 50)
 	td.populateExifDir(noExifDir, NoExifPath, 25)
