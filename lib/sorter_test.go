@@ -1,13 +1,12 @@
 package exifsort
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/matchstick/exifsort/testdir"
 )
 
@@ -36,7 +35,7 @@ func countFiles(t *testing.T, path string, correctCount int) {
 	}
 }
 
-func testTransfer(t *testing.T, method int, action int) {
+func testTransfer(t *testing.T, method int, action int) error {
 	src := testdir.NewTestDir(t)
 	defer os.RemoveAll(src)
 
@@ -46,13 +45,14 @@ func testTransfer(t *testing.T, method int, action int) {
 	dst, _ := ioutil.TempDir("", "sort_dst_")
 	defer os.RemoveAll(dst)
 
-	sorter, _ := NewSorter(scanner, method)
-
-	err := sorter.Transfer(dst, action, ioutil.Discard)
+	sorter, err := NewSorter(scanner, method)
 	if err != nil {
-		t.Errorf("Sort failed. Action: %d, Method: %d, Err: %s\n",
-			action, method, err.Error())
-		return
+		return err
+	}
+
+	err = sorter.Transfer(dst, action, ioutil.Discard)
+	if err != nil {
+		return err
 	}
 
 	countFiles(t, dst, testdir.CorrectNumValid)
@@ -64,42 +64,59 @@ func testTransfer(t *testing.T, method int, action int) {
 		leftovers := testdir.CorrectNumInvalid + testdir.CorrectNumSkipped
 		countFiles(t, src, leftovers)
 	default:
-		t.Fatal("Unknown action")
+		return &sortError{"Unknown action"}
 	}
+
+	return nil
 }
 
 func TestSortDir(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		testTransfer(t, method, ActionCopy)
-		testTransfer(t, method, ActionMove)
+		err := testTransfer(t, method, ActionCopy)
+		if err != nil {
+			t.Fatalf("%s\n", err.Error())
+		}
+
+		err = testTransfer(t, method, ActionMove)
+		if err != nil {
+			t.Fatalf("%s\n", err.Error())
+		}
 	}
 }
 
-func TestSortLoad(t *testing.T) {
-	tmpPath := testdir.NewTestDir(t)
-	defer os.RemoveAll(tmpPath)
+func TestBadSortMethod(t *testing.T) {
+	const badMethod = 888
 
-	jsonDir, _ := ioutil.TempDir("", "jsonDir")
-	defer os.RemoveAll(jsonDir)
+	err := testTransfer(t, badMethod, ActionMove)
+	if err == nil {
+		t.Fatalf("Expected error got success\n")
+	}
+}
 
-	s := NewScanner()
-	_ = s.ScanDir(tmpPath, ioutil.Discard)
+func TestBadSortAction(t *testing.T) {
+	const badAction = 888
 
-	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+	err := testTransfer(t, MethodYear, badAction)
+	if err == nil {
+		t.Fatalf("Expected error got success\n")
+	}
+}
 
-	err := s.Save(jsonPath)
-	if err != nil {
-		t.Errorf("Unexpected Error %s from Save\n", err.Error())
+func TestSortNoOutputDir(t *testing.T) {
+	src := testdir.NewTestDir(t)
+	defer os.RemoveAll(src)
+
+	scanner := NewScanner()
+	_ = scanner.ScanDir(src, ioutil.Discard)
+
+	sorter, _ := NewSorter(scanner, MethodYear)
+
+	err := sorter.Transfer("dst", ActionMove, ioutil.Discard)
+	if err == nil {
+		t.Fatalf("Unexpected Success\n")
 	}
 
-	newScanner := NewScanner()
-
-	err = newScanner.Load(jsonPath)
-	if err != nil {
-		t.Errorf("Unexpected Error %s from Load\n", err.Error())
-	}
-
-	if !cmp.Equal(s, newScanner) {
-		t.Errorf("Saved and Loaded Scanner do not match\n")
+	if !strings.Contains(err.Error(), "No Output dir") {
+		t.Fatalf("Unexpected msg (%s)\n", err.Error())
 	}
 }

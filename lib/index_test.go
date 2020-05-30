@@ -171,7 +171,7 @@ func TestIndexBadMethod(t *testing.T) {
 		t.Errorf("Expected non nil return\n")
 	}
 
-	if err.Error() != "Invalid Method" {
+	if !strings.Contains(err.Error(), "Invalid method") {
 		t.Errorf("Expected Different Method message\n")
 	}
 

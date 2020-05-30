@@ -100,7 +100,9 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 		case ActionMove:
 			err = s.moveMedia(oldPath, newPath)
 		default:
-			panic("Unknown action")
+			errStr := fmt.Sprintf("Invalid action %d\n",
+				action)
+			return &sortError{errStr}
 		}
 
 		if err != nil {

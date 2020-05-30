@@ -376,6 +376,7 @@ func newIndex(method int) (index, error) {
 
 		return &d, nil
 	default:
-		return nil, &indexError{"Invalid Method"}
+		errStr := fmt.Sprintf("Invalid method %d\n", method)
+		return nil, &indexError{errStr}
 	}
 }
