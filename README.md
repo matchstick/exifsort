@@ -77,9 +77,6 @@ Soon we will be able to merge output from sort to a pre-existing directory.
 
 TODOs
 =====
-* Sort out file formats?
 * concurrency
-* sort tests are not started.
-* Transfer invalid photos to an unsorted directory
 * Write a merge step to merge two sorted directories.
 * Set up CI on github.

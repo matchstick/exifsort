@@ -84,21 +84,14 @@ func (n *node) getNode(id int) node {
 // So <name>.jpg => <name>_#.jpg the number increments as it may have
 // multiple collisions.
 func (n *node) mediaCollisionName(base string) string {
-	var name string
-
 	var newName string
 
-	pieces := strings.Split(base, ".")
-	numPieces := len(pieces)
-	// get the suffx
-	suffix := pieces[numPieces-1]
-	// reconstruct the name (have to handle multiple "." in name)
-	for ii := 0; ii < numPieces-1; ii++ {
-		name += pieces[ii]
-	}
+	suffix := filepath.Ext(base)
+	prefix := strings.TrimRight(base, suffix)
+
 	// Now we keep trying until we create a name that won't collide
 	for counter := 0; true; counter++ {
-		newName = fmt.Sprintf("%s_%d.%s", name, counter, suffix)
+		newName = fmt.Sprintf("%s_%d%s", prefix, counter, suffix)
 
 		_, present := n.media[newName]
 		if !present {

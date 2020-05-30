@@ -134,23 +134,21 @@ func (s *Scanner) isSynologyFile(path string) bool {
 func (s *Scanner) mediaSuffixMap() map[string]int {
 	// We are going to do this check a lot so let's use a map.
 	return map[string]int{
-		"bmp":  SuffixBMP,
-		"cr2":  SuffixCR2,
-		"dng":  SuffixDNG,
-		"gif":  SuffixGIF,
-		"jpeg": SuffixJPEG,
-		"jpg":  SuffixJPG,
-		"nef":  SuffixNEF,
-		"png":  SuffixPNG,
-		"psd":  SuffixPSD,
-		"raf":  SuffixRAF,
-		"raw":  SuffixRAW,
-		"tif":  SuffixTIF,
-		"tiff": SuffixTIFF,
+		".bmp":  SuffixBMP,
+		".cr2":  SuffixCR2,
+		".dng":  SuffixDNG,
+		".gif":  SuffixGIF,
+		".jpeg": SuffixJPEG,
+		".jpg":  SuffixJPG,
+		".nef":  SuffixNEF,
+		".png":  SuffixPNG,
+		".psd":  SuffixPSD,
+		".raf":  SuffixRAF,
+		".raw":  SuffixRAW,
+		".tif":  SuffixTIF,
+		".tiff": SuffixTIFF,
 	}
 }
-
-const minSplitLen = 2 // We expect there to be at least two pieces
 
 func (s *Scanner) skipFileType(path string) (string, bool) {
 	// All comparisons are lower case as case don't matter
@@ -160,15 +158,12 @@ func (s *Scanner) skipFileType(path string) (string, bool) {
 		return "", true
 	}
 
-	pieces := strings.Split(path, ".")
-
-	numPieces := len(pieces)
-	if numPieces < minSplitLen {
-		// skip
+	suffix := filepath.Ext(path)
+	// no suffix to check so we skip
+	if suffix == "" {
 		return "", true
 	}
 
-	suffix := pieces[numPieces-1]
 	_, inMediaMap := s.mediaSuffixMap()[suffix]
 
 	return suffix, !inMediaMap
