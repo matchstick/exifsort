@@ -22,6 +22,10 @@ step results as they organize their photos. It cannot hurt to be careful.
 Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
 library](https://github.com/dsoprea/go-exif) and fast responses.
 
+exifsort will try to use the exifdata to determine the time period to sort the
+media. If it cannot find one due to an error in the exif data it will then rely
+on file modtime.
+
 # Commands
 
 ## scan

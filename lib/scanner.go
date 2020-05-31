@@ -202,24 +202,26 @@ func (s *Scanner) secsFractionFromStr(secsStr string) (int, error) {
 
 const numDateSplit = 3 // We expect the date to be X:X:X
 
-func (s *Scanner) dateFromStr(str string, exifDateTime string) (int, int, int, error) {
+func (s *Scanner) dateFromStr(str string, exifDateTime string) (int, time.Month, int, error) {
 	splitDate := strings.Split(str, ":")
 	if len(splitDate) != numDateSplit {
 		return 0, 0, 0, newScanError("Date Split", exifDateTime)
 	}
 
 	year, err := strconv.Atoi(splitDate[0])
-	if err != nil {
+	if err != nil || year <= 0 || year > 9999 {
 		return 0, 0, 0, newScanError("Year", exifDateTime)
 	}
 
-	month, err := strconv.Atoi(splitDate[1])
-	if err != nil {
+	monthInt, err := strconv.Atoi(splitDate[1])
+
+	month := time.Month(monthInt)
+	if err != nil || month < time.January || month > time.December {
 		return 0, 0, 0, newScanError("Month", exifDateTime)
 	}
 
 	day, err := strconv.Atoi(splitDate[2])
-	if err != nil {
+	if err != nil || day <=0 || day > 31 {
 		return 0, 0, 0, newScanError("Day", exifDateTime)
 	}
 
@@ -235,17 +237,17 @@ func (s *Scanner) timeFromStr(str string, exifDateTime string) (int, int, int, e
 	}
 
 	hour, err := strconv.Atoi(splitTime[0])
-	if err != nil {
+	if err != nil || hour <= 0 || hour > 23 {
 		return 0, 0, 0, newScanError("Hour", exifDateTime)
 	}
 
 	minute, err := strconv.Atoi(splitTime[1])
-	if err != nil {
+	if err != nil || minute <= 0 || minute > 59 {
 		return 0, 0, 0, newScanError("Minute", exifDateTime)
 	}
 
 	second, err := strconv.Atoi(splitTime[2])
-	if err != nil {
+	if err != nil || second <= 0 || second > 59 {
 		second, err = s.secsFractionFromStr(splitTime[2])
 		if err != nil {
 			return 0, 0, 0, newScanError("Sec", exifDateTime)
@@ -278,7 +280,7 @@ func (s *Scanner) extractTimeFromStr(exifDateTime string) (time.Time, error) {
 		return t, err
 	}
 
-	t = time.Date(year, time.Month(month), day,
+	t = time.Date(year, month, day,
 		hour, minute, second, 0, time.Local)
 
 	return t, nil
