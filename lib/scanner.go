@@ -288,12 +288,7 @@ func (s *Scanner) extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 const validDateTimeOrigninalTagNum = 1
 
-// ScanFile accepts a filepath, reads the exifdata stored inside and
-// returns the 'Exif/DateTimeOriginal' value as a golang time.Time format.
-//
-// It returns an error if the file has no exif data, mangled exif data, or the
-// contents are unexpected.
-func (s *Scanner) ScanFile(filepath string) (time.Time, error) {
+func (s *Scanner) scanExif(filepath string) (time.Time, error) {
 	var time time.Time
 	// Get the Exif Data and Ifd root
 	mc, err := exifknife.GetExif(filepath)
@@ -333,6 +328,32 @@ func (s *Scanner) ScanFile(filepath string) (time.Time, error) {
 	return time, nil
 }
 
+// ScanFile accepts a filepath, reads the exifdata stored inside and
+// returns the 'Exif/DateTimeOriginal' value as a golang time.Time format. If
+// the exifData is not valid it will return the time based on FileInfo's
+// ModTime.
+//
+// It returns an error if the file has no exif data and cannot be statted.
+func (s *Scanner) ScanFile(path string) (time.Time, error) {
+	var time time.Time
+
+	time, err := s.scanExif(path)
+	if err != nil {
+		suffix := filepath.Ext(path)
+
+		s.storeExifError(path, suffix, err)
+
+		info, err := os.Stat(path)
+		if err != nil {
+			return time, err
+		}
+
+		time = info.ModTime()
+	}
+
+	return time, nil
+}
+
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		var time time.Time
@@ -348,6 +369,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		if info.IsDir() {
 			return nil
 		}
+
 		// Only looking for media files that may have exif.
 		suffix, skipFile := s.skipFileType(path)
 		if skipFile {
@@ -355,7 +377,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 			return nil
 		}
 
-		time, err = s.ScanFile(path)
+		time, err = s.scanExif(path)
 		if err != nil {
 			s.storeExifError(path, suffix, err)
 

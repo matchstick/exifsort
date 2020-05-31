@@ -175,13 +175,13 @@ func TestScanFile(t *testing.T) {
 	}
 
 	_, err = s.ScanFile(testdir.NoExifPath)
-	if err == nil {
-		t.Errorf("Unexpected success with invalid Exif file.\n")
+	if err != nil {
+		t.Errorf("Unexpected error with invalid Exif file.\n")
 	}
 
 	_, err = s.ScanFile(testdir.NoRootExifPath)
-	if err == nil {
-		t.Errorf("Unexpected success with invalid Exif file.\n")
+	if err != nil {
+		t.Errorf("Unexpected error with invalid Exif file.\n")
 	}
 
 	_, err = s.ScanFile(testdir.NonesensePath)
