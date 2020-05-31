@@ -197,36 +197,47 @@ func TestScanDir(t *testing.T) {
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	if testdir.CorrectNumSkipped != s.NumSkipped() {
-		t.Errorf("Expected %d Skipped Count. Got %d\n",
-			testdir.CorrectNumSkipped, s.NumSkipped())
+	if testdir.NumData != s.NumData() {
+		t.Errorf("Expected %d Valid Count. Got %d\n",
+			testdir.NumData, s.NumData())
 	}
 
-	if testdir.CorrectNumInvalid != s.NumInvalid() {
-		t.Errorf("Expected %d Invalid Count. Got %d\n",
-			testdir.CorrectNumInvalid, s.NumInvalid())
+	if testdir.NumSkipped != s.NumSkipped() {
+		t.Errorf("Expected %d Skipped Count. Got %d\n",
+			testdir.NumSkipped, s.NumSkipped())
+	}
+
+	if testdir.NumExifError != s.NumExifErrors() {
+		t.Errorf("Expected %d ExifErrors Count. Got %d\n",
+			testdir.NumExifError, s.NumExifErrors())
+	}
+
+	if testdir.NumScanError != s.NumScanErrors() {
+		t.Errorf("Expected %d ExifErrors Count. Got %d\n",
+			testdir.NumScanError, s.NumScanErrors())
 	}
 
 	walkData := s.Data
-	if len(walkData) != testdir.CorrectNumValid {
+	if len(walkData) != testdir.NumData {
 		t.Errorf("Expected number of data to be %d. Got %d\n",
-			testdir.CorrectNumValid, len(walkData))
+			testdir.NumData, len(walkData))
 	}
 
-	walkErrs := s.Errors
-	if len(walkErrs) != testdir.CorrectNumInvalid {
+	exifErrs := s.ExifErrors
+	if len(exifErrs) != testdir.NumExifError {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
-			testdir.CorrectNumInvalid, len(walkErrs))
+			testdir.NumExifError, len(exifErrs))
 	}
 
-	if testdir.CorrectNumValid != s.NumValid() {
-		t.Errorf("Expected %d Valid Count. Got %d\n",
-			testdir.CorrectNumValid, s.NumValid())
+	scanErrs := s.ScanErrors
+	if len(scanErrs) != testdir.NumScanError {
+		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
+			testdir.NumScanError, len(scanErrs))
 	}
 
-	if testdir.CorrectNumTotal != s.NumTotal() {
+	if testdir.NumTotal != s.NumTotal() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
-			testdir.CorrectNumTotal, s.NumTotal())
+			testdir.NumTotal, s.NumTotal())
 	}
 }
 

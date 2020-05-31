@@ -10,7 +10,7 @@ import (
 	"github.com/matchstick/exifsort/testdir"
 )
 
-func countFiles(t *testing.T, path string, correctCount int) {
+func countFiles(t *testing.T, path string, correctCount int, label string) {
 	var count = 0
 
 	_ = filepath.Walk(path,
@@ -30,8 +30,8 @@ func countFiles(t *testing.T, path string, correctCount int) {
 		})
 
 	if count != correctCount {
-		t.Errorf("File Count error for %s. Expected %d, got %d\n",
-			path, correctCount, count)
+		t.Errorf("File Count error for %s on %s. Expected %d, got %d\n",
+			label, path, correctCount, count)
 	}
 }
 
@@ -55,14 +55,16 @@ func testTransfer(t *testing.T, method int, action int) error {
 		return err
 	}
 
-	countFiles(t, dst, testdir.CorrectNumValid)
+	countFiles(t, dst, testdir.NumData, "Dst Data")
 
 	switch {
 	case action == ActionCopy:
-		countFiles(t, src, testdir.CorrectNumTotal)
+		// exifErrors counted twice as they also are added to data.
+		copyCount := testdir.NumTotal - testdir.NumExifError
+		countFiles(t, src, copyCount, "Src Copy")
 	case action == ActionMove:
-		leftovers := testdir.CorrectNumInvalid + testdir.CorrectNumSkipped
-		countFiles(t, src, leftovers)
+		leftovers := testdir.NumScanError + testdir.NumSkipped
+		countFiles(t, src, leftovers, "Src Move")
 	default:
 		return &sortError{"Unknown action"}
 	}

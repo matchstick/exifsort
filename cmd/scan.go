@@ -26,27 +26,32 @@ import (
 func scanSummary(s *exifsort.Scanner) {
 	fmt.Printf("Scanned Total: %d\n", s.NumTotal())
 	fmt.Printf("Scanned Skipped: %d\n", s.NumSkipped())
-	fmt.Printf("Scanned Valid: %d\n", s.NumValid())
+	fmt.Printf("Scanned Data: %d\n", s.NumData())
 
 	for suffix, num := range s.NumDataTypes {
 		fmt.Printf("\t[%s]: %d\n", suffix, num)
 	}
 
-	if s.NumInvalid() == 0 {
-		fmt.Println("No Files caused Errors")
-		return
+	if s.NumExifErrors() != 0 {
+		fmt.Printf("Scanned ExifErrors: %d\n", s.NumExifErrors())
+
+		for suffix, num := range s.NumExifErrorTypes {
+			fmt.Printf("\t[%s]: %d\n", suffix, num)
+		}
+
+		fmt.Println("ExifError Files were:")
+
+		for path, err := range s.ExifErrors {
+			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		}
 	}
 
-	fmt.Printf("Scanned Invalid: %d\n", s.NumInvalid())
+	if s.NumScanErrors() != 0 {
+		fmt.Println("Scan Errors were:")
 
-	for suffix, num := range s.NumErrorTypes {
-		fmt.Printf("\t[%s]: %d\n", suffix, num)
-	}
-
-	fmt.Println("Error Files were:")
-
-	for path, err := range s.Errors {
-		fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		for path, err := range s.ScanErrors {
+			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+		}
 	}
 }
 

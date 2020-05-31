@@ -25,7 +25,8 @@ func (e scanError) Error() string {
 
 func newScanError(label string, dateString string) error {
 	var e scanError
-	e.prob = fmt.Sprintf("bad format for %s: %s Problem", dateString, label)
+	e.prob = fmt.Sprintf("bad format for %s: %s Problem",
+		dateString, label)
 
 	return e
 }
@@ -34,11 +35,12 @@ func newScanError(label string, dateString string) error {
 //
 // It holds errors and data results of the scan after scanning.
 type Scanner struct {
-	SkippedCount  int
-	Data          map[string]time.Time
-	NumDataTypes  map[string]int
-	Errors        map[string]string
-	NumErrorTypes map[string]int
+	SkippedCount      int
+	Data              map[string]time.Time
+	NumDataTypes      map[string]int
+	ExifErrors        map[string]string
+	NumExifErrorTypes map[string]int
+	ScanErrors        map[string]string
 }
 
 // Returns how many files were skipped.
@@ -47,22 +49,28 @@ func (s *Scanner) NumSkipped() int {
 }
 
 // Returns how many files had valid exif DateTimeOriginal data.
-func (s *Scanner) NumValid() int {
+func (s *Scanner) NumData() int {
 	return len(s.Data)
 }
 
 // Returns how many files had invalid exif DateTimeOriginal data.
-func (s *Scanner) NumInvalid() int {
-	return len(s.Errors)
+func (s *Scanner) NumExifErrors() int {
+	return len(s.ExifErrors)
+}
+
+// Returns how many files had errors walking.
+func (s *Scanner) NumScanErrors() int {
+	return len(s.ScanErrors)
 }
 
 // Returns the total number of files skipped and scanned.
 func (s *Scanner) NumTotal() int {
-	return s.SkippedCount + s.NumValid() + s.NumInvalid()
+	return s.SkippedCount + s.NumData() +
+		s.NumExifErrors() + s.NumScanErrors()
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeValid(path string, suffix string, time time.Time) {
+func (s *Scanner) storeData(path string, suffix string, time time.Time) {
 	s.Data[path] = time
 
 	_, present := s.NumDataTypes[suffix]
@@ -74,15 +82,19 @@ func (s *Scanner) storeValid(path string, suffix string, time time.Time) {
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeInvalid(path string, suffix string, err error) {
-	s.Errors[path] = err.Error()
+func (s *Scanner) storeExifError(path string, suffix string, err error) {
+	s.ExifErrors[path] = err.Error()
 
-	_, present := s.NumErrorTypes[suffix]
+	_, present := s.NumExifErrorTypes[suffix]
 	if present {
-		s.NumErrorTypes[suffix]++
+		s.NumExifErrorTypes[suffix]++
 	} else {
-		s.NumErrorTypes[suffix] = 1
+		s.NumExifErrorTypes[suffix] = 1
 	}
+}
+
+func (s *Scanner) storeScanError(path string, err error) {
+	s.ScanErrors[path] = err.Error()
 }
 
 func (s *Scanner) storeSkipped() {
@@ -321,8 +333,10 @@ func (s *Scanner) ScanFile(filepath string) (time.Time, error) {
 
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
+		var time time.Time
+
 		if err != nil {
-			s.storeInvalid(path, "", err)
+			s.storeScanError(path, err)
 			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
 
 			return nil
@@ -339,16 +353,15 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 			return nil
 		}
 
-		time, err := s.ScanFile(path)
+		time, err = s.ScanFile(path)
 		if err != nil {
-			s.storeInvalid(path, suffix, err)
-			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
+			s.storeExifError(path, suffix, err)
 
-			return nil
+			time = info.ModTime()
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-		s.storeValid(path, suffix, time)
+		s.storeData(path, suffix, time)
 
 		return nil
 	}
@@ -410,8 +423,9 @@ func (s *Scanner) Reset() {
 	s.SkippedCount = 0
 	s.Data = make(map[string]time.Time)
 	s.NumDataTypes = make(map[string]int)
-	s.Errors = make(map[string]string)
-	s.NumErrorTypes = make(map[string]int)
+	s.ExifErrors = make(map[string]string)
+	s.NumExifErrorTypes = make(map[string]int)
+	s.ScanErrors = make(map[string]string)
 }
 
 // Allocates a new Scanner.

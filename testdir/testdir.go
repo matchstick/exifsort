@@ -10,15 +10,16 @@ import (
 )
 
 const (
-	ExifPath          = "../data/with_exif.jpg"
-	NoExifPath        = "../data/no_exif.jpg"
-	SkipPath          = "../README.md"
-	NoRootExifPath    = "../data/no_root_ifd.jpg"
-	NonesensePath     = "../gobofragggle"
-	CorrectNumInvalid = 51
-	CorrectNumValid   = 100
-	CorrectNumSkipped = 25
-	CorrectNumTotal   = 176
+	ExifPath       = "../data/with_exif.jpg"
+	NoExifPath     = "../data/no_exif.jpg"
+	SkipPath       = "../README.md"
+	NoRootExifPath = "../data/no_root_ifd.jpg"
+	NonesensePath  = "../gobofragggle"
+	NumExifError   = 50
+	NumData        = 150
+	NumSkipped     = 25
+	NumScanError   = 1
+	NumTotal       = 226
 )
 
 type testdir struct {
@@ -53,23 +54,6 @@ func (td *testdir) populateExifDir(dir string, readPath string, num int) {
 	}
 }
 
-func (td *testdir) setDirPerms(dirPath string, perms os.FileMode) {
-	infos, _ := ioutil.ReadDir(dirPath)
-	for _, info := range infos {
-		targetPath := fmt.Sprintf("%s/%s", dirPath, info.Name())
-
-		err := os.Chmod(targetPath, perms)
-		if err != nil {
-			td.t.Errorf("Chmod failed on %s with %s\n", info.Name(), err.Error())
-		}
-	}
-
-	err := os.Chmod(dirPath, perms)
-	if err != nil {
-		td.t.Errorf("Chmod failed on %s with %s\n", dirPath, err.Error())
-	}
-}
-
 // Returns the path to the root of a directory full of files and nested
 // structures. This is only intended for test code. Some of the media has
 // exifdata some does not, some are not even media files. All of the files and
@@ -97,8 +81,11 @@ func NewTestDir(t *testing.T) string {
 	td.populateExifDir(nestedDir, ExifPath, 25)
 	td.populateExifDir(skipDir, SkipPath, 25)
 
-	td.populateExifDir(badDir, ExifPath, 25)
-	td.setDirPerms(badDir, 0)
+	err := os.Chmod(badDir, 0)
+	if err != nil {
+		td.t.Errorf("Chmod failed on %s with %s\n",
+			badDir, err.Error())
+	}
 
 	return td.root
 }
