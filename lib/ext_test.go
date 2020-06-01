@@ -7,18 +7,18 @@ import (
 )
 
 func TestSkipFileType(t *testing.T) {
-	// Try just gobo.<suffix>
-	for suffix := range extensionMap() {
-		goodInput := fmt.Sprintf("gobo.%s", suffix)
+	// Try just gobo.<extension>
+	for extension := range extensionMap() {
+		goodInput := fmt.Sprintf("gobo.%s", extension)
 
 		_, skip := skipFileType(goodInput)
 		if skip {
 			t.Errorf("Expected False for %s\n", goodInput)
 		}
 	}
-	// Try a simple upper case just gobo.<suffix>
-	for suffix := range extensionMap() {
-		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", suffix))
+	// Try a simple upper case just gobo.<extension>
+	for extension := range extensionMap() {
+		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", extension))
 
 		_, skip := skipFileType(goodInput)
 		if skip {
@@ -26,9 +26,9 @@ func TestSkipFileType(t *testing.T) {
 		}
 	}
 
-	// Try with many "." hey.gobo.<suffix>
-	for suffix := range extensionMap() {
-		goodInput := fmt.Sprintf("hey.gobo.%s", suffix)
+	// Try with many "." hey.gobo.<extension>
+	for extension := range extensionMap() {
+		goodInput := fmt.Sprintf("hey.gobo.%s", extension)
 
 		_, skip := skipFileType(goodInput)
 		if skip {
@@ -50,9 +50,9 @@ func TestSkipFileType(t *testing.T) {
 		t.Errorf("Expected True for %s\n", badInput)
 	}
 
-	// Try ".." at the end.<suffix>
-	for suffix := range extensionMap() {
-		badInput := fmt.Sprintf("gobo.%s..", suffix)
+	// Try ".." at the end.<extension>
+	for extension := range extensionMap() {
+		badInput := fmt.Sprintf("gobo.%s..", extension)
 
 		_, skip := skipFileType(badInput)
 		if !skip {

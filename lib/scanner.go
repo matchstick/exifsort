@@ -70,26 +70,26 @@ func (s *Scanner) NumTotal() int {
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeData(path string, suffix string, time time.Time) {
+func (s *Scanner) storeData(path string, extension string, time time.Time) {
 	s.Data[path] = time
 
-	_, present := s.NumDataTypes[suffix]
+	_, present := s.NumDataTypes[extension]
 	if present {
-		s.NumDataTypes[suffix]++
+		s.NumDataTypes[extension]++
 	} else {
-		s.NumDataTypes[suffix] = 1
+		s.NumDataTypes[extension] = 1
 	}
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeExifError(path string, suffix string, err error) {
+func (s *Scanner) storeExifError(path string, extension string, err error) {
 	s.ExifErrors[path] = err.Error()
 
-	_, present := s.NumExifErrorTypes[suffix]
+	_, present := s.NumExifErrorTypes[extension]
 	if present {
-		s.NumExifErrorTypes[suffix]++
+		s.NumExifErrorTypes[extension]++
 	} else {
-		s.NumExifErrorTypes[suffix] = 1
+		s.NumExifErrorTypes[extension] = 1
 	}
 }
 
@@ -269,9 +269,9 @@ func (s *Scanner) ScanFile(path string) (time.Time, error) {
 
 	time, err := s.scanExif(path)
 	if err != nil {
-		suffix := filepath.Ext(path)
+		extension := filepath.Ext(path)
 
-		s.storeExifError(path, suffix, err)
+		s.storeExifError(path, extension, err)
 
 		info, err := os.Stat(path)
 		if err != nil {

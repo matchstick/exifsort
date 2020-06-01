@@ -86,12 +86,12 @@ func (n *node) getNode(id int) node {
 func (n *node) mediaCollisionName(base string) string {
 	var newName string
 
-	suffix := filepath.Ext(base)
-	prefix := strings.TrimRight(base, suffix)
+	extension := filepath.Ext(base)
+	prefix := strings.TrimRight(base, extension)
 
 	// Now we keep trying until we create a name that won't collide
 	for counter := 0; true; counter++ {
-		newName = fmt.Sprintf("%s_%d%s", prefix, counter, suffix)
+		newName = fmt.Sprintf("%s_%d%s", prefix, counter, extension)
 
 		_, present := n.media[newName]
 		if !present {

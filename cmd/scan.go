@@ -28,15 +28,15 @@ func scanSummary(s *exifsort.Scanner) {
 	fmt.Printf("Scanned Skipped: %d\n", s.NumSkipped())
 	fmt.Printf("Scanned Data: %d\n", s.NumData())
 
-	for suffix, num := range s.NumDataTypes {
-		fmt.Printf("\t[%s]: %d\n", suffix, num)
+	for extension, num := range s.NumDataTypes {
+		fmt.Printf("\t[%s]: %d\n", extension, num)
 	}
 
 	if s.NumExifErrors() != 0 {
 		fmt.Printf("Scanned ExifErrors: %d\n", s.NumExifErrors())
 
-		for suffix, num := range s.NumExifErrorTypes {
-			fmt.Printf("\t[%s]: %d\n", suffix, num)
+		for extension, num := range s.NumExifErrorTypes {
+			fmt.Printf("\t[%s]: %d\n", extension, num)
 		}
 
 		fmt.Println("ExifError Files were:")

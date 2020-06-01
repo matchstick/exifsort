@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Files suffixes that are processed and not skipped.
+// Files extensions that are processed and not skipped.
 const (
 	ExtensionBMP = iota
 	ExtensionCR2
@@ -45,7 +45,6 @@ func skipFileType(path string) (string, bool) {
 	// All comparisons are lower case as case don't matter
 	path = strings.ToLower(path)
 
-
 	// Running this on a synology results in the file server
 	// creating all these useless media files. We want to skip
 	// them.
@@ -58,15 +57,13 @@ func skipFileType(path string) (string, bool) {
 		return "", true
 	}
 
-	suffix := filepath.Ext(path)
-	// no suffix to check so we skip
-	if suffix == "" {
+	extension := filepath.Ext(path)
+	// no extension to check so we skip
+	if extension == "" {
 		return "", true
 	}
 
-	_, inExtMap := extensionMap()[suffix]
+	_, inExtMap := extensionMap()[extension]
 
-	return suffix, !inExtMap
+	return extension, !inExtMap
 }
-
-
