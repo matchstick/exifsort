@@ -72,12 +72,11 @@ linters:
   # these are NOT enabled by default with disable-all=false
   # - godox
   # - gocritic
-  # - unused
   # - goconst
   # - unparam
   disable: # these are enabled by default with disable-all=false
-    - unused
-    - deadcode
+#    - unused
+#    - deadcode
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
