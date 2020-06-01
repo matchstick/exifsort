@@ -4,3 +4,7 @@ cov.out
 exifsort
 exifsort.linux
 exifsort.darwin
+
+# Goland
+.idea/
+*.iml
