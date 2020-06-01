@@ -7,6 +7,7 @@ require (
 	github.com/dsoprea/go-exif/v2 v2.0.0-20200520191204-1a12aec48f90
 	github.com/golangci/golangci-lint v1.27.0
 	github.com/google/go-cmp v0.4.0
+	github.com/hectane/go-acl v0.0.0-20190604041725-da78bae5fc95
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
