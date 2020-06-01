@@ -40,7 +40,7 @@ fix:
 
 fmt:
 	go fmt ./...
-	(which goimports || go get $(REPO_GOIMPORTS))
+	go get $(REPO_GOIMPORTS)
 	$(GOBIN)/goimports -w .
 
 tidy:
@@ -53,7 +53,7 @@ vet:
 	go vet ./...
 
 lint:
-	go get $(REPO_GOLINT))
+	go get $(REPO_GOLINT)
 	$(GOBIN)/golangci-lint run ./...
 
 docs:
