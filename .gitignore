@@ -4,6 +4,7 @@ cov.out
 exifsort
 exifsort.linux
 exifsort.darwin
+exifsort.windows
 
 # Goland
 .idea/

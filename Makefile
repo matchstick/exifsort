@@ -31,7 +31,7 @@ build_darwin:
 	env GOOS=darwin GOARCH=amd64 go build -v -o exifsort.darwin
 
 build_windows:
-	env GOOS=darwin GOARCH=amd64 go build -v -o exifsort.windows
+	env GOOS=windows GOARCH=amd64 go build -v -o exifsort.windows
 
 all: fix vet fmt test build lint tidy
 
@@ -65,4 +65,4 @@ cov:
 	go tool cover -html=cov.out
 
 clean:
-	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin *.json
+	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin exifsort.windows *.json
