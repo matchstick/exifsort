@@ -57,6 +57,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test
-        run: | # windows doesn't have make
-	  go test ./... 
-	  go build
+        run: go test ./... 
