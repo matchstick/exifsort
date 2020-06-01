@@ -17,7 +17,7 @@
 default: build
 
 GOBIN := $(shell go env GOPATH)/bin
-REPO_GOLINT := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
+REPO_GOLINT := github.com/golangci/golangci-lint/cmd/golangci-lint
 REPO_GOIMPORTS := golang.org/x/tools/cmd/goimports
 REPO_GODOC := golang.org/x/tools/cmd/godoc
 
@@ -53,11 +53,11 @@ vet:
 	go vet ./...
 
 lint:
-	(which golangci-lint || go get $(REPO_GOLINT))
+	go get $(REPO_GOLINT))
 	$(GOBIN)/golangci-lint run ./...
 
 docs:
-	(which godoc || go get $(REPO_GODOC))
+	go get $(REPO_GODOC)
 	$(GOBIN)/godoc -http=localhost:6060
 
 cov:
