@@ -149,13 +149,13 @@ func TestScanDir(t *testing.T) {
 	}
 
 	exifErrs := s.ExifErrors
-	if !winOS() && len(exifErrs) != testdir.NumExifError {
+	if len(exifErrs) != testdir.NumExifError {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
 			testdir.NumExifError, len(exifErrs))
 	}
 
 	scanErrs := s.ScanErrors
-	if len(scanErrs) != testdir.NumScanError {
+	if !winOS() && len(scanErrs) != testdir.NumScanError {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
 			testdir.NumScanError, len(scanErrs))
 	}
