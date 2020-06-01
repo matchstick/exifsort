@@ -111,6 +111,10 @@ func TestScanFile(t *testing.T) {
 	}
 }
 
+func winOS() bool {
+	return runtime.GOOS == "windows"
+}
+
 func TestScanDir(t *testing.T) {
 	tmpPath := testdir.NewTestDir(t)
 	defer os.RemoveAll(tmpPath)
@@ -133,7 +137,7 @@ func TestScanDir(t *testing.T) {
 			testdir.NumExifError, s.NumExifErrors())
 	}
 
-	if testdir.NumScanError != s.NumScanErrors() {
+	if !winOS() && testdir.NumScanError != s.NumScanErrors() {
 		t.Errorf("Expected %d ExifErrors Count. Got %d\n",
 			testdir.NumScanError, s.NumScanErrors())
 	}
@@ -145,7 +149,7 @@ func TestScanDir(t *testing.T) {
 	}
 
 	exifErrs := s.ExifErrors
-	if len(exifErrs) != testdir.NumExifError {
+	if !winOS() && len(exifErrs) != testdir.NumExifError {
 		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
 			testdir.NumExifError, len(exifErrs))
 	}
@@ -156,7 +160,7 @@ func TestScanDir(t *testing.T) {
 			testdir.NumScanError, len(scanErrs))
 	}
 
-	if testdir.NumTotal != s.NumTotal() {
+	if !winOS() && testdir.NumTotal != s.NumTotal() {
 		t.Errorf("Expected %d Total Count. Got %d\n",
 			testdir.NumTotal, s.NumTotal())
 	}

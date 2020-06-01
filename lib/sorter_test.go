@@ -29,7 +29,7 @@ func countFiles(t *testing.T, path string, correctCount int, label string) {
 			return nil
 		})
 
-	if count != correctCount {
+	if !winOS() && count != correctCount {
 		t.Errorf("File Count error for %s on %s. Expected %d, got %d\n",
 			label, path, correctCount, count)
 	}
