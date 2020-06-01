@@ -80,11 +80,3 @@ scans by file not directory. Prints the date information of files specified.
 Soon we will be able to merge output from sort to a pre-existing directory.
 
 `exifsort merge -i <src> -o <dst> -q -s`
-
-TODOs
-=====
-* concurrency
-* Write a merge step to merge two sorted directories.
-	* check input and output directories are correct format
-	* copy or move files from input to output
-* Set up CI on github.
