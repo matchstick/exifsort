@@ -111,76 +111,6 @@ func exifTimeToStr(t time.Time) string {
 		t.Hour(), t.Minute(), t.Second())
 }
 
-// Files suffixes that are processed and not skipped.
-const (
-	SuffixBMP = iota
-	SuffixCR2
-	SuffixDNG
-	SuffixGIF
-	SuffixJPEG
-	SuffixJPG
-	SuffixNEF
-	SuffixPNG
-	SuffixPSD
-	SuffixRAF
-	SuffixRAW
-	SuffixTIF
-	SuffixTIFF
-)
-
-// Running this on a synology results in the file server creating all these
-// useless media files. We want to skip them.
-func (s *Scanner) isSynologyFile(path string) bool {
-	switch {
-	case strings.Contains(path, "@eadir"):
-		return true
-	case strings.Contains(path, "@syno"):
-		return true
-	case strings.Contains(path, "synofile_thumb"):
-		return true
-	}
-
-	return false
-}
-
-func (s *Scanner) mediaSuffixMap() map[string]int {
-	// We are going to do this check a lot so let's use a map.
-	return map[string]int{
-		".bmp":  SuffixBMP,
-		".cr2":  SuffixCR2,
-		".dng":  SuffixDNG,
-		".gif":  SuffixGIF,
-		".jpeg": SuffixJPEG,
-		".jpg":  SuffixJPG,
-		".nef":  SuffixNEF,
-		".png":  SuffixPNG,
-		".psd":  SuffixPSD,
-		".raf":  SuffixRAF,
-		".raw":  SuffixRAW,
-		".tif":  SuffixTIF,
-		".tiff": SuffixTIFF,
-	}
-}
-
-func (s *Scanner) skipFileType(path string) (string, bool) {
-	// All comparisons are lower case as case don't matter
-	path = strings.ToLower(path)
-	if s.isSynologyFile(path) {
-		// skip
-		return "", true
-	}
-
-	suffix := filepath.Ext(path)
-	// no suffix to check so we skip
-	if suffix == "" {
-		return "", true
-	}
-
-	_, inMediaMap := s.mediaSuffixMap()[suffix]
-
-	return suffix, !inMediaMap
-}
-
 const numSecsSplit = 2 // we expect two pieces
 
 // Seconds are funny. The format may be "<sec> <milli>"
@@ -221,7 +151,7 @@ func (s *Scanner) dateFromStr(str string, exifDateTime string) (int, time.Month,
 	}
 
 	day, err := strconv.Atoi(splitDate[2])
-	if err != nil || day <=0 || day > 31 {
+	if err != nil || day < 1 || day > 31 {
 		return 0, 0, 0, newScanError("Day", exifDateTime)
 	}
 
@@ -237,17 +167,17 @@ func (s *Scanner) timeFromStr(str string, exifDateTime string) (int, int, int, e
 	}
 
 	hour, err := strconv.Atoi(splitTime[0])
-	if err != nil || hour <= 0 || hour > 23 {
+	if err != nil || hour < 0 || hour > 23 {
 		return 0, 0, 0, newScanError("Hour", exifDateTime)
 	}
 
 	minute, err := strconv.Atoi(splitTime[1])
-	if err != nil || minute <= 0 || minute > 59 {
+	if err != nil || minute < 0 || minute > 59 {
 		return 0, 0, 0, newScanError("Minute", exifDateTime)
 	}
 
 	second, err := strconv.Atoi(splitTime[2])
-	if err != nil || second <= 0 || second > 59 {
+	if err != nil || second < 0 || second > 59 {
 		second, err = s.secsFractionFromStr(splitTime[2])
 		if err != nil {
 			return 0, 0, 0, newScanError("Sec", exifDateTime)
@@ -371,7 +301,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		}
 
 		// Only looking for media files that may have exif.
-		suffix, skipFile := s.skipFileType(path)
+		extension, skipFile := skipFileType(path)
 		if skipFile {
 			s.storeSkipped()
 			return nil
@@ -379,13 +309,13 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 
 		time, err = s.scanExif(path)
 		if err != nil {
-			s.storeExifError(path, suffix, err)
+			s.storeExifError(path, extension, err)
 
 			time = info.ModTime()
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-		s.storeData(path, suffix, time)
+		s.storeData(path, extension, time)
 
 		return nil
 	}
