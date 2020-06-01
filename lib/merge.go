@@ -30,13 +30,17 @@ func mergePathValid(root string, path string, method int) bool {
 
 	var err error
 
+	yearRe := `\d\d\d\d`
+	monthRe := yearRe + `_` + `\d\d`
+	dayRe := yearRe + `_` + monthRe + `_` + `\d\d`
+
 	switch method {
 	case MethodYear:
-		isMatch, err = regexp.MatchString(`\d\d\d\d\/`, pieces)
+		isMatch, err = regexp.MatchString(yearRe, pieces)
 	case MethodMonth:
-		isMatch, err = regexp.MatchString(`\d\d\d\d\/\d\d\d\d_\d\d`, pieces)
+		isMatch, err = regexp.MatchString(yearRe+`\/`+monthRe, pieces)
 	case MethodDay:
-		isMatch, err = regexp.MatchString(`\d\d\d\d\/\d\d\d\d_\d\d\/\d\d\d\d_\d\d_\d\d`, pieces)
+		isMatch, err = regexp.MatchString(yearRe+`\/`+monthRe+`\/`+dayRe, pieces)
 	default:
 		return false
 	}
