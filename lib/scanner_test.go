@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/hectane/go-acl"
 	"github.com/google/go-cmp/cmp"
 	"github.com/matchstick/exifsort/testdir"
 )
@@ -201,7 +203,12 @@ func TestScanBadSave(t *testing.T) {
 
 	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
 
-	_ = os.Chmod(jsonDir, 0)
+	// Windows permissions are much different than unix variants
+	if runtime.GOOS == "windows" {
+		_ = acl.Chmod(jsonDir, 0)
+	} else {
+		_ = os.Chmod(jsonDir, 0)
+	}
 
 	err := s.Save(jsonPath)
 	if err == nil {
