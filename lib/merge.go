@@ -58,7 +58,7 @@ func mergePathValid(root string, path string, method int) bool {
 // 2) Must contain at least one media file.
 // 3) Must follow the nested directory structure of:
 // TODO.
-func mergeCheck(root string, method int, logger io.Writer) error {
+func MergeCheck(root string, method int, logger io.Writer) error {
 	err := filepath.Walk(root,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
