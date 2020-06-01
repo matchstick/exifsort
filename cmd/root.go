@@ -45,11 +45,13 @@ func Execute() {
 
 	rootCmd := newRootCmd()
 	evalCmd := newEvalCmd()
+	mergeCmd := newMergeCmd()
 	scanCmd := newScanCmd()
 	sortCmd := newSortCmd()
 
-	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(evalCmd)
+	rootCmd.AddCommand(mergeCmd)
+	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(sortCmd)
 
 	if err := rootCmd.Execute(); err != nil {
