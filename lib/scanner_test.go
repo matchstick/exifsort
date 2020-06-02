@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hectane/go-acl"
 	"github.com/google/go-cmp/cmp"
+	"github.com/hectane/go-acl"
 	"github.com/matchstick/exifsort/testdir"
 )
 
