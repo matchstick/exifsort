@@ -23,28 +23,43 @@ func mergePathValid(root string, path string, method int) bool {
 		return false
 	}
 
+	// We want the replace below to strip out the "/" for us
+	// So we add it here
+	if strings.LastIndex(root, "/") != len(root)-1 {
+		root = root + "/"
+	}
+
 	// get the time based paths.
-	pieces := strings.TrimLeft(root, dir)
+	path = strings.Replace(dir, root, "", 1)
 
-	isMatch := false
+	// year = 1900 - 9999
+	yearRe := `(19|[2-9][0-9])\d{2}`
 
-	var err error
+	// month = 01 - 12
+	monthRe := `(0[1-9]|1[012])`
 
-	yearRe := `\d\d\d\d`
-	monthRe := yearRe + `_` + `\d\d`
-	dayRe := yearRe + `_` + monthRe + `_` + `\d\d`
+	// day = 01 - 31
+	dayRe := `(0[1-9]|1[0-9]|2[0-9]|3[01])`
+
+	var matchStr string
 
 	switch method {
 	case MethodYear:
-		isMatch, err = regexp.MatchString(yearRe, pieces)
+		matchStr = yearRe
 	case MethodMonth:
-		isMatch, err = regexp.MatchString(yearRe+`\/`+monthRe, pieces)
+		matchStr = yearRe + `/` + // year
+			yearRe + "_" + monthRe // month
 	case MethodDay:
-		isMatch, err = regexp.MatchString(yearRe+`\/`+monthRe+`\/`+dayRe, pieces)
+		matchStr = yearRe + `/` + // year
+			yearRe + "_" + monthRe + `/` + // month
+			yearRe + "_" + monthRe + "_" + dayRe // day
 	default:
 		return false
 	}
 
+	matchStr = `^` + matchStr + `$`
+
+	isMatch, err := regexp.MatchString(matchStr, path)
 	if err != nil {
 		return false
 	}
@@ -52,17 +67,17 @@ func mergePathValid(root string, path string, method int) bool {
 	return isMatch
 }
 
-// We are pretty strict on the directoires we merge from and to here.
+// We are pretty strict on the directories we merge from and to here.
 // They must fulfill several requirements:
 // 1) No walk errors.
 // 2) Must contain at least one media file.
 // 3) Must follow the nested directory structure of:
-// TODO.
 func MergeCheck(root string, method int, logger io.Writer) error {
 	err := filepath.Walk(root,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				errStr := fmt.Sprintf("Walk Err on %s with %s", path, err.Error())
+				errStr := fmt.Sprintf("Walk Err on %s with %s",
+					path, err.Error())
 				return &mergeErr{errStr}
 			}
 
