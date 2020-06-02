@@ -2,14 +2,16 @@
 
 ![Under Construction](data/construction.jpg) 
 
-Program are both under construction but for now here are some notes.
+Everything is done except merge for 1.0 release.  Code coverage is greater than 87% and climbing.
+Open [issues](https://github.com/matchstick/exifsort/issues) show remaining work.
 
 # exifsort
 
 Libraries and CLI to sort to sort media by date using EXIF information.
 
 This is for folks who have a closet full of hard drives and network drives full
-of photos and want to centralize them in one folder structure.
+of photos and want to centralize them in one folder structure that is organized
+by time.
 
 The functionality and API live in the lib directory. Check out
 [godocs](https://godoc.org/github.com/matchstick/exifsort/lib) for details.
@@ -17,7 +19,15 @@ The functionality and API live in the lib directory. Check out
 # Overview
 
 The program is written to employ several stages to let the user verify the
-step results as they organize their photos. It cannot hurt to be careful.
+step results as they organize their photos. We break down the pipeline into
+four stages so we can verify correctness for each stage.
+
+| Stage | Description |
+|-------|-------------|
+| Scan  | Collect the mapping of path to time |
+| Sort  | Accept scan results to transfer media to new directory organized by time. |
+| Merge | Transfer one sorted directory to another sorted directory. |
+
 
 Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
 library](https://github.com/dsoprea/go-exif) and fast responses.
@@ -80,11 +90,3 @@ scans by file not directory. Prints the date information of files specified.
 Soon we will be able to merge output from sort to a pre-existing directory.
 
 `exifsort merge -i <src> -o <dst> -q -s`
-
-TODOs
-=====
-* concurrency
-* Write a merge step to merge two sorted directories.
-	* check input and output directories are correct format
-	* copy or move files from input to output
-* Set up CI on github.
