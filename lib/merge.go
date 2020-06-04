@@ -19,21 +19,27 @@ func (m mergeErr) Error() string {
 
 func mergePathValid(root string, path string, method int) bool {
 	dir := filepath.Dir(path)
+	fmt.Printf("Dir After: %s\n", dir)
 	if dir == "" {
 		return false
 	}
 
 	// We want the replace below to strip out the "/" for us
 	// So we add it here
+	fmt.Printf("Root Before: %s\n", root)
 	if strings.LastIndexByte(root, filepath.Separator) != len(root)-1 {
 		// We do this as the separator is a rune for windows.
 		runeRoot := []rune(root)
 		runeRoot = append(runeRoot, filepath.Separator)
 		root = string(runeRoot)
 	}
+	fmt.Printf("Root After: %s\n", root)
 
 	// get the time based paths.
 	path = strings.Replace(dir, root, "", 1)
+
+
+	fmt.Printf("Path: %s\n\n", path)
 
 	// year = 1900 - 9999
 	yearRe := `(19|[2-9][0-9])\d{2}`

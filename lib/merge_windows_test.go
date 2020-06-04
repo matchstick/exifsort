@@ -45,7 +45,7 @@ func TestWinMergePathRoots(t *testing.T) {
 
 	for root, input := range goodRootInput {
 		if !mergePathValid(root, input, MethodYear) {
-			t.Errorf("Expected Match with %s on method %d\n",
+			t.Errorf("Expected input %s to be valid on method %d\n",
 				input, MethodYear)
 		}
 	}
@@ -73,7 +73,7 @@ func TestWinMergePathBad(t *testing.T) {
 
 	for input, method := range goodInput {
 		if mergePathValid(`gobo`, input, method) {
-			t.Errorf("Unexpected Match with %s on method %d\n",
+			t.Errorf("Unexpected valid input %s on method %d\n",
 				input, method)
 		}
 	}
