@@ -25,8 +25,11 @@ func mergePathValid(root string, path string, method int) bool {
 
 	// We want the replace below to strip out the "/" for us
 	// So we add it here
-	if strings.LastIndex(root, "/") != len(root)-1 {
-		root = root + "/"
+	if strings.LastIndexByte(root, filepath.Separator) != len(root)-1 {
+		// We do this as the separator is a rune for windows.
+		runeRoot := []rune(root)
+		runeRoot = append(runeRoot, filepath.Separator)
+		root = string(runeRoot)
 	}
 
 	// get the time based paths.

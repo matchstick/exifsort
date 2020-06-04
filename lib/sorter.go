@@ -56,7 +56,7 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 	mediaMap := s.idx.GetAll()
 
 	for newPath, oldPath := range mediaMap {
-		newPath = fmt.Sprintf("%s/%s", dst, newPath)
+		newPath = filepath.Join(dst, newPath)
 
 		err = s.ensureFullPath(newPath)
 		if err != nil {

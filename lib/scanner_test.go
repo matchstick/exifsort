@@ -1,9 +1,9 @@
 package exifsort
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -176,7 +176,7 @@ func TestScanSaveLoad(t *testing.T) {
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+	jsonPath := filepath.Join(jsonDir, "scanned.json")
 
 	err := s.Save(jsonPath)
 	if err != nil {
@@ -205,7 +205,7 @@ func TestScanBadSave(t *testing.T) {
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+	jsonPath := filepath.Join(jsonDir, "scanned.json")
 
 	// Windows permissions are much different than unix variants
 	if runtime.GOOS == "windows" {
@@ -230,7 +230,7 @@ func TestScanBadLoad(t *testing.T) {
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	jsonPath := fmt.Sprintf("%s/%s", jsonDir, "scanned.json")
+	jsonPath := filepath.Join(jsonDir, "scanned.json")
 
 	err := s.Save(jsonPath)
 	if err != nil {

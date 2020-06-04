@@ -142,7 +142,8 @@ type yearIndex struct {
 }
 
 func (y *yearIndex) PathStr(time time.Time, base string) string {
-	return fmt.Sprintf("%04d/%s", time.Year(), base)
+	year := fmt.Sprintf("%04d", time.Year())
+	return filepath.Join(year, base)
 }
 
 func (y *yearIndex) Put(path string, time time.Time) error {
@@ -207,10 +208,10 @@ func (m *monthIndex) Put(path string, time time.Time) error {
 }
 
 func (m *monthIndex) PathStr(time time.Time, base string) string {
-	return fmt.Sprintf("%04d/%04d_%02d/%s",
-		time.Year(),               // Year label
-		time.Year(), time.Month(), // Month label
-		base)
+	year := fmt.Sprintf("%04d", time.Year())                     // Year label
+	month := fmt.Sprintf("%04d_%02d", time.Year(), time.Month()) // Month label
+
+	return filepath.Join(year, month, base)
 }
 
 func (m *monthIndex) Get(path string) (string, bool) {
@@ -277,11 +278,12 @@ func (d *dayIndex) Put(path string, time time.Time) error {
 }
 
 func (d *dayIndex) PathStr(time time.Time, base string) string {
-	return fmt.Sprintf("%04d/%04d_%02d/%04d_%02d_%02d/%s",
-		time.Year(),
-		time.Year(), time.Month(),
-		time.Year(), time.Month(), time.Day(),
-		base)
+	year := fmt.Sprintf("%04d", time.Year())                     // Year label
+	month := fmt.Sprintf("%04d_%02d", time.Year(), time.Month()) // Month label
+	day := fmt.Sprintf("%04d_%02d_%02d",
+		time.Year(), time.Month(), time.Day()) // Day label
+
+	return filepath.Join(year, month, day, base)
 }
 
 func (d *dayIndex) Get(path string) (string, bool) {
