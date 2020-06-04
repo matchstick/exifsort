@@ -17,6 +17,10 @@ limitations under the License.
 package main
 
 import (
+	// Adding the golangci-lint import here as a way to insure
+	// that it is installed automatically with a standard version
+	// when we either build the product or run tests.
+	_ "github.com/golangci/golangci-lint/pkg/commands"
 	"github.com/matchstick/exifsort/cmd"
 )
 
