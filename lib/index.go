@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
-
-	"github.com/udhos/equalfile"
 )
 
 type indexError struct {
@@ -80,28 +77,6 @@ func (n *node) getNode(id int) node {
 	return retNode
 }
 
-// When you find a collision you add a counter to the name.
-// So <name>.jpg => <name>_#.jpg the number increments as it may have
-// multiple collisions.
-func (n *node) mediaCollisionName(base string) string {
-	var newName string
-
-	extension := filepath.Ext(base)
-	prefix := strings.TrimRight(base, extension)
-
-	// Now we keep trying until we create a name that won't collide
-	for counter := 0; true; counter++ {
-		newName = fmt.Sprintf("%s_%d%s", prefix, counter, extension)
-
-		_, present := n.media[newName]
-		if !present {
-			break
-		}
-	}
-
-	return newName
-}
-
 // Add a file to the mediaMap. It needs to handle collisions, duplicates, etc.
 func (n *node) mediaAdd(path string) error {
 	var base = filepath.Base(path)
@@ -113,23 +88,27 @@ func (n *node) mediaAdd(path string) error {
 		return nil
 	}
 
-	// Check for same contents
-	cmp := equalfile.New(nil, equalfile.Options{})
-
-	equal, err := cmp.CompareFile(path, storedPath)
+	// Are the file equal in name AND in contents?
+	equal, err := isEqual(path, storedPath)
 	if err != nil {
 		return err
 	}
 
+	// If equal then let's not add duplicates.
 	if equal {
 		errStr := fmt.Sprintf("%s is a duplicate of the already stored media %s",
 			path, storedPath)
 		return indexError{errStr}
 	}
 
-	// If it has the same name as is not the same file we should add it
+	// If it has the same name and not the same contents we should add it
 	// with a new base name to not collide.
-	base = n.mediaCollisionName(base)
+	base = collisionName(base,
+		// Test for collision func
+		func(newName string) bool {
+			_, present := n.media[newName]
+			return present
+		})
 	n.media[base] = path
 
 	return nil
