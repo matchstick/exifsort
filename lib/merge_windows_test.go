@@ -37,10 +37,10 @@ func TestWinMergePathGood(t *testing.T) {
 
 func TestWinMergePathRoots(t *testing.T) {
 	var goodRootInput = map[string]string{
-		`gobo/gobo`:      `gobo/gobo/1920/m.jpg`,
-		`gobo/dogo/gobo`: `gobo/dogo/gobo/1920/m.jpg`,
-		`gobo/`:          `gobo/1920/m.jpg`,
-		`../gobo/`:       `../gobo/1920/m.jpg`,
+		`gobo\gobo`:      `gobo\gobo\1920\m.jpg`,
+		`gobo\dogo\gobo`: `gobo\dogo\gobo\1920\m.jpg`,
+		`gobo\`:          `gobo\1920\m.jpg`,
+		`..\gobo\`:       `..\gobo\1920\m.jpg`,
 	}
 
 	for root, input := range goodRootInput {

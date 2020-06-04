@@ -61,8 +61,6 @@ func mergePathValid(root string, path string, method int) bool {
 
 	matchStr = `^` + matchStr + `$`
 
-	fmt.Printf("MatchStr: %s\n\n", matchStr)
-
 	isMatch, err := regexp.MatchString(matchStr, path)
 	if err != nil {
 		return false
