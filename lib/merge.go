@@ -17,6 +17,12 @@ func (m mergeErr) Error() string {
 	return m.prob
 }
 
+const (
+	yearRe  = `(19|[2-9][0-9])\d{2}`         // year = 1900 - 9999
+	monthRe = `(0[1-9]|1[012])`              // month = 01 - 12
+	dayRe   = `(0[1-9]|1[0-9]|2[0-9]|3[01])` // day = 01 - 31
+)
+
 func mergePathValid(root string, path string, method int) bool {
 	dir := filepath.Dir(path)
 	if dir == "" {
@@ -35,27 +41,20 @@ func mergePathValid(root string, path string, method int) bool {
 	// get the time based paths.
 	path = strings.Replace(dir, root, "", 1)
 
-	// year = 1900 - 9999
-	yearRe := `(19|[2-9][0-9])\d{2}`
-
-	// month = 01 - 12
-	monthRe := `(0[1-9]|1[012])`
-
-	// day = 01 - 31
-	dayRe := `(0[1-9]|1[0-9]|2[0-9]|3[01])`
-
 	var matchStr string
+
+	var regexSep = regexp.QuoteMeta(string(filepath.Separator))
 
 	switch method {
 	case MethodYear:
 		matchStr = yearRe
 	case MethodMonth:
-		matchStr = filepath.Join(yearRe, // year
-			yearRe+"_"+monthRe) // month
+		matchStr = yearRe + regexSep +
+			yearRe + "_" + monthRe
 	case MethodDay:
-		matchStr = filepath.Join(yearRe, // year
-			yearRe+"_"+monthRe,           // month
-			yearRe+"_"+monthRe+"_"+dayRe) // day
+		matchStr = yearRe + regexSep +
+			yearRe + "_" + monthRe + regexSep +
+			yearRe + "_" + monthRe + "_" + dayRe
 	default:
 		return false
 	}

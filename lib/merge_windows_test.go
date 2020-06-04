@@ -37,15 +37,15 @@ func TestWinMergePathGood(t *testing.T) {
 
 func TestWinMergePathRoots(t *testing.T) {
 	var goodRootInput = map[string]string{
-		`gobo/gobo`:      `gobo/gobo/1920/m.jpg`,
-		`gobo/dogo/gobo`: `gobo/dogo/gobo/1920/m.jpg`,
-		`gobo/`:          `gobo/1920/m.jpg`,
-		`../gobo/`:       `../gobo/1920/m.jpg`,
+		`gobo\gobo`:      `gobo\gobo\1920\m.jpg`,
+		`gobo\dogo\gobo`: `gobo\dogo\gobo\1920\m.jpg`,
+		`gobo\`:          `gobo\1920\m.jpg`,
+		`..\gobo\`:       `..\gobo\1920\m.jpg`,
 	}
 
 	for root, input := range goodRootInput {
 		if !mergePathValid(root, input, MethodYear) {
-			t.Errorf("Expected Match with %s on method %d\n",
+			t.Errorf("Expected input %s to be valid on method %d\n",
 				input, MethodYear)
 		}
 	}
@@ -73,7 +73,7 @@ func TestWinMergePathBad(t *testing.T) {
 
 	for input, method := range goodInput {
 		if mergePathValid(`gobo`, input, method) {
-			t.Errorf("Unexpected Match with %s on method %d\n",
+			t.Errorf("Unexpected valid input %s on method %d\n",
 				input, method)
 		}
 	}
