@@ -43,6 +43,9 @@ func mergePathValid(root string, path string, method int) bool {
 
 	var matchStr string
 
+	// We need this since windows uses "\" as a separator
+	// and that is a special character for regex. It needs to be escaped.
+	// Thank you QuoteMeta.
 	var regexSep = regexp.QuoteMeta(string(filepath.Separator))
 
 	switch method {
