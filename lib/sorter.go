@@ -29,37 +29,6 @@ type Sorter struct {
 	TransferErrors map[string]string
 }
 
-func (s *Sorter) moveMedia(srcPath string, dstPath string) error {
-	return os.Rename(srcPath, dstPath)
-}
-
-func (s *Sorter) copyMedia(srcPath string, dstPath string) error {
-	srcStat, err := os.Stat(srcPath)
-	if err != nil {
-		return err
-	}
-
-	if !srcStat.Mode().IsRegular() {
-		errStr := fmt.Sprintf("%s is not a regular file", srcPath)
-		return sortError{errStr}
-	}
-
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-	_, err = io.Copy(dst, src)
-
-	return err
-}
-
 func (s *Sorter) ensureFullPath(path string) error {
 	dirPath := filepath.Dir(path)
 	return os.MkdirAll(dirPath, 0755)
@@ -96,9 +65,9 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 
 		switch action {
 		case ActionCopy:
-			err = s.copyMedia(oldPath, newPath)
+			err = copyFile(oldPath, newPath)
 		case ActionMove:
-			err = s.moveMedia(oldPath, newPath)
+			err = moveFile(oldPath, newPath)
 		default:
 			errStr := fmt.Sprintf("Invalid action %d\n",
 				action)

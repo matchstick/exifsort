@@ -96,7 +96,7 @@ func TestMergeCheckGood(t *testing.T) {
 		sorter, _ := NewSorter(scanner, method)
 		_ = sorter.Transfer(dst, ActionCopy, ioutil.Discard)
 
-		err := MergeCheck(dst, method, ioutil.Discard)
+		err := MergeCheck(dst, method)
 		if err != nil {
 			t.Errorf("MergeCheck err of Sorted Dir %s, method %d\n",
 				err.Error(), method)

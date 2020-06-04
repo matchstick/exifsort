@@ -21,18 +21,6 @@ func indexTmpDir(t *testing.T, parent string, name string) string {
 	return newDir
 }
 
-func copyFile(t *testing.T, src string, dst string) {
-	content, err := ioutil.ReadFile(src)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = ioutil.WriteFile(dst, content, 0600)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 // Add Some filepaths to the index
 // File names are of the form "IMG_<start>.jpg" to "IMG_<end>.jpg"
 // We have a time associated with each file based on args provided.
@@ -43,7 +31,7 @@ func PutFiles(t *testing.T, idx index, dir string, srcFile string,
 		time := time.Date(year, time.Month(month), day,
 			0, 0, 0, 0, time.Local)
 		name := fmt.Sprintf("%s/IMG_%d.jpg", dir, ii)
-		copyFile(t, srcFile, name)
+		_ = copyFile(srcFile, name)
 
 		err := idx.Put(name, time)
 		if err != nil {

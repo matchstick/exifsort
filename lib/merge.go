@@ -47,12 +47,12 @@ func mergePathValid(root string, path string, method int) bool {
 	case MethodYear:
 		matchStr = yearRe
 	case MethodMonth:
-		matchStr = yearRe + `/` + // year
-			yearRe + "_" + monthRe // month
+		matchStr = filepath.Join(yearRe, // year
+			yearRe+"_"+monthRe) // month
 	case MethodDay:
-		matchStr = yearRe + `/` + // year
-			yearRe + "_" + monthRe + `/` + // month
-			yearRe + "_" + monthRe + "_" + dayRe // day
+		matchStr = filepath.Join(yearRe, // year
+			yearRe+"_"+monthRe,           // month
+			yearRe+"_"+monthRe+"_"+dayRe) // day
 	default:
 		return false
 	}
@@ -72,7 +72,7 @@ func mergePathValid(root string, path string, method int) bool {
 // 1) No walk errors.
 // 2) Must contain at least one media file.
 // 3) Must follow the nested directory structure of:
-func MergeCheck(root string, method int, logger io.Writer) error {
+func MergeCheck(root string, method int) error {
 	err := filepath.Walk(root,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -94,6 +94,50 @@ func MergeCheck(root string, method int, logger io.Writer) error {
 			if !mergePathValid(root, path, method) {
 				errStr := fmt.Sprintf("Illegal Path %s", path)
 				return &mergeErr{errStr}
+			}
+
+			return nil
+		})
+
+	return err
+}
+
+func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
+	dstFile := strings.Replace(srcFile, srcRoot, dstRoot, 1)
+
+	switch action {
+	case ActionCopy:
+		return copyFile(srcFile, dstFile)
+	case ActionMove:
+		return moveFile(srcFile, dstFile)
+	default:
+		errStr := fmt.Sprintf("Unknown Action %d", action)
+		return &mergeErr{errStr}
+	}
+}
+
+func Merge(srcRoot string, dstRoot string, method int, logger io.Writer) error {
+	err := filepath.Walk(srcRoot,
+		func(srcFile string, info os.FileInfo, err error) error {
+			if err != nil {
+				errStr := fmt.Sprintf("Err on %s with %s",
+					srcFile, err.Error())
+				return &mergeErr{errStr}
+			}
+
+			// Don't need to scan directories
+			if info.IsDir() {
+				return nil
+			}
+
+			_, skip := skipFileType(srcFile)
+			if skip {
+				return nil
+			}
+
+			err = merge(srcFile, srcRoot, dstRoot, method)
+			if err != nil {
+				return err
 			}
 
 			return nil

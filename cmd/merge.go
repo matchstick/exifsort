@@ -44,15 +44,21 @@ func newMergeCmd() *cobra.Command {
 				return
 			}
 
-			err = exifsort.MergeCheck(src, method, os.Stdout)
+			err = exifsort.MergeCheck(src, method)
 			if err != nil {
 				fmt.Printf("Input Dir Error: %s\n", err.Error())
 				return
 			}
 
-			err = exifsort.MergeCheck(dst, method, os.Stdout)
+			err = exifsort.MergeCheck(dst, method)
 			if err != nil {
 				fmt.Printf("Output Dir Error: %s\n", err.Error())
+				return
+			}
+
+			err = exifsort.Merge(src, dst, method, os.Stdout)
+			if err != nil {
+				fmt.Printf("Merge Error: %s\n", err.Error())
 				return
 			}
 		},
