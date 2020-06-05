@@ -79,36 +79,12 @@ func (n *node) getNode(id int) node {
 
 // Add a file to the mediaMap. It needs to handle collisions, duplicates, etc.
 func (n *node) mediaAdd(path string) error {
-	var base = filepath.Base(path)
-	storedPath, present := n.media[base]
-
-	// Common case, no duplicates or collisions.
-	if !present {
-		n.media[base] = path
-		return nil
-	}
-
-	// Are the file equal in name AND in contents?
-	equal, err := isEqual(path, storedPath)
+	// Use collisionRename to find a name that won't collide with others.
+	base, err := uniqueName(path, func(filename string) string { return n.media[filename] })
 	if err != nil {
 		return err
 	}
 
-	// If equal then let's not add duplicates.
-	if equal {
-		errStr := fmt.Sprintf("%s is a duplicate of the already stored media %s",
-			path, storedPath)
-		return indexError{errStr}
-	}
-
-	// If it has the same name and not the same contents we should add it
-	// with a new base name to not collide.
-	base = collisionName(base,
-		// Test for collision func
-		func(newName string) bool {
-			_, present := n.media[newName]
-			return present
-		})
 	n.media[base] = path
 
 	return nil
