@@ -40,28 +40,53 @@ func isEqual(lhs string, rhs string) (bool, error) {
 	return equal, nil
 }
 
-// Routine to test if the argument filename will collide with any
-// other filenames for the caller context.
-type doesCollideFunc func(filename string) bool
+// Routine returns what path that collides with the argument
+type collisionNameFunc func(filename string) string
 
-// When you find a collision you add a counter to the filename.
-// So <name>.jpg => <name>_#.jpg the number increments as it may have
+// uniqueName's purpose is to return to the caller a filename that is unique
+// among the context provided in the argument func. If it discovers a file that
+// has the same filename and the same contents it will return an error. We
+// don't want to add a file that is a duplicate.
+// 
+// The routine achieves ths goal by when finding a collision it reconstructs
+// the filename with a counter as part of the name. 
+//
+// So <name>.jpg => <name>_#.jpg. The number increments as it may have
 // multiple collisions. This way we can create a new unique name.
-// We accept a doesCollideFunc to have the context for collisions be clean.
-func collisionName(base string, doesCollide doesCollideFunc) string {
-	var newName string
+// We accept a function to determine if the filenames collide with the caller's
+// file set.
+func uniqueName(path string, doesCollide collisionNameFunc) (string, error) {
+	var filename = filepath.Base(path)
 
-	extension := filepath.Ext(base)
-	prefix := strings.TrimRight(base, extension)
+	extension := filepath.Ext(filename)
+	prefix := strings.TrimRight(filename, extension)
 
-	// Now we keep trying until we create a name that won't collide
 	for counter := 0; true; counter++ {
-		newName = fmt.Sprintf("%s_%d%s", prefix, counter, extension)
+		// Test for unique filename
+		collisionPath := doesCollide(filename)
 
-		if !doesCollide(newName) {
+		if collisionPath == "" {
+			// There is no collisionPath so filename is unique
 			break
 		}
+
+		sameContents, err := isEqual(path, collisionPath)
+		if err != nil {
+			// Some error in comparison
+			return "", err
+		}
+
+		if sameContents {
+			// If filename and contents are the same then
+			// no need to add this file, it is not unique.
+			errStr := fmt.Sprintf("%s is a duplicate of %s",
+				path, collisionPath)
+			return "", indexError{errStr}
+		}
+
+		// Try a new filename then
+		filename = fmt.Sprintf("%s_%d%s", prefix, counter, extension)
 	}
 
-	return newName
+	return filename, nil
 }
