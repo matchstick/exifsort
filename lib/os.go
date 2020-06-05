@@ -47,9 +47,9 @@ type collisionNameFunc func(filename string) string
 // among the context provided in the argument func. If it discovers a file that
 // has the same filename and the same contents it will return an error. We
 // don't want to add a file that is a duplicate.
-// 
+//
 // The routine achieves ths goal by when finding a collision it reconstructs
-// the filename with a counter as part of the name. 
+// the filename with a counter as part of the name.
 //
 // So <name>.jpg => <name>_#.jpg. The number increments as it may have
 // multiple collisions. This way we can create a new unique name.
