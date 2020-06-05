@@ -3,6 +3,7 @@ package exifsort
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -108,7 +109,35 @@ func MergeCheck(root string, method int) error {
 }
 
 func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
-	dstFile := strings.Replace(srcFile, srcRoot, dstRoot, 1)
+	// Remove the root
+	filePath := strings.Replace(srcFile, srcRoot, "", 1)
+
+	// The directories we are going to put the file into
+	dstDir := filepath.Join(dstRoot, filepath.Dir(filePath))
+
+	// The dstFile path
+	dstFile := filepath.Join(dstRoot, filePath)
+
+	dirEntries, err := ioutil.ReadDir(dstDir)
+	if err != nil {
+		return &mergeErr{err.Error()}
+	}
+
+	entryMap := make(map[string]string)
+
+	for _, entry := range dirEntries {
+		entryMap[filepath.Base(entry.Name())] = entry.Name()
+	}
+
+	dstFile, err = uniqueName(dstFile, func(filename string) string {
+		return entryMap[filename]
+	})
+
+	if err != nil {
+		return &mergeErr{err.Error()}
+	}
+
+	dstFile = filepath.Join(dstDir, dstFile)
 
 	switch action {
 	case ActionCopy:
