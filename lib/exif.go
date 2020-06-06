@@ -116,7 +116,9 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 const validDateTimeOrigninalTagNum = 1
 
-func GetExifTime(filepath string) (time.Time, error) {
+// ExifTimeGet accepts a filepath, reads the exifdata stored inside and
+// returns the 'Exif/DateTimeOriginal' value as a golang time.Time format.
+func ExifTimeGet(filepath string) (time.Time, error) {
 	var time time.Time
 	// Get the Exif Data and Ifd root
 	mc, err := exifknife.GetExif(filepath)

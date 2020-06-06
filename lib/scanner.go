@@ -115,7 +115,7 @@ func exifTimeToStr(t time.Time) string {
 func (s *Scanner) ScanFile(path string) (time.Time, error) {
 	var t time.Time
 
-	t, err := GetExifTime(path)
+	t, err := ExifTimeGet(path)
 	if err == nil {
 		return t, nil
 	}
