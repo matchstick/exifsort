@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 	"time"
 
@@ -14,105 +13,67 @@ import (
 	"github.com/matchstick/exifsort/testdir"
 )
 
-func TestFormatError(t *testing.T) {
-	testErrStr := "bad format for dingle: dangle Problem"
-	err := newScanError("dangle", "dingle")
-
-	if err.Error() != testErrStr {
-		t.Errorf("Errors do not match: %s %s", err, testErrStr)
-	}
+func winOS() bool {
+	return runtime.GOOS == "windows"
 }
 
-func TestGoodTimes(t *testing.T) {
-	good1String := "2008:03:01 12:36:01"
-	good2String := "2008:03:01 12:36:01.34"
-	testMonth := 3
-	goodTime := time.Date(2008, time.Month(testMonth), 1, 12, 36, 1, 0, time.Local)
+func testGetModTime(path string) (time.Time, error) {
+	var t time.Time
 
-	s := NewScanner()
-
-	testTime, err := s.extractTimeFromStr(good1String)
-	if testTime != goodTime {
-		t.Errorf("Return Time is incorrect %q\n", testTime)
-	}
-
+	info, err := os.Stat(path)
 	if err != nil {
-		t.Errorf("Error is incorrectly not nil %q\n", err)
+		return t, err
 	}
 
-	testTime, err = s.extractTimeFromStr(good2String)
-	if testTime != goodTime {
-		t.Errorf("Return Time is incorrect %q\n", testTime)
-	}
+	t = info.ModTime()
 
-	if err != nil {
-		t.Errorf("Error is incorrectly not nil %q\n", err)
-	}
+	// We are clearing the nanoseconds for consistency
+	t = time.Date(t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), 0, time.Local)
+
+	return t, nil
 }
-
-func TestExtractBadTimeFromStr(t *testing.T) {
-	var formBadInput = map[string]string{
-		"Gobo":                    "Space Problem",
-		"Gobo a a a a":            "Space Problem",
-		"Gobo Hey":                "Date Split",
-		"Gobo:03:01 12:36:11":     "Year",
-		"2008:Gobo:01 12:36:11":   "Month",
-		"2008:03:Gobo 12:36:11":   "Day",
-		"2008:03:01 Gobo":         "Time Split",
-		"2008:03:01 Gobo:36:11":   "Hour",
-		"2008:03:01 12:Gobo:11":   "Minute",
-		"2008:03:01 12:36:Gobo":   "Sec",
-		"2008:03:01 12:36:Gobo.2": "Sec",
-	}
-
-	for input, errLabel := range formBadInput {
-		s := NewScanner()
-
-		_, err := s.extractTimeFromStr(input)
-		if err == nil {
-			t.Fatalf("Expected error on input: %s\n", input)
-		}
-
-		if strings.Contains(err.Error(), errLabel) == false {
-			t.Errorf("Improper error reporting on input %s: %s\n",
-				input, err.Error())
-		}
-	}
-}
-
-const goodDateExifStr = "2020:04:28 14:12:21"
 
 func TestScanFile(t *testing.T) {
 	s := NewScanner()
-	goodTime, _ := s.extractTimeFromStr(goodDateExifStr)
+
+	exifTime, _ := extractTimeFromStr(testdir.ExifTimeStr)
+	modTime, _ := testGetModTime(testdir.NoExifPath)
+	rootlessModTime, _ := testGetModTime(testdir.NoRootExifPath)
 
 	time, err := s.ScanFile(testdir.ExifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
 
-	if goodTime != time {
-		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
+	if exifTime != time {
+		t.Errorf("Expected Time %s but got %s\n", exifTime, time)
 	}
 
-	_, err = s.ScanFile(testdir.NoExifPath)
+	time, err = s.ScanFile(testdir.NoExifPath)
 	if err != nil {
 		t.Errorf("Unexpected error with invalid Exif file.\n")
 	}
 
-	_, err = s.ScanFile(testdir.NoRootExifPath)
+	if modTime != time {
+		t.Errorf("%s Should have %s not %s\n",
+			testdir.NoExifPath, "", time)
+	}
+
+	time, err = s.ScanFile(testdir.NoRootExifPath)
 	if err != nil {
 		t.Errorf("Unexpected error with invalid Exif file.\n")
+	}
+
+	if rootlessModTime != time {
+		t.Errorf("%s Should have %s not %s\n",
+			testdir.NoRootExifPath, "", time)
 	}
 
 	_, err = s.ScanFile(testdir.NonesensePath)
 	if err == nil {
-		t.Errorf("Unexpected success with nonsense path\n")
+		t.Errorf("Expected error with nonsense path\n")
 	}
-}
-
-func winOS() bool {
-	return runtime.GOOS == "windows"
 }
 
 func TestScanDir(t *testing.T) {
