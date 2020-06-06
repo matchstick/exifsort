@@ -11,10 +11,10 @@ import (
 
 const (
 	ExifPath    = "../data/with_exif.jpg"
-        ExifTimeStr = "2020:04:28 14:12:21"
+	ExifTimeStr = "2020:04:28 14:12:21"
 
-	NoExifPath       = "../data/no_exif.jpg"
-	NoRootExifPath   = "../data/no_root_ifd.jpg"
+	NoExifPath     = "../data/no_exif.jpg"
+	NoRootExifPath = "../data/no_root_ifd.jpg"
 
 	SkipPath      = "../README.md"
 	NonesensePath = "../gobofragggle"

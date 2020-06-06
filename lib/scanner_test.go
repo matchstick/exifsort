@@ -37,9 +37,8 @@ func testGetModTime(path string) (time.Time, error) {
 func TestScanFile(t *testing.T) {
 	s := NewScanner()
 
-
-	exifTime, _        := extractTimeFromStr(testdir.ExifTimeStr)
-	modTime, _         := testGetModTime(testdir.NoExifPath)
+	exifTime, _ := extractTimeFromStr(testdir.ExifTimeStr)
+	modTime, _ := testGetModTime(testdir.NoExifPath)
 	rootlessModTime, _ := testGetModTime(testdir.NoRootExifPath)
 
 	time, err := s.ScanFile(testdir.ExifPath)
@@ -73,7 +72,7 @@ func TestScanFile(t *testing.T) {
 
 	_, err = s.ScanFile(testdir.NonesensePath)
 	if err == nil {
-		t.Errorf("Unexpected success with nonsense path\n")
+		t.Errorf("Expected error with nonsense path\n")
 	}
 }
 

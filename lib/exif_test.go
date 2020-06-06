@@ -89,11 +89,11 @@ func TestGetExifTime(t *testing.T) {
 
 	_, err = ExifTimeGet(testdir.NoRootExifPath)
 	if err == nil {
-		t.Errorf("Unexpected error with invalid Exif file.\n")
+		t.Errorf("Expected error with invalid Exif file.\n")
 	}
 
 	_, err = ExifTimeGet(testdir.NonesensePath)
 	if err == nil {
-		t.Errorf("Unexpected success with nonsense path\n")
+		t.Errorf("Expected error with nonsense path\n")
 	}
 }
