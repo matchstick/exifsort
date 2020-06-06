@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hectane/go-acl"
@@ -16,20 +17,38 @@ func winOS() bool {
 	return runtime.GOOS == "windows"
 }
 
+func testGetModTime(path string) (time.Time, error) {
+	var t time.Time
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return t, err
+	}
+
+	t = info.ModTime()
+
+	// We are clearing the nanoseconds for consistency
+	t = time.Date(t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), 0, time.Local)
+
+	return t, nil
+}
+
 func TestScanFile(t *testing.T) {
 	s := NewScanner()
 
-	goodTime, _ := extractTimeFromStr(testdir.ExifDateStr)
-	modTime, _ := extractTimeFromStr(testdir.NoExifModTimeStr)
-	rootlessModTime, _ := extractTimeFromStr(testdir.NoRootModTimeStr)
+
+	exifTime, _        := extractTimeFromStr(testdir.ExifTimeStr)
+	modTime, _         := testGetModTime(testdir.NoExifPath)
+	rootlessModTime, _ := testGetModTime(testdir.NoRootExifPath)
 
 	time, err := s.ScanFile(testdir.ExifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
 
-	if goodTime != time {
-		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
+	if exifTime != time {
+		t.Errorf("Expected Time %s but got %s\n", exifTime, time)
 	}
 
 	time, err = s.ScanFile(testdir.NoExifPath)
@@ -39,7 +58,7 @@ func TestScanFile(t *testing.T) {
 
 	if modTime != time {
 		t.Errorf("%s Should have %s not %s\n",
-			testdir.NoExifPath, testdir.NoExifModTimeStr, time)
+			testdir.NoExifPath, "", time)
 	}
 
 	time, err = s.ScanFile(testdir.NoRootExifPath)
@@ -49,7 +68,7 @@ func TestScanFile(t *testing.T) {
 
 	if rootlessModTime != time {
 		t.Errorf("%s Should have %s not %s\n",
-			testdir.NoRootExifPath, testdir.NoRootModTimeStr, time)
+			testdir.NoRootExifPath, "", time)
 	}
 
 	_, err = s.ScanFile(testdir.NonesensePath)

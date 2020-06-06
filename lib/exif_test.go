@@ -71,7 +71,7 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 }
 
 func TestGetExifTime(t *testing.T) {
-	goodTime, _ := extractTimeFromStr(testdir.ExifDateStr)
+	goodTime, _ := extractTimeFromStr(testdir.ExifTimeStr)
 
 	time, err := ExifTimeGet(testdir.ExifPath)
 	if err != nil {
