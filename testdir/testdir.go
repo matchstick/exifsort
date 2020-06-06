@@ -10,16 +10,23 @@ import (
 )
 
 const (
-	ExifPath       = "../data/with_exif.jpg"
-	NoExifPath     = "../data/no_exif.jpg"
-	SkipPath       = "../README.md"
-	NoRootExifPath = "../data/no_root_ifd.jpg"
-	NonesensePath  = "../gobofragggle"
-	NumExifError   = 50
-	NumData        = 150
-	NumSkipped     = 25
-	NumScanError   = 1
-	NumTotal       = 226
+	ExifPath    = "../data/with_exif.jpg"
+	ExifDateStr = "2020:04:28 14:12:21"
+
+	NoExifPath       = "../data/no_exif.jpg"
+	NoExifModTimeStr = "2020:04:28 19:58:32"
+
+	NoRootExifPath   = "../data/no_root_ifd.jpg"
+	NoRootModTimeStr = "2020:05:24 13:20:03"
+
+	SkipPath      = "../README.md"
+	NonesensePath = "../gobofragggle"
+
+	NumExifError = 50
+	NumData      = 150
+	NumSkipped   = 25
+	NumScanError = 1
+	NumTotal     = 226
 )
 
 type testdir struct {
