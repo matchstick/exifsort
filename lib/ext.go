@@ -41,7 +41,7 @@ func extensionMap() map[string]int {
 	}
 }
 
-func skipFileType(path string) (string, bool) {
+func skipFileType(path string) bool {
 	// All comparisons are lower case as case don't matter
 	path = strings.ToLower(path)
 
@@ -50,20 +50,20 @@ func skipFileType(path string) (string, bool) {
 	// them.
 	switch {
 	case strings.Contains(path, "@eadir"):
-		return "", true
+		return true
 	case strings.Contains(path, "@syno"):
-		return "", true
+		return true
 	case strings.Contains(path, "synofile_thumb"):
-		return "", true
+		return true
 	}
 
 	extension := filepath.Ext(path)
 	// no extension to check so we skip
 	if extension == "" {
-		return "", true
+		return true
 	}
 
 	_, inExtMap := extensionMap()[extension]
 
-	return extension, !inExtMap
+	return !inExtMap
 }

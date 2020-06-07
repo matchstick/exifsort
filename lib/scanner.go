@@ -65,8 +65,10 @@ func (s *Scanner) NumTotal() int {
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeData(path string, extension string, time time.Time) {
+func (s *Scanner) storeData(path string, time time.Time) {
 	s.Data[path] = time
+
+	extension := filepath.Ext(path)
 
 	_, present := s.NumDataTypes[extension]
 	if present {
@@ -77,8 +79,10 @@ func (s *Scanner) storeData(path string, extension string, time time.Time) {
 }
 
 // We don't check if you have a path duplicate.
-func (s *Scanner) storeExifError(path string, extension string, err error) {
+func (s *Scanner) storeExifError(path string, err error) {
 	s.ExifErrors[path] = err.Error()
+
+	extension := filepath.Ext(path)
 
 	_, present := s.NumExifErrorTypes[extension]
 	if present {
@@ -101,9 +105,26 @@ func ErrStr(path string, errStr string) string {
 }
 
 func exifTimeToStr(t time.Time) string {
-	return fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",
+	return fmt.Sprintf("%d:%02d:%02d %02d:%02d:%02d",
 		t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
+}
+
+func (s *Scanner) modTime(path string) (time.Time, error) {
+	var t time.Time
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return t, err
+	}
+
+	t = info.ModTime()
+
+	// We are clearing the nanoseconds for consistency
+	t = time.Date(t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), 0, time.Local)
+
+	return t, nil
 }
 
 // ScanFile accepts a filepath, reads the exifdata stored inside and
@@ -116,24 +137,11 @@ func (s *Scanner) ScanFile(path string) (time.Time, error) {
 	var t time.Time
 
 	t, err := ExifTimeGet(path)
-	if err == nil {
-		return t, nil
-	}
-
-	extension := filepath.Ext(path)
-
-	s.storeExifError(path, extension, err)
-
-	info, err := os.Stat(path)
 	if err != nil {
-		return t, err
+		s.storeExifError(path, err)
+
+		return s.modTime(path)
 	}
-
-	t = info.ModTime()
-
-	// We are clearing the nanoseconds for consistency
-	t = time.Date(t.Year(), t.Month(), t.Day(),
-		t.Hour(), t.Minute(), t.Second(), 0, time.Local)
 
 	return t, nil
 }
@@ -155,21 +163,18 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		}
 
 		// Only looking for media files that may have exif.
-		extension, skipFile := skipFileType(path)
-		if skipFile {
+		if skipFileType(path) {
 			s.storeSkipped()
 			return nil
 		}
 
 		time, err = s.ScanFile(path)
 		if err != nil {
-			s.storeExifError(path, extension, err)
-
-			time = info.ModTime()
+			s.storeScanError(path, err)
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-		s.storeData(path, extension, time)
+		s.storeData(path, time)
 
 		return nil
 	}
