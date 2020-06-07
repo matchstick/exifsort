@@ -147,7 +147,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 
 		if err != nil {
 			s.storeScanError(path, err)
-			fmt.Fprintf(logger, "Exif Error: %s: (%s)\n", path, err.Error())
+			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
 
 			return nil
 		}
@@ -166,6 +166,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		time, err = s.ScanFile(path)
 		if err != nil {
 			s.storeScanError(path, err)
+			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
