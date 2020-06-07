@@ -200,12 +200,8 @@ func newSortCmd() *cobra.Command {
 	var cmd sortCmd
 	cmd.cobraCmd = newCobraCmd(&cmd)
 
-	cmd.cobraCmd.Flags().BoolP("quiet", "q", false,
-		"Suppress line by line printing.")
-	cmd.cobraCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary of stats when done.")
-
 	setStringFlags(cmd.cobraCmd, sortFlags)
+	addCommonFlags(cmd.cobraCmd)
 
 	return cmd.cobraCmd
 }

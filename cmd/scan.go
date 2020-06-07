@@ -101,12 +101,8 @@ func newScanCmd() *cobra.Command {
 		{"j", "json", false, "json file to save output to."},
 	}
 
-	scanCmd.Flags().BoolP("quiet", "q", false,
-		"Suppress line by line printing.")
-	scanCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary of stats when done.")
-
 	setStringFlags(scanCmd, scanFlags)
+	addCommonFlags(scanCmd)
 
 	return scanCmd
 }
