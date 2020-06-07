@@ -92,8 +92,7 @@ func MergeCheck(root string, method int) error {
 				return nil
 			}
 
-			_, skip := skipFileType(path)
-			if skip {
+			if skipFileType(path) {
 				return nil
 			}
 
@@ -164,8 +163,7 @@ func Merge(srcRoot string, dstRoot string, method int, logger io.Writer) error {
 				return nil
 			}
 
-			_, skip := skipFileType(srcFile)
-			if skip {
+			if skipFileType(srcFile) {
 				return nil
 			}
 
