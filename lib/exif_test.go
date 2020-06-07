@@ -4,8 +4,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/matchstick/exifsort/testdir"
 )
 
 func TestFormatError(t *testing.T) {
@@ -71,9 +69,9 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 }
 
 func TestGetExifTime(t *testing.T) {
-	goodTime, _ := extractTimeFromStr(testdir.ExifTimeStr)
+	goodTime, _ := extractTimeFromStr(exifTimeStr)
 
-	time, err := ExifTimeGet(testdir.ExifPath)
+	time, err := ExifTimeGet(exifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
@@ -82,17 +80,17 @@ func TestGetExifTime(t *testing.T) {
 		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
 	}
 
-	_, err = ExifTimeGet(testdir.NoExifPath)
+	_, err = ExifTimeGet(noExifPath)
 	if err == nil {
 		t.Errorf("Expected error with invalid Exif file.\n")
 	}
 
-	_, err = ExifTimeGet(testdir.NoRootExifPath)
+	_, err = ExifTimeGet(noRootExifPath)
 	if err == nil {
 		t.Errorf("Expected error with invalid Exif file.\n")
 	}
 
-	_, err = ExifTimeGet(testdir.NonesensePath)
+	_, err = ExifTimeGet(nonesensePath)
 	if err == nil {
 		t.Errorf("Expected error with nonsense path\n")
 	}

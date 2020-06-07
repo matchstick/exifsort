@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/matchstick/exifsort/testdir"
 )
 
 func countFiles(t *testing.T, path string, correctCount int, label string) {
@@ -36,7 +34,7 @@ func countFiles(t *testing.T, path string, correctCount int, label string) {
 }
 
 func testTransfer(t *testing.T, method int, action int) error {
-	src := testdir.NewTestDir(t)
+	src := newTestDir(t)
 	defer os.RemoveAll(src)
 
 	scanner := NewScanner()
@@ -55,13 +53,13 @@ func testTransfer(t *testing.T, method int, action int) error {
 		return err
 	}
 
-	countFiles(t, dst, testdir.NumData, "Dst Data")
+	countFiles(t, dst, numData, "Dst Data")
 
 	switch {
 	case action == ActionCopy:
-		countFiles(t, src, testdir.NumTotal, "Src Copy")
+		countFiles(t, src, numTotal, "Src Copy")
 	case action == ActionMove:
-		leftovers := testdir.NumScanError + testdir.NumSkipped
+		leftovers := numScanError + numSkipped
 		countFiles(t, src, leftovers, "Src Move")
 	default:
 		return &sortError{"Unknown action"}
@@ -103,7 +101,7 @@ func TestBadSortAction(t *testing.T) {
 }
 
 func TestSortNoOutputDir(t *testing.T) {
-	src := testdir.NewTestDir(t)
+	src := newTestDir(t)
 	defer os.RemoveAll(src)
 
 	scanner := NewScanner()
