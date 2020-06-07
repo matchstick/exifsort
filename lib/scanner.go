@@ -99,10 +99,6 @@ func (s *Scanner) storeSkipped() {
 	s.SkippedCount++
 }
 
-func ErrStr(path string, errStr string) string {
-	return fmt.Sprintf("%s with (%s)", path, errStr)
-}
-
 func exifTimeToStr(t time.Time) string {
 	return fmt.Sprintf("%d:%02d:%02d %02d:%02d:%02d",
 		t.Year(), t.Month(), t.Day(),
@@ -151,7 +147,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 
 		if err != nil {
 			s.storeScanError(path, err)
-			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
+			fmt.Fprintf(logger, "Exif Error: %s: (%s)\n", path, err.Error())
 
 			return nil
 		}
