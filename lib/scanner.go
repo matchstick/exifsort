@@ -60,8 +60,7 @@ func (s *Scanner) NumScanErrors() int {
 
 // Returns the total number of files skipped and scanned.
 func (s *Scanner) NumTotal() int {
-	return s.SkippedCount + s.NumData() +
-		s.NumExifErrors() + s.NumScanErrors()
+	return s.SkippedCount + s.NumData() + s.NumScanErrors()
 }
 
 // We don't check if you have a path duplicate.

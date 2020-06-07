@@ -57,7 +57,7 @@ const (
 	NumData      = 150
 	NumSkipped   = 25
 	NumScanError = 1
-	NumTotal     = 226
+	NumTotal     = 176
 )
 
 type testdir struct {

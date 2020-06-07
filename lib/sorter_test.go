@@ -59,9 +59,7 @@ func testTransfer(t *testing.T, method int, action int) error {
 
 	switch {
 	case action == ActionCopy:
-		// exifErrors counted twice as they also are added to data.
-		copyCount := testdir.NumTotal - testdir.NumExifError
-		countFiles(t, src, copyCount, "Src Copy")
+		countFiles(t, src, testdir.NumTotal, "Src Copy")
 	case action == ActionMove:
 		leftovers := testdir.NumScanError + testdir.NumSkipped
 		countFiles(t, src, leftovers, "Src Move")
