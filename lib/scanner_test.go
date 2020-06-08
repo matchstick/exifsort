@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hectane/go-acl"
-	"github.com/matchstick/exifsort/testdir"
 )
 
 func winOS() bool {
@@ -37,11 +36,11 @@ func testGetModTime(path string) (time.Time, error) {
 func TestScanFile(t *testing.T) {
 	s := NewScanner()
 
-	exifTime, _ := extractTimeFromStr(testdir.ExifTimeStr)
-	modTime, _ := testGetModTime(testdir.NoExifPath)
-	rootlessModTime, _ := testGetModTime(testdir.NoRootExifPath)
+	exifTime, _ := extractTimeFromStr(exifTimeStr)
+	modTime, _ := testGetModTime(noExifPath)
+	rootlessModTime, _ := testGetModTime(noRootExifPath)
 
-	time, err := s.ScanFile(testdir.ExifPath)
+	time, err := s.ScanFile(exifPath)
 	if err != nil {
 		t.Errorf("Unexpected Error with good input file\n")
 	}
@@ -50,85 +49,112 @@ func TestScanFile(t *testing.T) {
 		t.Errorf("Expected Time %s but got %s\n", exifTime, time)
 	}
 
-	time, err = s.ScanFile(testdir.NoExifPath)
+	time, err = s.ScanFile(noExifPath)
 	if err != nil {
 		t.Errorf("Unexpected error with invalid Exif file.\n")
 	}
 
 	if modTime != time {
-		t.Errorf("%s Should have %s not %s\n",
-			testdir.NoExifPath, "", time)
+		t.Errorf("%s Should have %s not %s\n", noExifPath, "", time)
 	}
 
-	time, err = s.ScanFile(testdir.NoRootExifPath)
+	time, err = s.ScanFile(noRootExifPath)
 	if err != nil {
 		t.Errorf("Unexpected error with invalid Exif file.\n")
 	}
 
 	if rootlessModTime != time {
-		t.Errorf("%s Should have %s not %s\n",
-			testdir.NoRootExifPath, "", time)
+		t.Errorf("%s Should have %s not %s\n", noRootExifPath, "", time)
 	}
 
-	_, err = s.ScanFile(testdir.NonesensePath)
+	_, err = s.ScanFile(nonesensePath)
 	if err == nil {
 		t.Errorf("Expected error with nonsense path\n")
 	}
 }
 
+func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
+	if td.numData != s.NumData() {
+		t.Errorf("Expected %d Data Count. Got %d\n",
+			td.numData, s.NumData())
+	}
+
+	walkData := s.Data
+	if len(walkData) != td.numData {
+		t.Errorf("Expected number of data to be %d got %d\n",
+			td.numData, len(walkData))
+	}
+
+	if td.numExifError != s.NumExifErrors() {
+		t.Errorf("Expected %d ExifErrors got %d\n",
+			td.numExifError, s.NumExifErrors())
+	}
+
+	exifErrs := s.ExifErrors
+	if len(exifErrs) != td.numExifError {
+		t.Errorf("Expected number of exifErrs to be %d got %d\n",
+			td.numExifError, len(exifErrs))
+	}
+
+	if td.numSkipped != s.NumSkipped() {
+		t.Errorf("Expected %d Skipped got %d\n",
+			td.numSkipped, s.NumSkipped())
+	}
+
+	if td.numScanError != s.NumScanErrors() {
+		t.Errorf("Expected %d ScanErrors got %d\n",
+			td.numScanError, s.NumScanErrors())
+	}
+
+	if td.numTotal() != s.NumTotal() {
+		t.Errorf("Expected %d Total got %d\n", td.numTotal(), s.NumTotal())
+	}
+}
+
 func TestScanDir(t *testing.T) {
-	tmpPath := testdir.NewTestDir(t)
+	td := newTestDir(t, MethodNone)
+
+	tmpPath := td.getRoot()
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
 	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	if testdir.NumData != s.NumData() {
-		t.Errorf("Expected %d Valid Count. Got %d\n",
-			testdir.NumData, s.NumData())
+	testCheckScanCounts(t, td, s)
+}
+
+func TestScanSkipDir(t *testing.T) {
+	td := newTestDir(t, MethodNone)
+
+	tmpPath := td.getSkipRoot()
+	defer os.RemoveAll(tmpPath)
+
+	s := NewScanner()
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
+
+	testCheckScanCounts(t, td, s)
+}
+
+func TestScanBadDir(t *testing.T) {
+	if winOS() {
+		return
 	}
 
-	if testdir.NumSkipped != s.NumSkipped() {
-		t.Errorf("Expected %d Skipped Count. Got %d\n",
-			testdir.NumSkipped, s.NumSkipped())
-	}
+	td := newTestDir(t, MethodNone)
 
-	if testdir.NumExifError != s.NumExifErrors() {
-		t.Errorf("Expected %d ExifErrors Count. Got %d\n",
-			testdir.NumExifError, s.NumExifErrors())
-	}
+	tmpPath := td.getBadRoot()
+	defer os.RemoveAll(tmpPath)
 
-	if !winOS() && testdir.NumScanError != s.NumScanErrors() {
-		t.Errorf("Expected %d ExifErrors Count. Got %d\n",
-			testdir.NumScanError, s.NumScanErrors())
-	}
+	s := NewScanner()
+	_ = s.ScanDir(tmpPath, ioutil.Discard)
 
-	walkData := s.Data
-	if len(walkData) != testdir.NumData {
-		t.Errorf("Expected number of data to be %d. Got %d\n",
-			testdir.NumData, len(walkData))
-	}
-
-	exifErrs := s.ExifErrors
-	if len(exifErrs) != testdir.NumExifError {
-		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
-			testdir.NumExifError, len(exifErrs))
-	}
-
-	scanErrs := s.ScanErrors
-	if !winOS() && len(scanErrs) != testdir.NumScanError {
-		t.Errorf("Expected number of walkErrs to be %d. Got %d\n",
-			testdir.NumScanError, len(scanErrs))
-	}
-
-	if !winOS() && testdir.NumTotal != s.NumTotal() {
-		t.Errorf("Expected %d Total Count. Got %d\n",
-			testdir.NumTotal, s.NumTotal())
-	}
+	testCheckScanCounts(t, td, s)
 }
 
 func TestScanSaveLoad(t *testing.T) {
-	tmpPath := testdir.NewTestDir(t)
+	td := newTestDir(t, MethodNone)
+
+	tmpPath := td.getRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")
@@ -157,7 +183,9 @@ func TestScanSaveLoad(t *testing.T) {
 }
 
 func TestScanBadSave(t *testing.T) {
-	tmpPath := testdir.NewTestDir(t)
+	td := newTestDir(t, MethodNone)
+
+	tmpPath := td.getRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")
@@ -182,7 +210,9 @@ func TestScanBadSave(t *testing.T) {
 }
 
 func TestScanBadLoad(t *testing.T) {
-	tmpPath := testdir.NewTestDir(t)
+	td := newTestDir(t, MethodNone)
+
+	tmpPath := td.getRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")

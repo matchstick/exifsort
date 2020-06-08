@@ -60,8 +60,7 @@ func (s *Scanner) NumScanErrors() int {
 
 // Returns the total number of files skipped and scanned.
 func (s *Scanner) NumTotal() int {
-	return s.SkippedCount + s.NumData() +
-		s.NumExifErrors() + s.NumScanErrors()
+	return s.SkippedCount + s.NumData() + s.NumScanErrors()
 }
 
 // We don't check if you have a path duplicate.
@@ -98,10 +97,6 @@ func (s *Scanner) storeScanError(path string, err error) {
 
 func (s *Scanner) storeSkipped() {
 	s.SkippedCount++
-}
-
-func ErrStr(path string, errStr string) string {
-	return fmt.Sprintf("%s with (%s)", path, errStr)
 }
 
 func exifTimeToStr(t time.Time) string {
@@ -152,7 +147,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 
 		if err != nil {
 			s.storeScanError(path, err)
-			fmt.Fprintf(logger, "%s\n", ErrStr(path, err.Error()))
+			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
 
 			return nil
 		}
@@ -171,6 +166,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		time, err = s.ScanFile(path)
 		if err != nil {
 			s.storeScanError(path, err)
+			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
 		}
 
 		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))

@@ -42,7 +42,7 @@ func scanSummary(s *exifsort.Scanner) {
 		fmt.Println("ExifError Files were:")
 
 		for path, err := range s.ExifErrors {
-			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+			fmt.Printf("\t%s: (%s)\n", path, err)
 		}
 	}
 
@@ -50,7 +50,7 @@ func scanSummary(s *exifsort.Scanner) {
 		fmt.Println("Scan Errors were:")
 
 		for path, err := range s.ScanErrors {
-			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+			fmt.Printf("\t%s: (%s)\n", path, err)
 		}
 	}
 }
@@ -101,12 +101,8 @@ func newScanCmd() *cobra.Command {
 		{"j", "json", false, "json file to save output to."},
 	}
 
-	scanCmd.Flags().BoolP("quiet", "q", false,
-		"Suppress line by line printing.")
-	scanCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary of stats when done.")
-
 	setStringFlags(scanCmd, scanFlags)
+	addCommonFlags(scanCmd)
 
 	return scanCmd
 }

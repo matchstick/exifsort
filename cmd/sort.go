@@ -45,7 +45,7 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 		fmt.Println("Index Errors were:")
 
 		for path, err := range sorter.IndexErrors {
-			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+			fmt.Printf("\t%s: (%s)\n", path, err)
 		}
 	}
 
@@ -53,7 +53,7 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 		fmt.Println("Transfer Errors were:")
 
 		for path, err := range sorter.TransferErrors {
-			fmt.Printf("\t%s\n", exifsort.ErrStr(path, err))
+			fmt.Printf("\t%s: (%s)\n", path, err)
 		}
 	}
 }
@@ -200,12 +200,8 @@ func newSortCmd() *cobra.Command {
 	var cmd sortCmd
 	cmd.cobraCmd = newCobraCmd(&cmd)
 
-	cmd.cobraCmd.Flags().BoolP("quiet", "q", false,
-		"Suppress line by line printing.")
-	cmd.cobraCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary of stats when done.")
-
 	setStringFlags(cmd.cobraCmd, sortFlags)
+	addCommonFlags(cmd.cobraCmd)
 
 	return cmd.cobraCmd
 }

@@ -72,10 +72,7 @@ func newMergeCmd() *cobra.Command {
 			"Output Directory to transfer media. (Must not exist.)"},
 	}
 
-	scanCmd.Flags().BoolP("quiet", "q", false,
-		"Suppress line by line printing.")
-	scanCmd.Flags().BoolP("summarize", "s", false,
-		"Print a summary of stats when done.")
+	addCommonFlags(scanCmd)
 
 	setStringFlags(scanCmd, scanFlags)
 
