@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type sortError struct {
@@ -27,11 +28,16 @@ type Sorter struct {
 	idx            index
 	IndexErrors    map[string]string
 	TransferErrors map[string]string
+	Duplicates     []string
 }
 
 func (s *Sorter) ensureFullPath(path string) error {
 	dirPath := filepath.Dir(path)
 	return os.MkdirAll(dirPath, 0755)
+}
+
+func (s *Sorter) storeDuplicate(path string) {
+	s.Duplicates = append(s.Duplicates, path)
 }
 
 // We don't check if you have a path duplicate.
@@ -51,6 +57,14 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 	if err != nil || !info.IsDir() {
 		errStr := fmt.Sprintf("Error: No Output dir: %s", dst)
 		return &sortError{errStr}
+	}
+
+	// Let's get rid of all the duplciates we know of before we transfer.
+	for _, toRemove := range s.Duplicates {
+		err := os.Remove(toRemove)
+		if err != nil {
+			s.storeTransferError(toRemove, err)
+		}
 	}
 
 	mediaMap := s.idx.GetAll()
@@ -98,9 +112,17 @@ func (s *Sorter) Reset(scanner Scanner, method int) error {
 
 	for path, time := range scanner.Data {
 		err = s.idx.Put(path, time)
-		if err != nil {
-			s.storeIndexError(path, err)
+		if err == nil {
+			continue
 		}
+
+		// Do we have a duplicate?
+		if strings.Contains(err.Error(), "duplicate") {
+			s.storeDuplicate(path)
+			continue
+		}
+
+		s.storeIndexError(path, err)
 	}
 
 	return nil

@@ -8,7 +8,9 @@ import (
 
 func TestMergeCheckGood(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		src := newMethodTestDir(t, method)
+		td := newTestDir(t, method)
+
+		src := td.getRoot()
 		defer os.RemoveAll(src)
 
 		scanner := NewScanner()
