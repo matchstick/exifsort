@@ -53,6 +53,11 @@ func (s *Sorter) storeTransferError(path string, err error) {
 // Performs the transfer after indexing.
 // Transfer will fail if dst directory does not exist and is not accessible.
 func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
+	if action != ActionCopy && action != ActionMove {
+		errStr := fmt.Sprintf("Invalid action %d\n", action)
+		return &sortError{errStr}
+	}
+
 	info, err := os.Stat(dst)
 	if err != nil || !info.IsDir() {
 		errStr := fmt.Sprintf("Error: No Output dir: %s", dst)
@@ -82,10 +87,6 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 			err = copyFile(oldPath, newPath)
 		case ActionMove:
 			err = moveFile(oldPath, newPath)
-		default:
-			errStr := fmt.Sprintf("Invalid action %d\n",
-				action)
-			return &sortError{errStr}
 		}
 
 		if err != nil {
