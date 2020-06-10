@@ -40,7 +40,8 @@ Merge rerquirments
 * A directory with broken structure
 * A directory with a disjoint set of media files to create new leaves
 * A directory with a same set of media files to not add anything to the dst
-* A directory with the same media names and sort times but different contents to create collisions.
+* A directory with the same media names and sort times but different contents
+  to create collisions.
 
 */
 
@@ -305,6 +306,18 @@ func (td *testdir) buildDuplicateRoot() string {
 	td.populateDuplicateFilenames(duplicateDir, exifPath, 25)
 
 	return td.root
+}
+
+func (td *testdir) buildSortedDir(src string, dst string, action int) string {
+	scanner := NewScanner()
+	_ = scanner.ScanDir(src, ioutil.Discard)
+
+	dst, _ = ioutil.TempDir("", dst)
+
+	sorter, _ := NewSorter(scanner, td.method)
+	_ = sorter.Transfer(dst, action, ioutil.Discard)
+
+	return dst
 }
 
 func newTestDir(t *testing.T, method int) *testdir {

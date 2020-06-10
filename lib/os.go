@@ -64,7 +64,6 @@ func uniqueName(path string, doesCollide collisionNameFunc) (string, error) {
 	for counter := 0; true; counter++ {
 		// Test for unique filename
 		collisionPath := doesCollide(filename)
-
 		if collisionPath == "" {
 			// There is no collisionPath so filename is unique
 			break
