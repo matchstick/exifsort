@@ -40,7 +40,8 @@ Merge rerquirments
 * A directory with broken structure
 * A directory with a disjoint set of media files to create new leaves
 * A directory with a same set of media files to not add anything to the dst
-* A directory with the same media names and sort times but different contents to create collisions.
+* A directory with the same media names and sort times but different contents
+  to create collisions.
 
 */
 
@@ -233,7 +234,7 @@ func (td *testdir) populateSkipFiles(dir string, num int) {
 	}
 }
 
-func (td *testdir) getRoot() string {
+func (td *testdir) buildRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
 	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
@@ -253,7 +254,7 @@ func (td *testdir) getRoot() string {
 	return td.root
 }
 
-func (td *testdir) getSkipRoot() string {
+func (td *testdir) buildSkipRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	skipDir, _ := ioutil.TempDir(td.root, "skip")
 
@@ -265,7 +266,7 @@ func (td *testdir) getSkipRoot() string {
 	return td.root
 }
 
-func (td *testdir) getBadRoot() string {
+func (td *testdir) buildBadRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	badDir, _ := ioutil.TempDir(td.root, "bad")
 
@@ -283,7 +284,7 @@ func (td *testdir) getBadRoot() string {
 	return td.root
 }
 
-func (td *testdir) getCollisionRoot() string {
+func (td *testdir) buildCollisionRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	collisionDir, _ := ioutil.TempDir(td.root, "collision")
 
@@ -295,7 +296,7 @@ func (td *testdir) getCollisionRoot() string {
 	return td.root
 }
 
-func (td *testdir) getDuplicateRoot() string {
+func (td *testdir) buildDuplicateRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	duplicateDir, _ := ioutil.TempDir(td.root, "duplicate")
 
@@ -305,6 +306,18 @@ func (td *testdir) getDuplicateRoot() string {
 	td.populateDuplicateFilenames(duplicateDir, exifPath, 25)
 
 	return td.root
+}
+
+func (td *testdir) buildSortedDir(src string, dst string, action int) string {
+	scanner := NewScanner()
+	_ = scanner.ScanDir(src, ioutil.Discard)
+
+	dst, _ = ioutil.TempDir("", dst)
+
+	sorter, _ := NewSorter(scanner, td.method)
+	_ = sorter.Transfer(dst, action, ioutil.Discard)
+
+	return dst
 }
 
 func newTestDir(t *testing.T, method int) *testdir {

@@ -85,7 +85,7 @@ func TestSortDir(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		td := newTestDir(t, method)
 
-		src := td.getRoot()
+		src := td.buildRoot()
 		defer os.RemoveAll(src)
 
 		err := testTransfer(t, td, method, ActionCopy)
@@ -104,7 +104,7 @@ func TestSortDuplicates(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		td := newTestDir(t, method)
 
-		src := td.getDuplicateRoot()
+		src := td.buildDuplicateRoot()
 		defer os.RemoveAll(src)
 
 		err := testTransfer(t, td, method, ActionCopy)
@@ -123,7 +123,7 @@ func TestSortCollisions(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		td := newTestDir(t, method)
 
-		src := td.getCollisionRoot()
+		src := td.buildCollisionRoot()
 		defer os.RemoveAll(src)
 
 		err := testTransfer(t, td, method, ActionCopy)
@@ -163,7 +163,7 @@ func TestBadSortAction(t *testing.T) {
 func TestSortNoOutputDir(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	src := td.getRoot()
+	src := td.buildRoot()
 	defer os.RemoveAll(src)
 
 	scanner := NewScanner()

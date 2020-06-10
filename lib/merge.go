@@ -92,10 +92,6 @@ func MergeCheck(root string, method int) error {
 				return nil
 			}
 
-			if skipFileType(path) {
-				return nil
-			}
-
 			if !mergePathValid(root, path, method) {
 				errStr := fmt.Sprintf("Illegal Path %s", path)
 				return &mergeErr{errStr}
@@ -114,9 +110,6 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 	// The directories we are going to put the file into
 	dstDir := filepath.Join(dstRoot, filepath.Dir(filePath))
 
-	// The dstFile path
-	dstFile := filepath.Join(dstRoot, filePath)
-
 	dirEntries, err := ioutil.ReadDir(dstDir)
 	if err != nil {
 		return &mergeErr{err.Error()}
@@ -125,13 +118,30 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 	entryMap := make(map[string]string)
 
 	for _, entry := range dirEntries {
-		entryMap[filepath.Base(entry.Name())] = entry.Name()
+		baseName := filepath.Base(entry.Name())
+		fullPath := filepath.Join(dstDir, entry.Name())
+		entryMap[baseName] = fullPath
 	}
 
-	dstFile, err = uniqueName(dstFile, func(filename string) string {
+	dstFile, err := uniqueName(srcFile, func(filename string) string {
 		return entryMap[filename]
 	})
 
+	// Do we have a duplicate and are moving files?
+	// Then we need to remove it from the source.
+	if err != nil && strings.Contains(err.Error(), "duplicate") {
+		if action == ActionMove {
+			// If we do then remove it
+			err = os.Remove(srcFile)
+			if err != nil {
+				return &mergeErr{err.Error()}
+			}
+
+			return nil
+		}
+	}
+
+	// If we have a real error we need to stop.
 	if err != nil {
 		return &mergeErr{err.Error()}
 	}
@@ -149,7 +159,7 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 	}
 }
 
-func Merge(srcRoot string, dstRoot string, method int, logger io.Writer) error {
+func Merge(srcRoot string, dstRoot string, action int, logger io.Writer) error {
 	err := filepath.Walk(srcRoot,
 		func(srcFile string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -167,7 +177,7 @@ func Merge(srcRoot string, dstRoot string, method int, logger io.Writer) error {
 				return nil
 			}
 
-			err = merge(srcFile, srcRoot, dstRoot, method)
+			err = merge(srcFile, srcRoot, dstRoot, action)
 			if err != nil {
 				return err
 			}

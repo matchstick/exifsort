@@ -114,7 +114,7 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 func TestScanDir(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getRoot()
+	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
@@ -126,7 +126,7 @@ func TestScanDir(t *testing.T) {
 func TestScanSkipDir(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getSkipRoot()
+	tmpPath := td.buildSkipRoot()
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
@@ -142,7 +142,7 @@ func TestScanBadDir(t *testing.T) {
 
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getBadRoot()
+	tmpPath := td.buildBadRoot()
 	defer os.RemoveAll(tmpPath)
 
 	s := NewScanner()
@@ -154,7 +154,7 @@ func TestScanBadDir(t *testing.T) {
 func TestScanSaveLoad(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getRoot()
+	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")
@@ -185,7 +185,7 @@ func TestScanSaveLoad(t *testing.T) {
 func TestScanBadSave(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getRoot()
+	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")
@@ -212,7 +212,7 @@ func TestScanBadSave(t *testing.T) {
 func TestScanBadLoad(t *testing.T) {
 	td := newTestDir(t, MethodNone)
 
-	tmpPath := td.getRoot()
+	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
 
 	jsonDir, _ := ioutil.TempDir("", "jsonDir")
