@@ -233,7 +233,7 @@ func (td *testdir) populateSkipFiles(dir string, num int) {
 	}
 }
 
-func (td *testdir) getRoot() string {
+func (td *testdir) buildRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
 	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
@@ -253,7 +253,7 @@ func (td *testdir) getRoot() string {
 	return td.root
 }
 
-func (td *testdir) getSkipRoot() string {
+func (td *testdir) buildSkipRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	skipDir, _ := ioutil.TempDir(td.root, "skip")
 
@@ -265,7 +265,7 @@ func (td *testdir) getSkipRoot() string {
 	return td.root
 }
 
-func (td *testdir) getBadRoot() string {
+func (td *testdir) buildBadRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	badDir, _ := ioutil.TempDir(td.root, "bad")
 
@@ -283,7 +283,7 @@ func (td *testdir) getBadRoot() string {
 	return td.root
 }
 
-func (td *testdir) getCollisionRoot() string {
+func (td *testdir) buildCollisionRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	collisionDir, _ := ioutil.TempDir(td.root, "collision")
 
@@ -295,7 +295,7 @@ func (td *testdir) getCollisionRoot() string {
 	return td.root
 }
 
-func (td *testdir) getDuplicateRoot() string {
+func (td *testdir) buildDuplicateRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "exif")
 	duplicateDir, _ := ioutil.TempDir(td.root, "duplicate")
 
