@@ -2,41 +2,11 @@ package exifsort
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 )
-
-func countFiles(t *testing.T, path string, correctCount int, label string) error {
-	var count = 0
-
-	_ = filepath.Walk(path,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				count++
-				return nil
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			count++
-
-			return nil
-		})
-
-	if count != correctCount {
-		errStr := fmt.Sprintf("count error for %s on %s. Expected %d got %d",
-			label, path, correctCount, count)
-		return errors.New(errStr)
-	}
-
-	return nil
-}
 
 func testTransfer(t *testing.T, td *testdir, method int, action int) error {
 	scanner := NewScanner()
