@@ -2,6 +2,7 @@ package exifsort
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,20 +11,11 @@ import (
 	"time"
 )
 
-type scanError struct {
-	prob string
-}
-
-func (e scanError) Error() string {
-	return e.prob
-}
-
 func newScanError(label string, dateString string) error {
-	var e scanError
-	e.prob = fmt.Sprintf("bad format for %s: %s Problem",
+	errStr := fmt.Sprintf("bad format for %s: %s Problem",
 		dateString, label)
 
-	return e
+	return errors.New(errStr)
 }
 
 // Scanner is your API to scan directory of media.

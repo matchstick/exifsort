@@ -35,19 +35,17 @@ type parseError struct {
 	choices argsMap
 }
 
-func (e *parseError) argChoices() string {
-	var choicesStr = make([]string, len(e.choices))
+func (e *parseError) Error() string {
+	var choicesList = make([]string, len(e.choices))
 
 	for _, str := range e.choices {
 		str = fmt.Sprintf("\"%s\"", str)
-		choicesStr = append(choicesStr, str)
+		choicesList = append(choicesList, str)
 	}
 
-	return strings.Join(choicesStr, ",")
-}
+	choiceStr := strings.Join(choicesList, ",")
 
-func (e *parseError) Error() string {
-	return fmt.Sprintf("must be one of [%s] (case insensitive)", e.argChoices())
+	return fmt.Sprintf("must be one of [%s] (case insensitive)", choiceStr)
 }
 
 // ParseMethod returns the constant value of the str.
