@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Sorter is your API to perform sorting actions after a scan.
@@ -110,12 +109,13 @@ func (s *Sorter) Reset(scanner Scanner, method int) error {
 			continue
 		}
 
-		// Do we have a duplicate?
-		if strings.Contains(err.Error(), "duplicate") {
-			s.storeDuplicate(path)
-			continue
+		// Is this an error for a duplicate?
+		var dupErr *duplicateError
+		if errors.As(err, &dupErr) {
+			s.storeDuplicate(dupErr.src)
 		}
 
+		// Or just an error
 		s.storeIndexError(path, err)
 	}
 

@@ -1,19 +1,12 @@
 package exifsort
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"time"
 )
-
-type indexError struct {
-	prob string
-}
-
-func (e indexError) Error() string {
-	return e.prob
-}
 
 // The goal of the index system is to be able to accept as input:
 // a) media pathname
@@ -327,6 +320,6 @@ func newIndex(method int) (index, error) {
 		return &d, nil
 	default:
 		errStr := fmt.Sprintf("Invalid method %d\n", method)
-		return nil, &indexError{errStr}
+		return nil, errors.New(errStr)
 	}
 }

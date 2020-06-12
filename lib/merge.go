@@ -120,23 +120,16 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 		return entryMap[filename]
 	})
 
-	// Do we have a duplicate and are moving files?
-	// Then we need to remove it from the source.
-	if err != nil && strings.Contains(err.Error(), "duplicate") {
-		if action == ActionMove {
-			// If we do then remove it
-			err = os.Remove(srcFile)
-			if err != nil {
-				return errors.New(err.Error())
-			}
-
-			return nil
-		}
+	// If we have a duplicate error that the file is a duplicate.
+	// If we are moving files then remove the source.
+	var dupErr *duplicateError
+	if errors.As(err, &dupErr) && action == ActionMove {
+		return os.Remove(dupErr.src)
 	}
 
 	// If we have a real error we need to stop.
 	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	dstFile = filepath.Join(dstDir, dstFile)

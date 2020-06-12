@@ -10,6 +10,20 @@ import (
 	"github.com/udhos/equalfile"
 )
 
+// We need to indicate when we have found a file that is an exact duplicate
+// (filename and contents) of another.
+type duplicateError struct {
+	src string
+	dst string
+	Err error
+}
+
+func (e *duplicateError) Error() string {
+	return fmt.Sprintf("%s is a duplicate of %s", e.src, e.dst)
+}
+
+func (e *duplicateError) Unwrap() error { return e.Err }
+
 func moveFile(srcPath string, dstPath string) error {
 	return os.Rename(srcPath, dstPath)
 }
@@ -78,9 +92,11 @@ func uniqueName(path string, doesCollide collisionNameFunc) (string, error) {
 		if sameContents {
 			// If filename and contents are the same then
 			// no need to add this file, it is not unique.
-			errStr := fmt.Sprintf("%s is a duplicate of %s",
-				path, collisionPath)
-			return "", indexError{errStr}
+			var err duplicateError
+			err.src = path
+			err.dst = collisionPath
+
+			return "", &err
 		}
 
 		// Try a new filename then
