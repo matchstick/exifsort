@@ -1,6 +1,7 @@
 package exifsort
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,14 +10,6 @@ import (
 	"regexp"
 	"strings"
 )
-
-type mergeErr struct {
-	prob string
-}
-
-func (m mergeErr) Error() string {
-	return m.prob
-}
 
 const (
 	yearRe  = `(19|[2-9][0-9])\d{2}`         // year = 1900 - 9999
@@ -84,7 +77,7 @@ func MergeCheck(root string, method int) error {
 			if err != nil {
 				errStr := fmt.Sprintf("Walk Err on %s with %s",
 					path, err.Error())
-				return &mergeErr{errStr}
+				return errors.New(errStr)
 			}
 
 			// Don't need to scan directories
@@ -94,7 +87,7 @@ func MergeCheck(root string, method int) error {
 
 			if !mergePathValid(root, path, method) {
 				errStr := fmt.Sprintf("Illegal Path %s", path)
-				return &mergeErr{errStr}
+				return errors.New(errStr)
 			}
 
 			return nil
@@ -112,7 +105,7 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 
 	dirEntries, err := ioutil.ReadDir(dstDir)
 	if err != nil {
-		return &mergeErr{err.Error()}
+		return errors.New(err.Error())
 	}
 
 	entryMap := make(map[string]string)
@@ -127,23 +120,16 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 		return entryMap[filename]
 	})
 
-	// Do we have a duplicate and are moving files?
-	// Then we need to remove it from the source.
-	if err != nil && strings.Contains(err.Error(), "duplicate") {
-		if action == ActionMove {
-			// If we do then remove it
-			err = os.Remove(srcFile)
-			if err != nil {
-				return &mergeErr{err.Error()}
-			}
-
-			return nil
-		}
+	// If we have a duplicate error that the file is a duplicate.
+	// If we are moving files then remove the source.
+	var dupErr *duplicateError
+	if errors.As(err, &dupErr) && action == ActionMove {
+		return os.Remove(dupErr.src)
 	}
 
 	// If we have a real error we need to stop.
 	if err != nil {
-		return &mergeErr{err.Error()}
+		return err
 	}
 
 	dstFile = filepath.Join(dstDir, dstFile)
@@ -155,7 +141,7 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 		return moveFile(srcFile, dstFile)
 	default:
 		errStr := fmt.Sprintf("Unknown Action %d", action)
-		return &mergeErr{errStr}
+		return errors.New(errStr)
 	}
 }
 
@@ -165,7 +151,7 @@ func Merge(srcRoot string, dstRoot string, action int, logger io.Writer) error {
 			if err != nil {
 				errStr := fmt.Sprintf("Err on %s with %s",
 					srcFile, err.Error())
-				return &mergeErr{errStr}
+				return errors.New(errStr)
 			}
 
 			// Don't need to scan directories

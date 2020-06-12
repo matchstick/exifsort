@@ -1,20 +1,12 @@
 package exifsort
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
-
-type sortError struct {
-	prob string
-}
-
-func (e sortError) Error() string {
-	return e.prob
-}
 
 // Sorter is your API to perform sorting actions after a scan.
 //
@@ -55,13 +47,13 @@ func (s *Sorter) storeTransferError(path string, err error) {
 func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 	if action != ActionCopy && action != ActionMove {
 		errStr := fmt.Sprintf("Invalid action %d\n", action)
-		return &sortError{errStr}
+		return errors.New(errStr)
 	}
 
 	info, err := os.Stat(dst)
 	if err != nil || !info.IsDir() {
 		errStr := fmt.Sprintf("Error: No Output dir: %s", dst)
-		return &sortError{errStr}
+		return errors.New(errStr)
 	}
 
 	// Let's get rid of all the duplciates we know of before we transfer.
@@ -117,12 +109,13 @@ func (s *Sorter) Reset(scanner Scanner, method int) error {
 			continue
 		}
 
-		// Do we have a duplicate?
-		if strings.Contains(err.Error(), "duplicate") {
-			s.storeDuplicate(path)
-			continue
+		// Is this an error for a duplicate?
+		var dupErr *duplicateError
+		if errors.As(err, &dupErr) {
+			s.storeDuplicate(dupErr.src)
 		}
 
+		// Or just an error
 		s.storeIndexError(path, err)
 	}
 

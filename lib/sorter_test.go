@@ -1,6 +1,7 @@
 package exifsort
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -31,7 +32,7 @@ func countFiles(t *testing.T, path string, correctCount int, label string) error
 	if count != correctCount {
 		errStr := fmt.Sprintf("count error for %s on %s. Expected %d got %d",
 			label, path, correctCount, count)
-		return &sortError{errStr}
+		return errors.New(errStr)
 	}
 
 	return nil
@@ -71,11 +72,10 @@ func testTransfer(t *testing.T, td *testdir, method int, action int) error {
 
 		err := countFiles(t, td.root, leftovers, "Src Move")
 		if err != nil {
-			fmt.Printf("hey 4\n")
 			return err
 		}
 	default:
-		return &sortError{"Unknown action"}
+		return errors.New("unknown action")
 	}
 
 	return nil
