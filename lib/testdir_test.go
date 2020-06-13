@@ -189,26 +189,38 @@ func (td *testdir) populateSkipFiles(dir string, num int) {
 	td.numSkipped += num
 }
 
-// Generate 'num' files with exif date set to arg in the directory passed in
-func (td *testdir) populateModFiles(dir string, num int, delta int) {
-	content, err := ioutil.ReadFile(noExifPath)
+func (td *testdir) populateNoExifFiles(dir string, num int) {
+	td.populateFiles(dir, num, &td.fileNo, noExifPath, noExifPath)
+	// THese will not work in the Exif library
+	td.numExifError += num
+	// But with modtimes they will still be handled as data
+	td.numData += num
+}
+
+// Set the modtimes that match the 'match' in 'dir' to a spread based on testdir
+func (td *testdir) setModTimes(dir string, match string,
+	startTime time.Time, delta int) {
+	time := startTime
+
+	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		td.t.Fatal(err)
 	}
 
-	time := td.startTime
+	for _, entry := range entries {
+		filename := entry.Name()
+		extension := filepath.Ext(filename)
+		prefix := strings.TrimRight(filename, extension)
 
-	for i := 0; i < num; i++ {
-		filename := td.buildFilename(noExifPath, &td.fileNo)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
+		// If not a matchjust skip it
+		if !strings.Contains(prefix, match) {
+			continue
 		}
 
 		// set time for file
-		err = os.Chtimes(targetPath, time, time)
+		path := filepath.Join(dir, filename)
+
+		err = os.Chtimes(path, time, time)
 		if err != nil {
 			td.t.Fatal(err)
 		}
@@ -216,31 +228,24 @@ func (td *testdir) populateModFiles(dir string, num int, delta int) {
 		if td.method != MethodNone {
 			time = td.addTimeByMethod(time, delta)
 		}
-
-		td.numExifError++
-
-		// We end up adding these as data if they have exif problems
-		// since we parse the mod time as input.
-		td.numData++
 	}
 }
 
 func (td *testdir) buildRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
-	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
-	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
-
-	// First add exif files
 	td.populateExifFiles(exifDir, 50)
-	// Then add mod file
-	td.populateModFiles(noExifDir, 25, 1)
-	// Add more exif files with different names
-	td.populateExifFiles(mixedDir, 25)
-	// Add more mod files with different names
-	td.populateModFiles(mixedDir, 25, 1)
-	// To exercise the walk algo we are creating a nested directory.
+
+	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
 	td.populateExifFiles(nestedDir, 25)
+
+	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
+	td.populateNoExifFiles(noExifDir, 25)
+	td.setModTimes(noExifDir, noExifPath, td.startTime, 1)
+
+	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
+	td.populateExifFiles(mixedDir, 25)
+	td.populateNoExifFiles(mixedDir, 25)
+	td.setModTimes(mixedDir, noExifPath, td.startTime, 1)
 
 	return td.root
 }
