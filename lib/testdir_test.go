@@ -86,6 +86,26 @@ func countFiles(t *testing.T, path string, correctCount int, label string) error
 	return nil
 }
 
+/*
+
+Helpful for debugging.
+
+func listDir(root string) {
+	_ = filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			fmt.Print(path + "\n")
+			return nil
+		})
+}
+*/
 type testdir struct {
 	fileNo    int // We want files that are unique across an entire testdir instance
 	root      string
