@@ -112,7 +112,7 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 }
 
 func TestScanDir(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
@@ -124,7 +124,7 @@ func TestScanDir(t *testing.T) {
 }
 
 func TestScanSkipDir(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildSkipRoot()
 	defer os.RemoveAll(tmpPath)
@@ -140,7 +140,7 @@ func TestScanBadDir(t *testing.T) {
 		return
 	}
 
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildBadRoot()
 	defer os.RemoveAll(tmpPath)
@@ -152,7 +152,7 @@ func TestScanBadDir(t *testing.T) {
 }
 
 func TestScanSaveLoad(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
@@ -183,7 +183,7 @@ func TestScanSaveLoad(t *testing.T) {
 }
 
 func TestScanBadSave(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)
@@ -210,7 +210,7 @@ func TestScanBadSave(t *testing.T) {
 }
 
 func TestScanBadLoad(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
 	defer os.RemoveAll(tmpPath)

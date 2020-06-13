@@ -13,32 +13,7 @@ import (
 
 /*
 
-This file began as a quick hack but it is becoming apparrent it is going to
-need work and focus if we are going to put exifsort into real production use
-for the family.
-
-Requirements are accumaltive as the stages of the pipeline refine the needs of
-the input directories.
-
-Scanner Requirements:
-* A directory with two levels
-* Some files (variable) with valid exifdata
-* Some files (variable) with invalid exifdata so they use mod times
-* Some examples of filepath errors
-* Some files to skip
-
-Sort Requirements
-* All the same ones scanner has
-* Create input files to allow for media sets of one and multiple files.
-* Have media sets be spread across all methods
-* Have transfer be all actions.
-* Exercise collision paths
-* Exercise duplicate paths
-
 Merge rerquirments
-* All the ones sorter has
-* Take as input a sorted directory with correct structure
-* A directory with broken structure
 * A directory with a disjoint set of media files to create new leaves
 * A directory with a same set of media files to not add anything to the dst
 * A directory with the same media names and sort times but different contents
@@ -54,6 +29,7 @@ const (
 	noRootExifPath = "../data/no_root_ifd.jpg"
 	skipPath       = "../README.md"
 	nonesensePath  = "../gobofragggle"
+	fileNoDefault  = 0
 )
 
 func countFiles(t *testing.T, path string, correctCount int, label string) error {
@@ -86,12 +62,33 @@ func countFiles(t *testing.T, path string, correctCount int, label string) error
 	return nil
 }
 
+/*
+
+Helpful for debugging.
+
+func listDir(root string) {
+	_ = filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			fmt.Print(path + "\n")
+			return nil
+		})
+}
+*/
 type testdir struct {
-	fileNo    int
-	root      string
-	t         *testing.T
-	startTime time.Time
-	method    int
+	fileNo      int
+	fileNoStart int
+	root        string
+	t           *testing.T
+	startTime   time.Time
+	method      int
 
 	numExifError  int
 	numData       int
@@ -121,114 +118,111 @@ func (td *testdir) addTimeByMethod(t time.Time, delta int) time.Time {
 	return time
 }
 
+func (td *testdir) setFileNo(fileNo int) {
+	td.fileNo = fileNo
+	td.fileNoStart = fileNo
+}
+
 // We need to have unique filenames often.
 // Instead of worrying about if they are unique in each subdir we are using a
 // testdir wide counter to ensure they are unique across the whole testdir
 // instance.
-func (td *testdir) uniqueFilename(path string) string {
+func (td *testdir) buildFilename(path string, counter *int) string {
 	filename := filepath.Base(path)
 	extension := filepath.Ext(filename)
 	prefix := strings.TrimRight(filename, extension)
 
-	filename = fmt.Sprintf("%s_%d%s", prefix, td.fileNo, extension)
-	td.fileNo++
+	filename = fmt.Sprintf("%s_%d%s", prefix, *counter, extension)
+	*counter = (*counter) + 1
 
 	return filename
 }
 
-func (td *testdir) testFilename(path string, index int) string {
-	filename := filepath.Base(path)
-	extension := filepath.Ext(filename)
-	prefix := strings.TrimRight(filename, extension)
+func (td *testdir) populateFiles(dir string, num int, counter *int,
+	contentsPath string, targetName string) {
+	content, err := ioutil.ReadFile(contentsPath)
+	if err != nil {
+		td.t.Fatal(err)
+	}
 
-	return fmt.Sprintf("%s_%d%s", prefix, index, extension)
+	for i := 0; i < num; i++ {
+		filename := td.buildFilename(targetName, counter)
+		targetPath := filepath.Join(dir, filename)
+
+		err := ioutil.WriteFile(targetPath, content, 0600)
+		if err != nil {
+			td.t.Fatal(err)
+		}
+	}
 }
 
 // Generate 'num' files with exif date set to arg in the directory passed in
 func (td *testdir) populateExifFiles(dir string, num int) {
-	content, err := ioutil.ReadFile(exifPath)
-	if err != nil {
-		td.t.Fatal(err)
-	}
-
-	for i := 0; i < num; i++ {
-		filename := td.uniqueFilename(exifPath)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
-		}
-
-		td.numData++
-	}
+	td.populateFiles(dir, num, &td.fileNo, exifPath, exifPath)
+	td.numData += num
 }
 
-// What we are doing is setting our fileno counter back to 0.
 // The goal is to create filenames bases on zero with exif contents.
 func (td *testdir) populateDuplicateFilenames(dir string, path string, num int) {
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		td.t.Fatal(err)
-	}
+	// What we are doing is setting our fileno counter back to the start
+	// THis will construct filenames that equal the ones created alredy.
+	var count = td.fileNoStart
 
-	for i := 0; i < num; i++ {
-		filename := td.testFilename(path, i)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
-		}
-
-		td.numDuplicates++
-	}
+	td.populateFiles(dir, num, &count, exifPath, exifPath)
+	td.numDuplicates += num
 }
 
-// What we are doing is setting our fileno counter back to 0 and using exif filenames.
-// The goal is to create filenames bases on zero with nonexif contents but with exif names.
 // This will have the same names as popualted exif files but different contents
 // so should be handled as a collision.
-
 func (td *testdir) populateCollisionFilenames(dir string, num int) {
-	content, err := ioutil.ReadFile(noExifPath)
-	if err != nil {
-		td.t.Fatal(err)
-	}
+	// What we are doing is setting our fileno counter back to the start
+	// This will construct filenames that equal the ones created alredy.
+	var count = td.fileNoStart
 
-	for i := 0; i < num; i++ {
-		filename := td.testFilename(exifPath, i)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
-		}
-
-		td.numData++
-	}
+	// Note the contents will be different though. So we get files that
+	// collide in name but not contents.
+	td.populateFiles(dir, num, &count, noExifPath, exifPath)
+	td.numData += num
 }
 
-// Generate 'num' files with exif date set to arg in the directory passed in
-func (td *testdir) populateModFiles(dir string, num int, delta int) {
-	content, err := ioutil.ReadFile(noExifPath)
+// Generate 'num' files that we will skip since they are not media.
+func (td *testdir) populateSkipFiles(dir string, num int) {
+	td.populateFiles(dir, num, &td.fileNo, skipPath, skipPath)
+	td.numSkipped += num
+}
+
+func (td *testdir) populateNoExifFiles(dir string, num int) {
+	td.populateFiles(dir, num, &td.fileNo, noExifPath, noExifPath)
+	// THese will not work in the Exif library
+	td.numExifError += num
+	// But with modtimes they will still be handled as data
+	td.numData += num
+}
+
+// Set the modtimes that match the 'match' in 'dir' to a spread based on testdir
+func (td *testdir) setModTimes(dir string, match string,
+	startTime time.Time, delta int) {
+	time := startTime
+
+	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		td.t.Fatal(err)
 	}
 
-	time := td.startTime
+	for _, entry := range entries {
+		filename := entry.Name()
+		extension := filepath.Ext(filename)
+		prefix := strings.TrimRight(filename, extension)
 
-	for i := 0; i < num; i++ {
-		filename := td.uniqueFilename(noExifPath)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
+		// If not a matchjust skip it
+		if !strings.Contains(prefix, match) {
+			continue
 		}
 
 		// set time for file
-		err = os.Chtimes(targetPath, time, time)
+		path := filepath.Join(dir, filename)
+
+		err = os.Chtimes(path, time, time)
 		if err != nil {
 			td.t.Fatal(err)
 		}
@@ -236,51 +230,24 @@ func (td *testdir) populateModFiles(dir string, num int, delta int) {
 		if td.method != MethodNone {
 			time = td.addTimeByMethod(time, delta)
 		}
-
-		td.numExifError++
-
-		// We end up adding these as data if they have exif problems
-		// since we parse the mod time as input.
-		td.numData++
-	}
-}
-
-// Generate 'num' files with exif date set to arg in the directory passed in
-func (td *testdir) populateSkipFiles(dir string, num int) {
-	content, err := ioutil.ReadFile(skipPath)
-	if err != nil {
-		td.t.Fatal(err)
-	}
-
-	for i := 0; i < num; i++ {
-		filename := td.uniqueFilename(skipPath)
-		targetPath := filepath.Join(dir, filename)
-
-		err := ioutil.WriteFile(targetPath, content, 0600)
-		if err != nil {
-			td.t.Fatal(err)
-		}
-
-		td.numSkipped++
 	}
 }
 
 func (td *testdir) buildRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
-	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
-	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
-
-	// First add exif files
 	td.populateExifFiles(exifDir, 50)
-	// Then add mod file
-	td.populateModFiles(noExifDir, 25, 1)
-	// Add more exif files with different names
-	td.populateExifFiles(mixedDir, 25)
-	// Add more mod files with different names
-	td.populateModFiles(mixedDir, 25, 1)
-	// To exercise the walk algo we are creating a nested directory.
+
+	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
 	td.populateExifFiles(nestedDir, 25)
+
+	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
+	td.populateNoExifFiles(noExifDir, 25)
+	td.setModTimes(noExifDir, noExifPath, td.startTime, 1)
+
+	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
+	td.populateExifFiles(mixedDir, 25)
+	td.populateNoExifFiles(mixedDir, 25)
+	td.setModTimes(mixedDir, noExifPath, td.startTime, 1)
 
 	return td.root
 }
@@ -351,9 +318,10 @@ func (td *testdir) buildSortedDir(src string, dst string, action int) string {
 	return dst
 }
 
-func newTestDir(t *testing.T, method int) *testdir {
+func newTestDir(t *testing.T, method int, fileNo int) *testdir {
 	var td testdir
 
+	td.fileNoStart = fileNo
 	td.fileNo = 0
 	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t

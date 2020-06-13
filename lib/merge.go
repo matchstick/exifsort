@@ -96,6 +96,24 @@ func MergeCheck(root string, method int) error {
 	return err
 }
 
+func mergeNonUniqueFileName(err error, action int) error {
+	// Is this error a duplicate file?
+	// If not a duplicate error just propagate it
+	var dupErr *duplicateError
+	if !errors.As(err, &dupErr) {
+		return err
+	}
+
+	// If we are not moving files then we should just do nothing
+	if action != ActionMove {
+		return nil
+	}
+
+	// We have a duplicate so we have to remove it
+	// Hopefully there is no os problem with doing so.
+	return os.Remove(dupErr.src)
+}
+
 func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 	// Remove the root
 	filePath := strings.Replace(srcFile, srcRoot, "", 1)
@@ -120,18 +138,11 @@ func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
 		return entryMap[filename]
 	})
 
-	// If we have a duplicate error that the file is a duplicate.
-	// If we are moving files then remove the source.
-	var dupErr *duplicateError
-	if errors.As(err, &dupErr) && action == ActionMove {
-		return os.Remove(dupErr.src)
-	}
-
-	// If we have a real error we need to stop.
 	if err != nil {
-		return err
+		return mergeNonUniqueFileName(err, action)
 	}
 
+	// time to move the file appropriately
 	dstFile = filepath.Join(dstDir, dstFile)
 
 	switch action {

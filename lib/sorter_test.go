@@ -53,7 +53,7 @@ func testTransfer(t *testing.T, td *testdir, method int, action int) error {
 
 func TestSortDir(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		td := newTestDir(t, method)
+		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildRoot()
 		defer os.RemoveAll(src)
@@ -72,7 +72,7 @@ func TestSortDir(t *testing.T) {
 
 func TestSortDuplicates(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		td := newTestDir(t, method)
+		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildDuplicateRoot()
 		defer os.RemoveAll(src)
@@ -91,7 +91,7 @@ func TestSortDuplicates(t *testing.T) {
 
 func TestSortCollisions(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		td := newTestDir(t, method)
+		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildCollisionRoot()
 		defer os.RemoveAll(src)
@@ -111,7 +111,7 @@ func TestSortCollisions(t *testing.T) {
 func TestBadSortMethod(t *testing.T) {
 	const badMethod = 888
 
-	td := newTestDir(t, badMethod)
+	td := newTestDir(t, badMethod, fileNoDefault)
 
 	err := testTransfer(t, td, badMethod, ActionMove)
 	if err == nil {
@@ -122,7 +122,7 @@ func TestBadSortMethod(t *testing.T) {
 func TestBadSortAction(t *testing.T) {
 	const badAction = 888
 
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	err := testTransfer(t, td, MethodYear, badAction)
 	if err == nil {
@@ -131,7 +131,7 @@ func TestBadSortAction(t *testing.T) {
 }
 
 func TestSortNoOutputDir(t *testing.T) {
-	td := newTestDir(t, MethodNone)
+	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	src := td.buildRoot()
 	defer os.RemoveAll(src)
