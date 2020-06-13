@@ -29,6 +29,7 @@ const (
 	noRootExifPath = "../data/no_root_ifd.jpg"
 	skipPath       = "../README.md"
 	nonesensePath  = "../gobofragggle"
+	fileNoDefault  = 0
 )
 
 func countFiles(t *testing.T, path string, correctCount int, label string) error {
@@ -317,10 +318,10 @@ func (td *testdir) buildSortedDir(src string, dst string, action int) string {
 	return dst
 }
 
-func newTestDir(t *testing.T, method int) *testdir {
+func newTestDir(t *testing.T, method int, fileNo int) *testdir {
 	var td testdir
 
-	td.fileNoStart = 0
+	td.fileNoStart = fileNo
 	td.fileNo = 0
 	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t

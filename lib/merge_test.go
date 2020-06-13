@@ -16,7 +16,7 @@ Think of all test cases:
 */
 func TestMergeCheckGood(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		td := newTestDir(t, method)
+		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildRoot()
 		defer os.RemoveAll(src)
@@ -34,7 +34,7 @@ func TestMergeCheckGood(t *testing.T) {
 
 func TestMergeCheckBad(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
-		td := newTestDir(t, method)
+		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildRoot()
 		defer os.RemoveAll(src)
@@ -57,11 +57,11 @@ func TestMergeCheckBad(t *testing.T) {
 }
 
 func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) error {
-	tdSrc := newTestDir(t, method)
-	tdDst := newTestDir(t, method)
+	tdSrc := newTestDir(t, method, fileNoDefault)
+	tdDst := newTestDir(t, method, fileNoDefault)
 
 	// If we want to not have duplicate testdirs we need to modify the fileNo
-	if dstFileNo != 0 {
+	if dstFileNo != fileNoDefault {
 		tdDst.setFileNo(dstFileNo)
 	}
 
@@ -142,9 +142,9 @@ func TestMergeGood(t *testing.T) {
 }
 
 func TestMergeDuplicate(t *testing.T) {
-	// By setting the fileNo to 0 we ensure the dst directory will have
+	// By setting the fileNo to the default we ensure the dst directory will have
 	// files with the same names as src and then get duplicates.
-	fileNo := 0
+	fileNo := fileNoDefault
 
 	for method := MethodYear; method < MethodNone; method++ {
 		err := testMerge(t, method, ActionCopy, fileNo, true)
