@@ -13,32 +13,7 @@ import (
 
 /*
 
-This file began as a quick hack but it is becoming apparrent it is going to
-need work and focus if we are going to put exifsort into real production use
-for the family.
-
-Requirements are accumaltive as the stages of the pipeline refine the needs of
-the input directories.
-
-Scanner Requirements:
-* A directory with two levels
-* Some files (variable) with valid exifdata
-* Some files (variable) with invalid exifdata so they use mod times
-* Some examples of filepath errors
-* Some files to skip
-
-Sort Requirements
-* All the same ones scanner has
-* Create input files to allow for media sets of one and multiple files.
-* Have media sets be spread across all methods
-* Have transfer be all actions.
-* Exercise collision paths
-* Exercise duplicate paths
-
 Merge rerquirments
-* All the ones sorter has
-* Take as input a sorted directory with correct structure
-* A directory with broken structure
 * A directory with a disjoint set of media files to create new leaves
 * A directory with a same set of media files to not add anything to the dst
 * A directory with the same media names and sort times but different contents
@@ -107,11 +82,12 @@ func listDir(root string) {
 }
 */
 type testdir struct {
-	fileNo    int // We want files that are unique across an entire testdir instance
-	root      string
-	t         *testing.T
-	startTime time.Time
-	method    int
+	fileNo      int
+	fileNoStart int
+	root        string
+	t           *testing.T
+	startTime   time.Time
+	method      int
 
 	numExifError  int
 	numData       int
@@ -139,6 +115,11 @@ func (td *testdir) addTimeByMethod(t time.Time, delta int) time.Time {
 	}
 
 	return time
+}
+
+func (td *testdir) setFileNo(fileNo int) {
+	td.fileNo = fileNo
+	td.fileNoStart = fileNo
 }
 
 // We need to have unique filenames often.
@@ -182,9 +163,9 @@ func (td *testdir) populateExifFiles(dir string, num int) {
 
 // The goal is to create filenames bases on zero with exif contents.
 func (td *testdir) populateDuplicateFilenames(dir string, path string, num int) {
-	// What we are doing is setting our fileno counter back to 0.
+	// What we are doing is setting our fileno counter back to the start
 	// THis will construct filenames that equal the ones created alredy.
-	var count = 0
+	var count = td.fileNoStart
 
 	td.populateFiles(dir, num, &count, exifPath, exifPath)
 	td.numDuplicates += num
@@ -193,9 +174,9 @@ func (td *testdir) populateDuplicateFilenames(dir string, path string, num int) 
 // This will have the same names as popualted exif files but different contents
 // so should be handled as a collision.
 func (td *testdir) populateCollisionFilenames(dir string, num int) {
-	// What we are doing is setting our fileno counter back to 0.
+	// What we are doing is setting our fileno counter back to the start
 	// This will construct filenames that equal the ones created alredy.
-	var count = 0
+	var count = td.fileNoStart
 
 	// Note the contents will be different though. So we get files that
 	// collide in name but not contents.
@@ -339,6 +320,7 @@ func (td *testdir) buildSortedDir(src string, dst string, action int) string {
 func newTestDir(t *testing.T, method int) *testdir {
 	var td testdir
 
+	td.fileNoStart = 0
 	td.fileNo = 0
 	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t
