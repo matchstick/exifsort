@@ -74,7 +74,7 @@ func TestSortDuplicates(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		td := newTestDir(t, method, fileNoDefault)
 
-		src := td.buildDuplicateRoot()
+		src := td.buildDuplicateWithinThisRoot()
 		defer os.RemoveAll(src)
 
 		err := testTransfer(t, td, method, ActionCopy)
@@ -93,7 +93,7 @@ func TestSortCollisions(t *testing.T) {
 	for method := MethodYear; method < MethodNone; method++ {
 		td := newTestDir(t, method, fileNoDefault)
 
-		src := td.buildCollisionRoot()
+		src := td.buildCollisionWithinThisRoot()
 		defer os.RemoveAll(src)
 
 		err := testTransfer(t, td, method, ActionCopy)
