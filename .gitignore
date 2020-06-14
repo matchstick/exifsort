@@ -1,6 +1,7 @@
 *.swp
 *.bak
 cov.out
+coverage.out
 exifsort
 exifsort.linux
 exifsort.darwin
