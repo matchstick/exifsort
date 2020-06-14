@@ -33,7 +33,7 @@ build_darwin:
 build_windows:
 	env GOOS=windows GOARCH=amd64 go build -v -o exifsort.windows
 
-all: fix vet fmt test build lint tidy
+all: fix vet fmt tidy build lint test
 
 fix:
 	go fix ./...

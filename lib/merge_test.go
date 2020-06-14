@@ -58,12 +58,7 @@ func TestMergeCheckBad(t *testing.T) {
 
 func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) error {
 	tdSrc := newTestDir(t, method, fileNoDefault)
-	tdDst := newTestDir(t, method, fileNoDefault)
-
-	// If we want to not have duplicate testdirs we need to modify the fileNo
-	if dstFileNo != fileNoDefault {
-		tdDst.setFileNo(dstFileNo)
-	}
+	tdDst := newTestDir(t, method, dstFileNo)
 
 	src := tdSrc.buildRoot()
 	dst := tdDst.buildRoot()
@@ -117,6 +112,57 @@ func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) er
 	return nil
 }
 
+func testMergeCollisions(t *testing.T, method int, action int) error {
+	tdSrc := newTestDir(t, method, fileNoDefault)
+	// Not for collisons the dst dir has to have the default fileNo
+	tdDst := newTestDir(t, method, fileNoDefault)
+
+	src := tdSrc.buildCollisionWithRoot()
+	dst := tdDst.buildRoot()
+
+	// Copy files to two sorted directories that are identical
+	fromDir := tdSrc.buildSortedDir(src, "fromDir_", ActionCopy)
+	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
+
+	// merge them
+	err := Merge(fromDir, toDir, action, ioutil.Discard)
+	if err != nil {
+		return err
+	}
+
+	var leftOvers int
+
+	switch action {
+	case ActionCopy:
+		// src dir should have all its media untouched
+		leftOvers = tdSrc.numTotal()
+	case ActionMove:
+		// src dir should have all media merged and be empty
+		leftOvers = 0
+	default:
+		return errors.New("unknown action")
+	}
+
+	err = countFiles(t, fromDir, leftOvers, "Src Dir")
+	if err != nil {
+		return err
+	}
+
+	// Destination should have all data from both sources
+	total := tdDst.numData + tdSrc.numData
+
+	err = countFiles(t, toDir, total, "Target Dir")
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(fromDir)
+	defer os.RemoveAll(toDir)
+	defer os.RemoveAll(src)
+
+	return nil
+}
+
 func TestMergeGood(t *testing.T) {
 	// By setting the fileNo so high the files will have different names
 	// between tesdirs We are hoping that this number is just high enough
@@ -156,6 +202,24 @@ func TestMergeDuplicate(t *testing.T) {
 
 	for method := MethodYear; method < MethodNone; method++ {
 		err := testMerge(t, method, ActionMove, fileNo, true)
+		if err != nil {
+			t.Fatalf("Method %d, Action Move Error: %s\n",
+				method, err.Error())
+		}
+	}
+}
+
+func TestMergeCollisions(t *testing.T) {
+	for method := MethodYear; method < MethodNone; method++ {
+		err := testMergeCollisions(t, method, ActionCopy)
+		if err != nil {
+			t.Fatalf("Method %d, Action Copy Error: %s\n",
+				method, err.Error())
+		}
+	}
+
+	for method := MethodYear; method < MethodNone; method++ {
+		err := testMergeCollisions(t, method, ActionMove)
 		if err != nil {
 			t.Fatalf("Method %d, Action Move Error: %s\n",
 				method, err.Error())
