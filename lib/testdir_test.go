@@ -92,6 +92,7 @@ type testdir struct {
 	numDuplicates int
 	numSkipped    int
 	numScanError  int
+	numTimeSpread int
 }
 
 func (td *testdir) numTotal() int {
@@ -111,6 +112,7 @@ func (td *testdir) incrementTimeByMethod(delta int) {
 	default:
 		td.t.Fatalf("Invalid Method %d", td.method)
 	}
+	td.numTimeSpread++
 }
 
 // We need to have unique filenames often.

@@ -143,34 +143,14 @@ func testMergeCollisions(t *testing.T, method int, action int) error {
 		return err
 	}
 
-	var leftOvers int
-
-	switch action {
-	case ActionCopy:
-		// src dir should have all its media untouched
-		leftOvers = tdSrc.numTotal()
-	case ActionMove:
-		// src dir should have all media merged and be empty
-		leftOvers = 0
-	default:
-		return errors.New("unknown action")
-	}
-
-	err = countFiles(t, fromDir, leftOvers, "Src Dir")
-	if err != nil {
-		return err
-	}
-
-	// Destination should have all data from both sources
-	total := tdDst.numData + tdSrc.numData
-
-	err = countFiles(t, toDir, total, "Target Dir")
+	err = testMergeResults(t, tdSrc, tdDst, fromDir, toDir, action, false)
 	if err != nil {
 		return err
 	}
 
 	defer os.RemoveAll(fromDir)
 	defer os.RemoveAll(toDir)
+	defer os.RemoveAll(dst)
 	defer os.RemoveAll(src)
 
 	return nil
