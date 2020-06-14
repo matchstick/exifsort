@@ -56,6 +56,45 @@ func TestMergeCheckBad(t *testing.T) {
 	}
 }
 
+func testMergeResults(t *testing.T, tdSrc *testdir, tdDst *testdir,
+	fromDir string, toDir string,
+	action int, dup bool) error {
+	var leftOvers int
+
+	switch action {
+	case ActionCopy:
+		// src dir should have all its media untouched
+		leftOvers = tdSrc.numTotal()
+	case ActionMove:
+		// src dir should have all media merged and be empty
+		leftOvers = 0
+	default:
+		return errors.New("unknown action")
+	}
+
+	err := countFiles(t, fromDir, leftOvers, "Src Dir")
+	if err != nil {
+		return err
+	}
+
+	var total int
+	if dup {
+		// Destination should have data only from dst as src is all
+		// duplicates
+		total = tdDst.numData
+	} else {
+		// Destination should have all data from both sources
+		total = tdDst.numData + tdSrc.numData
+	}
+
+	err = countFiles(t, toDir, total, "Target Dir")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) error {
 	tdSrc := newTestDir(t, method, fileNoDefault)
 	tdDst := newTestDir(t, method, dstFileNo)
@@ -73,40 +112,14 @@ func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) er
 		return err
 	}
 
-	var leftOvers int
-
-	switch action {
-	case ActionCopy:
-		// src dir should have all its media untouched
-		leftOvers = tdSrc.numTotal()
-	case ActionMove:
-		// src dir should have all media merged and be empty
-		leftOvers = 0
-	default:
-		return errors.New("unknown action")
-	}
-
-	err = countFiles(t, fromDir, leftOvers, "Src Dir")
-	if err != nil {
-		return err
-	}
-
-	var total int
-	if dup {
-		// Destination should have data only from dst as src is all duplicates
-		total = tdDst.numData
-	} else {
-		// Destination should have all data from both sources
-		total = tdDst.numData + tdSrc.numData
-	}
-
-	err = countFiles(t, toDir, total, "Target Dir")
+	err = testMergeResults(t, tdSrc, tdDst, fromDir, toDir, action, dup)
 	if err != nil {
 		return err
 	}
 
 	defer os.RemoveAll(fromDir)
 	defer os.RemoveAll(toDir)
+	defer os.RemoveAll(dst)
 	defer os.RemoveAll(src)
 
 	return nil
@@ -163,6 +176,37 @@ func testMergeCollisions(t *testing.T, method int, action int) error {
 	return nil
 }
 
+func testMergeTimeSpread(t *testing.T, method int, action int) error {
+	tdSrc := newTestDir(t, method, fileNoDefault)
+	// Time should trump whether or not the name is the same
+	tdDst := newTestDir(t, method, fileNoDefault)
+
+	src := tdSrc.buildTimeSpreadRoot()
+	dst := tdDst.buildRoot()
+
+	// Copy files to two sorted directories that are identical
+	fromDir := tdSrc.buildSortedDir(src, "fromDir_", ActionCopy)
+	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
+
+	// merge them
+	err := Merge(fromDir, toDir, action, ioutil.Discard)
+	if err != nil {
+		return err
+	}
+
+	err = testMergeResults(t, tdSrc, tdDst, fromDir, toDir, action, false)
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(fromDir)
+	defer os.RemoveAll(toDir)
+	defer os.RemoveAll(dst)
+	defer os.RemoveAll(src)
+
+	return nil
+}
+
 func TestMergeGood(t *testing.T) {
 	// By setting the fileNo so high the files will have different names
 	// between tesdirs We are hoping that this number is just high enough
@@ -180,6 +224,24 @@ func TestMergeGood(t *testing.T) {
 
 	for method := MethodYear; method < MethodNone; method++ {
 		err := testMerge(t, method, ActionMove, fileNo, false)
+		if err != nil {
+			t.Fatalf("Method %d, Action Move Error: %s\n",
+				method, err.Error())
+		}
+	}
+}
+
+func TestMergeTime(t *testing.T) {
+	for method := MethodYear; method < MethodNone; method++ {
+		err := testMergeTimeSpread(t, method, ActionCopy)
+		if err != nil {
+			t.Fatalf("Method %d, Action Copy Error: %s\n",
+				method, err.Error())
+		}
+	}
+
+	for method := MethodYear; method < MethodNone; method++ {
+		err := testMergeTimeSpread(t, method, ActionMove)
 		if err != nil {
 			t.Fatalf("Method %d, Action Move Error: %s\n",
 				method, err.Error())

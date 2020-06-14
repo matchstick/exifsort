@@ -14,10 +14,7 @@ import (
 /*
 
 Merge rerquirments
-* A directory with a disjoint set of media files to create new leaves
-* A directory with the same media names and sort times but different contents
-  to create collisions.
-* Start mering with mis aligned time spreads in a big way. Need to test mkdir
+We want a src that forces to create a new directory
 */
 
 const (
@@ -62,7 +59,6 @@ func countFiles(t *testing.T, path string, correctCount int, label string) error
 }
 
 /*
-
 // For debugging - commented out for lint
 
 func listDir(root string) {
@@ -88,7 +84,7 @@ type testdir struct {
 	fileNoStart int
 	root        string
 	t           *testing.T
-	startTime   time.Time
+	time        time.Time
 	method      int
 
 	numExifError  int
@@ -102,21 +98,19 @@ func (td *testdir) numTotal() int {
 	return td.numData + td.numScanError + td.numSkipped
 }
 
-func (td *testdir) addTimeByMethod(t time.Time, delta int) time.Time {
-	var time time.Time
-
+func (td *testdir) incrementTimeByMethod(delta int) {
 	switch td.method {
 	case MethodYear:
-		return t.AddDate(delta, 0, 0)
+		td.time = td.time.AddDate(delta, 0, 0)
 	case MethodMonth:
-		return t.AddDate(0, delta, 0)
+		td.time = td.time.AddDate(0, delta, 0)
 	case MethodDay:
-		return t.AddDate(0, 0, delta)
+		td.time = td.time.AddDate(0, 0, delta)
+	case MethodNone:
+		return
 	default:
 		td.t.Fatalf("Invalid Method %d", td.method)
 	}
-
-	return time
 }
 
 // We need to have unique filenames often.
@@ -188,35 +182,18 @@ func (td *testdir) populateNoExifFiles(dir string, num int) {
 }
 
 // Set the modtimes that match the 'match' in 'dir' to a spread based on testdir
-func (td *testdir) setModTimes(dir string, match string,
-	startTime time.Time, delta int) {
-	time := startTime
-
+func (td *testdir) setModTimes(dir string, match string) {
 	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		td.t.Fatal(err)
 	}
 
 	for _, entry := range entries {
-		filename := entry.Name()
-		extension := filepath.Ext(filename)
-		prefix := strings.TrimRight(filename, extension)
+		path := filepath.Join(dir, entry.Name())
 
-		// If not a matchjust skip it
-		if !strings.Contains(prefix, match) {
-			continue
-		}
-
-		// set time for file
-		path := filepath.Join(dir, filename)
-
-		err = os.Chtimes(path, time, time)
+		err = os.Chtimes(path, td.time, td.time)
 		if err != nil {
 			td.t.Fatal(err)
-		}
-
-		if td.method != MethodNone {
-			time = td.addTimeByMethod(time, delta)
 		}
 	}
 }
@@ -230,12 +207,10 @@ func (td *testdir) buildRoot() string {
 
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
 	td.populateNoExifFiles(noExifDir, 25)
-	td.setModTimes(noExifDir, noExifPath, td.startTime, 1)
 
 	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
 	td.populateExifFiles(mixedDir, 25)
 	td.populateNoExifFiles(mixedDir, 25)
-	td.setModTimes(mixedDir, noExifPath, td.startTime, 1)
 
 	return td.root
 }
@@ -252,6 +227,28 @@ func (td *testdir) buildCollisionWithRoot() string {
 
 	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
 	td.populateCollisionFiles(mixedDir, 25)
+
+	return td.root
+}
+
+// We are building a root with no exif data to keep times straight.
+// All modtimes.
+func (td *testdir) buildTimeSpreadRoot() string {
+	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
+	td.populateNoExifFiles(exifDir, 25)
+	td.setModTimes(exifDir, noExifPath)
+
+	td.incrementTimeByMethod(10)
+
+	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
+	td.populateNoExifFiles(nestedDir, 25)
+	td.setModTimes(nestedDir, noExifPath)
+
+	td.incrementTimeByMethod(10)
+
+	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
+	td.populateNoExifFiles(noExifDir, 25)
+	td.setModTimes(noExifDir, noExifPath)
 
 	return td.root
 }
@@ -341,7 +338,7 @@ func newTestDir(t *testing.T, method int, fileNo int) *testdir {
 	td.fileNo = fileNo
 	td.root, _ = ioutil.TempDir("", "root")
 	td.t = t
-	td.startTime = time.Date(2000, time.January, 1, 12, 0, 0, 0, time.Local)
+	td.time = time.Date(2000, time.January, 1, 12, 0, 0, 0, time.Local)
 	td.method = method
 
 	return &td
