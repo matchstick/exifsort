@@ -60,9 +60,13 @@ docs:
 	go get $(REPO_GODOC)
 	$(GOBIN)/godoc -http=localhost:6060
 
-cov:
+covhtml:
 	go test ./... -coverprofile=cov.out
 	go tool cover -html=cov.out
+
+covfunc:
+	go test ./... -coverprofile=cov.out
+	go tool cover -func=cov.out
 
 clean:
 	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin exifsort.windows *.json
