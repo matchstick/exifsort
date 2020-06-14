@@ -96,7 +96,7 @@ func MergeCheck(root string, method int) error {
 	return err
 }
 
-func mergeNonUniqueFileName(err error, action int) error {
+func mergeDuplicate(err error, action int) error {
 	// Is this error a duplicate file?
 	// If not a duplicate error just propagate it
 	var dupErr *duplicateError
@@ -114,42 +114,64 @@ func mergeNonUniqueFileName(err error, action int) error {
 	return os.Remove(dupErr.src)
 }
 
-func merge(srcFile string, srcRoot string, dstRoot string, action int) error {
-	// Remove the root
-	filePath := strings.Replace(srcFile, srcRoot, "", 1)
+func merge(srcPath string, srcRoot string, dstRoot string, action int) error {
+	// Remove the root but this is not the basename just what is between
+	// root and base
+	filePath := strings.Replace(srcPath, srcRoot, "", 1)
 
-	// The directories we are going to put the file into
+	// The directory we are going to put the file into
 	dstDir := filepath.Join(dstRoot, filepath.Dir(filePath))
 
 	dirEntries, err := ioutil.ReadDir(dstDir)
-	if err != nil {
+
+	var dstPath string
+
+	switch {
+	case os.IsNotExist(err):
+		// mkdir as we need to
+		err = os.MkdirAll(dstDir, 0777)
+		if err != nil {
+			return err
+		}
+
+		// We know dstPath is unique, first file in the directory we just made
+		srcBase := filepath.Base(srcPath)
+		dstPath = filepath.Join(dstDir, srcBase)
+	case err != nil:
+		// We have an error
 		return errors.New(err.Error())
+	default:
+		// Here we know the directory pre-exists we have the entries.
+		// So we need to find a unique filename and build a path for
+		// the target.
+		entryMap := make(map[string]string)
+
+		// Collect the existing names
+		for _, entry := range dirEntries {
+			baseName := filepath.Base(entry.Name())
+			fullPath := filepath.Join(dstDir, entry.Name())
+			entryMap[baseName] = fullPath
+		}
+
+		// Find a new one base don ours
+		dstBase, err := uniqueName(srcPath, func(filename string) string {
+			return entryMap[filename]
+		})
+
+		// We got an error it's either a duplicate or a real problem.
+		if err != nil {
+			return mergeDuplicate(err, action)
+		}
+
+		dstPath = filepath.Join(dstDir, dstBase)
 	}
 
-	entryMap := make(map[string]string)
-
-	for _, entry := range dirEntries {
-		baseName := filepath.Base(entry.Name())
-		fullPath := filepath.Join(dstDir, entry.Name())
-		entryMap[baseName] = fullPath
-	}
-
-	dstFile, err := uniqueName(srcFile, func(filename string) string {
-		return entryMap[filename]
-	})
-
-	if err != nil {
-		return mergeNonUniqueFileName(err, action)
-	}
-
-	// time to move the file appropriately
-	dstFile = filepath.Join(dstDir, dstFile)
-
+	// Finally we have everything we need to move the media
 	switch action {
 	case ActionCopy:
-		return copyFile(srcFile, dstFile)
+		return copyFile(srcPath, dstPath)
 	case ActionMove:
-		return moveFile(srcFile, dstFile)
+		return moveFile(srcPath, dstPath)
 	default:
 		errStr := fmt.Sprintf("Unknown Action %d", action)
 		return errors.New(errStr)
