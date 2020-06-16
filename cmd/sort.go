@@ -25,14 +25,11 @@ import (
 )
 
 type sortCmd struct {
-	src       string
-	dst       string
-	json      string
-	method    int
-	action    int
-	quiet     bool
-	summarize bool
-	cobraCmd  *cobra.Command
+	src      string
+	dst      string
+	method   int
+	action   int
+	cobraCmd *cobra.Command
 }
 
 func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
@@ -67,10 +64,21 @@ func outputCreate(dst string) error {
 	return nil
 }
 
+func (s *sortCmd) isSrcDir() bool {
+	info, err := os.Stat(s.src)
+
+	// Cannot even stat it
+	if err != nil {
+		return false
+	}
+
+	return info.IsDir()
+}
+
 func (s *sortCmd) sortLongHelp() string {
 	return `Sort directory by Exif Date Info. 
 
-	exifsort sort <options>
+	exifsort sort <copy | move> <year | month | day> <src> <dst> [--json <json>]
 
 	exifsort will recursively check every file in an input directory and
 	then create antoher directory structure organized by time to either
@@ -80,33 +88,23 @@ func (s *sortCmd) sortLongHelp() string {
 
 // Here we finally do the work.
 func (s *sortCmd) sortExecute() {
-	writer := ioWriter(s.quiet)
-
 	scanner := exifsort.NewScanner()
 
-	switch {
-	case s.src != "":
+	var err error
+	if s.isSrcDir() {
 		// Here we walk the directory and get stats
-		err := scanner.ScanDir(s.src, writer)
-		if err != nil {
-			fmt.Printf("Input Directory \"%s\" has error (%s)\n",
-				s.src, err.Error())
-			return
-		}
-	case s.json != "":
+		err = scanner.ScanDir(s.src, os.Stdout)
+	} else {
 		// Or we get stats from a json file
-		err := scanner.Load(s.json)
-		if err != nil {
-			fmt.Printf("Load of \"%s\" has error (%s)\n",
-				s.json, err.Error())
-			return
-		}
-	default:
-		fmt.Printf("Inputs were not chosen\n")
+		err = scanner.Load(s.src)
+	}
+
+	if err != nil {
+		fmt.Printf("\"%s\" error (%s)\n", s.src, err.Error())
 		return
 	}
 
-	// Now we take those stats and Sort them.
+	// Now we ke those stats and Sort them.
 	sorter, err := exifsort.NewSorter(scanner, s.method)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
@@ -114,47 +112,33 @@ func (s *sortCmd) sortExecute() {
 	}
 
 	// Transfer the files to the dst
-	err = sorter.Transfer(s.dst, s.action, writer)
+	err = sorter.Transfer(s.dst, s.action, os.Stdout)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		return
 	}
 
-	if s.summarize {
-		s.sortSummary(&scanner, sorter)
-	}
+	s.sortSummary(&scanner, sorter)
 }
 
-func newCobraCmd(s *sortCmd) *cobra.Command {
+func (s *sortCmd) newMethodCmd(action int, method int) *cobra.Command {
+	const numMethodCmdArgs = 2
+
+	methodStr := exifsort.MethodMap()[method]
+	actionStr := exifsort.ActionMap()[action]
+
 	return &cobra.Command{
-		Use:   "sort",
-		Short: "Accepts an input directory and will sort media by time created",
+		Use:   methodStr,
+		Short: fmt.Sprintf("Need to add subcommand for %s %s", actionStr, methodStr),
 		// Very long help message so we moved it to a func.
 		Long: s.sortLongHelp(),
+		Args: cobra.MinimumNArgs(numMethodCmdArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			s.quiet, _ = cmd.Flags().GetBool("quiet")
-			s.summarize, _ = cmd.Flags().GetBool("summarize")
-
-			s.src, _ = cmd.Flags().GetString("input")
-			s.dst, _ = cmd.Flags().GetString("output")
-			s.json, _ = cmd.Flags().GetString("json")
-			methodArg, _ := cmd.Flags().GetString("method")
-			actionArg, _ := cmd.Flags().GetString("action")
-
-			// User needs to set either json or src, but not both.
-
-			// Has the user not set any inputs?
-			if s.json == "" && s.src == "" {
-				fmt.Printf("Must set input with either -j or -i.\n")
-				return
-			}
-
-			// Has the user set both?
-			if s.json != "" && s.src != "" {
-				fmt.Printf("Cannot use both -j and -i for input.\n")
-				return
-			}
+			s.src = args[0]
+			s.dst = args[1]
+			s.method = method
+			s.action = action
 
 			// We create directory before executing.
 			// It would not be cool to spend a lot of time
@@ -165,43 +149,49 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 				return
 			}
 
-			s.method, err = exifsort.ParseMethod(methodArg)
-			if err != nil {
-				fmt.Printf("%s\n", err.Error())
-				return
-			}
-
-			s.action, err = exifsort.ParseAction(actionArg)
-			if err != nil {
-				fmt.Printf("%s\n", err.Error())
-				return
-			}
-
 			s.sortExecute()
 		},
 	}
 }
 
-func newSortCmd() *cobra.Command {
-	var sortFlags = []cmdStringFlag{
-		{"a", "action", true,
-			"Transfer Action: <copy|move>"},
-		{"i", "input", false,
-			"Input Directory to scan media."},
-		{"j", "json", false,
-			"Json File input to load media."},
-		{"m", "method", true,
-			"Method to index media in output directory. <year|month|day>"},
-		{"o", "output", true,
-			"Output Directory to transfer media. (Must not exist.)"},
+func (s *sortCmd) newActionCmd(action int) *cobra.Command {
+	actionStr := exifsort.ActionMap()[action]
+
+	actionCmd := &cobra.Command{
+		Use:   actionStr,
+		Short: "Need to add usage for " + actionStr + " subcommand.",
+		// Very long help message so we moved it to a func.
+		Long: s.sortLongHelp(),
 	}
 
+	for method := range exifsort.MethodMap() {
+		methodCmd := s.newMethodCmd(action, method)
+		actionCmd.AddCommand(methodCmd)
+	}
+
+	return actionCmd
+}
+
+func newSortRootCmd(s *sortCmd) *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "sort",
+		Short: "Accepts an input directory and will sort media by time created",
+		// Very long help message so we moved it to a func.
+		Long: s.sortLongHelp(),
+	}
+
+	for action := range exifsort.ActionMap() {
+		actionCmd := s.newActionCmd(action)
+		rootCmd.AddCommand(actionCmd)
+	}
+
+	return rootCmd
+}
+
+func newSortCmd() *cobra.Command {
 	// sortCmd represents the sort command.
-	var cmd sortCmd
-	cmd.cobraCmd = newCobraCmd(&cmd)
+	var s sortCmd
+	s.cobraCmd = newSortRootCmd(&s)
 
-	setStringFlags(cmd.cobraCmd, sortFlags)
-	addCommonFlags(cmd.cobraCmd)
-
-	return cmd.cobraCmd
+	return s.cobraCmd
 }

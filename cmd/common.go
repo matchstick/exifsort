@@ -17,21 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"io"
-	"io/ioutil"
-	"os"
-
 	"github.com/spf13/cobra"
 )
-
-// common routine to select writer from command line.
-func ioWriter(quiet bool) io.Writer {
-	if quiet {
-		return ioutil.Discard
-	}
-
-	return os.Stdout
-}
 
 type cmdStringFlag struct {
 	shorthand string

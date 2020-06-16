@@ -19,6 +19,8 @@ package cmd
 import (
 	"fmt"
 
+	"os"
+
 	exifsort "github.com/matchstick/exifsort/lib"
 	"github.com/spf13/cobra"
 )
@@ -29,20 +31,14 @@ func scanSummary(s *exifsort.Scanner) {
 	fmt.Printf("Scanned Data: %d\n", s.NumData())
 
 	for extension, num := range s.NumDataTypes {
-		fmt.Printf("\t[%s]: %d\n", extension, num)
+		fmt.Printf("Scanned [%s]: %d\n", extension, num)
 	}
 
 	if s.NumExifErrors() != 0 {
 		fmt.Printf("Scanned ExifErrors: %d\n", s.NumExifErrors())
 
-		for extension, num := range s.NumExifErrorTypes {
-			fmt.Printf("\t[%s]: %d\n", extension, num)
-		}
-
-		fmt.Println("ExifError Files were:")
-
 		for path, err := range s.ExifErrors {
-			fmt.Printf("\t%s: (%s)\n", path, err)
+			fmt.Printf("Scanned %s: (%s)\n", path, err)
 		}
 	}
 
@@ -50,7 +46,7 @@ func scanSummary(s *exifsort.Scanner) {
 		fmt.Println("Scan Errors were:")
 
 		for path, err := range s.ScanErrors {
-			fmt.Printf("\t%s: (%s)\n", path, err)
+			fmt.Printf("Scanned %s: (%s)\n", path, err)
 		}
 	}
 }
@@ -74,35 +70,29 @@ func newScanCmd() *cobra.Command {
 		Short: "Scan directory for Exif Dates",
 		Long: `Scan directory for Exif Date Info. 
 
-	exifsort scan [<options>...] <dir> `,
-		Args: cobra.MaximumNArgs(0),
+	exifsort scan <dir> [--json=<file>] `,
+		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			quiet, _ := cmd.Flags().GetBool("quiet")
-			summarize, _ := cmd.Flags().GetBool("summarize")
-			dirPath, _ := cmd.Flags().GetString("input")
+			dirPath := args[0]
 			json, _ := cmd.Flags().GetString("json")
 
 			scanner := exifsort.NewScanner()
-			err := scanner.ScanDir(dirPath, ioWriter(quiet))
+			err := scanner.ScanDir(dirPath, os.Stdout)
 			if err != nil {
 				fmt.Printf("Scan error %s\n", err.Error())
 				return
 			}
 
-			if summarize {
-				scanSummary(&scanner)
-			}
+			scanSummary(&scanner)
 			scanSave(&scanner, json)
 		},
 	}
 
 	var scanFlags = []cmdStringFlag{
-		{"i", "input", true, "Input Directory to scan media."},
 		{"j", "json", false, "json file to save output to."},
 	}
 
 	setStringFlags(scanCmd, scanFlags)
-	addCommonFlags(scanCmd)
 
 	return scanCmd
 }

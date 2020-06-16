@@ -13,6 +13,14 @@ const (
 	MethodNone
 )
 
+func MethodMap() map[int]string {
+	return map[int]string{
+		MethodYear:  "year",
+		MethodMonth: "month",
+		MethodDay:   "day",
+	}
+}
+
 type argsMap map[int]string
 
 const parseUnknown = -1
@@ -51,15 +59,9 @@ func (e *parseError) Error() string {
 // ParseMethod returns the constant value of the str.
 // Input is case insensitive.
 func ParseMethod(str string) (int, error) {
-	var methodMap = map[int]string{
-		MethodYear:  "Year",
-		MethodMonth: "Month",
-		MethodDay:   "Day",
-	}
-
-	val := parseArg(str, methodMap)
+	val := parseArg(str, MethodMap())
 	if val == parseUnknown {
-		return MethodNone, &parseError{methodMap}
+		return MethodNone, &parseError{MethodMap()}
 	}
 
 	return val, nil
@@ -73,17 +75,19 @@ const (
 	ActionNone
 )
 
+func ActionMap() map[int]string {
+	return map[int]string{
+		ActionCopy: "copy",
+		ActionMove: "move",
+	}
+}
+
 // ParseAction returns the constant value of the str.
 // Input is case insensitive.
 func ParseAction(str string) (int, error) {
-	var actionMap = map[int]string{
-		ActionCopy: "Copy",
-		ActionMove: "Move",
-	}
-
-	val := parseArg(str, actionMap)
+	val := parseArg(str, ActionMap())
 	if val == parseUnknown {
-		return ActionNone, &parseError{actionMap}
+		return ActionNone, &parseError{ActionMap()}
 	}
 
 	return val, nil
