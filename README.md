@@ -93,3 +93,9 @@ scans by file not directory. Prints the date information of files specified.
 Soon we will be able to merge output from sort to a pre-existing directory.
 
 `exifsort merge -i <src> -o <dst> -q -s`
+
+TODO:
+  * Clean up usage
+  * Clean up readme
+  * Fix up merge args
+  * Fix up summaries
