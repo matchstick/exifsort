@@ -24,13 +24,27 @@ four stages so we can verify correctness for each stage.
 
 | Stage | Description |
 |-------|-------------|
-| Scan  | Collect the mapping of path to time |
+| Scan  | Collect the mapping of path to time in json |
 | Sort  | Accept scan results to transfer media to new directory organized by time. |
 | Merge | Transfer one sorted directory to another sorted directory. |
 
+## Actions
 
-Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
-library](https://github.com/dsoprea/go-exif) and fast responses.
+An action specifies whether to move or copy the files from input to output 
+
+| Action | Transfer By |
+| ------ | --------- |
+| Copy   | copy file from src to dst |
+| Move   | move file from src to dst |
+
+
+## Methods
+
+| Method | Structure |
+| ------ | --------- |
+| Year   | dst -> year -> media |
+| Month  | dst -> year-> month -> media |
+| Day    | dst -> year-> month -> day -> media |
 
 exifsort will try to use the exifdata to determine the time period to sort the
 media. If it cannot find one due to an error in the exif data it will then rely
@@ -41,46 +55,41 @@ on file modtime.
 ## scan
 
 Scanning is when exifsort will read the data from the directory of files,
-filter for media and retrieve time. Useful to test that exif library will be fine.
+filter for media and retrieve time. Useful to test that exif library will be
+fine. You can optionally store the results in a json file.
 
-`exifsort scan <src> 
+*exifsort scan <src>*
 
 You can save data to a json file too:
 
-`exifsort scan <src> -j <json file> 
+*exifsort scan <src> -j <json file>*
+
+Example:
+
+`exifsort scan data -j data.json`
 
 ## sort
 
-Walk an input directory, index the data and then transfer files to an output  directory.
+The sort command performs a number of steps:
+
+  1 Collect media information via scanning a directory or reading a json file from scan
+  1 Indexing the media by method
+  1 Create a directory for output
+  1 Transfer media to the output
+
 
 *exifsort sort <copy | move> <year | month | day> <src> <dst>*
 
+Example: 
+
 `exifsort sort copy month src dst`
 
-Will copy all the media files from src. Create a new directory called dst and
-have them arranged by month.
+Will create a new directory called dst, scan the media in src, index that media
+then transfer it to dst so that it is arranged by month.
 
 or load from json file:
 
 `exifsort sort <copy | move> <year | month | day> <dst> -j <json>`
-
-### Methods
-
-| Method | Structure |
-| ------ | --------- |
-| Year   | dst -> year -> media |
-| Month  | dst -> year-> month -> media |
-| Day    | dst -> year-> month -> day -> media |
-
-### Actions
-
-An action specifies whether to move or copy the files from input to output 
-
-| Action | Transfer By |
-| ------ | --------- |
-| Copy   | copy file from src to dst |
-| Move   | move file from src to dst |
-
 
 ## eval
 
@@ -92,10 +101,15 @@ scans by file not directory. Prints the date information of files specified.
 
 Soon we will be able to merge output from sort to a pre-existing directory.
 
-`exifsort merge -i <src> -o <dst> -q -s`
+`exifsort merge <src> <dst> <method>`
+
+Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
+library](https://github.com/dsoprea/go-exif) and fast responses.
+
 
 TODO:
   * Clean up usage
   * Clean up readme
   * Fix up merge args
   * Fix up summaries
+  * Autodetect method in merge

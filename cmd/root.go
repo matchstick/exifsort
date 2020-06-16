@@ -60,11 +60,6 @@ func Execute() {
 	}
 }
 
-func addCommonFlags(cmd *cobra.Command) {
-	cmd.Flags().BoolP("quiet", "q", false, "Suppress line printing.")
-	cmd.Flags().BoolP("summarize", "s", true, "Print stats when done.")
-}
-
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	var cfgFile string

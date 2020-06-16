@@ -25,6 +25,7 @@ import (
 )
 
 func newMergeCmd() *cobra.Command {
+	const minMergeArgs = 3
 	// scanCmd represents the scan command.
 	var scanCmd = &cobra.Command{
 		Use:   "merge",
@@ -32,11 +33,11 @@ func newMergeCmd() *cobra.Command {
 		Long: `Merge directory for Exif Date Info. 
 
 	exifsort scan [<options>...] <dir> `,
-		Args: cobra.MaximumNArgs(0),
+		Args: cobra.MinimumNArgs(minMergeArgs),
 		Run: func(cmd *cobra.Command, args []string) {
-			src, _ := cmd.Flags().GetString("input")
-			dst, _ := cmd.Flags().GetString("output")
-			methodArg, _ := cmd.Flags().GetString("method")
+			src := args[0]
+			dst := args[1]
+			methodArg := args[2]
 
 			method, err := exifsort.ParseMethod(methodArg)
 			if err != nil {
@@ -63,18 +64,6 @@ func newMergeCmd() *cobra.Command {
 			}
 		},
 	}
-
-	var scanFlags = []cmdStringFlag{
-		{"i", "input", true, "Input Directory to scan media."},
-		{"m", "method", true,
-			"Method to index media in output directory. <year|month|day>"},
-		{"o", "output", true,
-			"Output Directory to transfer media. (Must not exist.)"},
-	}
-
-	addCommonFlags(scanCmd)
-
-	setStringFlags(scanCmd, scanFlags)
 
 	return scanCmd
 }
