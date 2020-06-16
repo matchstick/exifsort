@@ -43,23 +43,26 @@ on file modtime.
 Scanning is when exifsort will read the data from the directory of files,
 filter for media and retrieve time. Useful to test that exif library will be fine.
 
-`exifsort scan input -i <src> [--summarize --quiet]`
+`exifsort scan <src> 
 
 You can save data to a json file too:
 
-`exifsort scan input -i <src> -j <json file> [--summarize --quiet]`
+`exifsort scan <src> -j <json file> 
 
 ## sort
 
 Walk an input directory, index the data and then transfer files to an output  directory.
 
-`exifsort sort -i <src> -o <dst> -m <year | month | day> -a <copy | move>`
+*exifsort sort <copy | move> <year | month | day> <src> <dst>*
+
+`exifsort sort copy month src dst`
+
+Will copy all the media files from src. Create a new directory called dst and
+have them arranged by month.
 
 or load from json file:
 
-`exifsort sort -j <json> -o <dst> -m <year | month | day> -a <copy | move>`
-
-Sort supports -s and -q also.
+`exifsort sort <copy | move> <year | month | day> <dst> -j <json>`
 
 ### Methods
 

@@ -70,7 +70,7 @@ func outputCreate(dst string) error {
 func (s *sortCmd) sortLongHelp() string {
 	return `Sort directory by Exif Date Info. 
 
-	exifsort sort <options>
+	exifsort sort <copy | move> <year | month | day> <src> <dst> [--json <json>]
 
 	exifsort will recursively check every file in an input directory and
 	then create antoher directory structure organized by time to either
@@ -125,22 +125,20 @@ func (s *sortCmd) sortExecute() {
 	}
 }
 
-func newCobraCmd(s *sortCmd) *cobra.Command {
+func (s *sortCmd) newMethodCmd(method string, action string) *cobra.Command {
+	const numMethodCmdArgs = 2
+
 	return &cobra.Command{
-		Use:   "sort",
-		Short: "Accepts an input directory and will sort media by time created",
+		Use:   method,
+		Short: fmt.Sprintf("Need to add subcommand for %s %s", action, method),
 		// Very long help message so we moved it to a func.
 		Long: s.sortLongHelp(),
+		Args: cobra.MinimumNArgs(numMethodCmdArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			s.quiet, _ = cmd.Flags().GetBool("quiet")
-			s.summarize, _ = cmd.Flags().GetBool("summarize")
-
-			s.src, _ = cmd.Flags().GetString("input")
-			s.dst, _ = cmd.Flags().GetString("output")
+			s.src = args[0]
+			s.dst = args[1]
 			s.json, _ = cmd.Flags().GetString("json")
-			methodArg, _ := cmd.Flags().GetString("method")
-			actionArg, _ := cmd.Flags().GetString("action")
 
 			// User needs to set either json or src, but not both.
 
@@ -165,13 +163,13 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 				return
 			}
 
-			s.method, err = exifsort.ParseMethod(methodArg)
+			s.method, err = exifsort.ParseMethod(method)
 			if err != nil {
 				fmt.Printf("%s\n", err.Error())
 				return
 			}
 
-			s.action, err = exifsort.ParseAction(actionArg)
+			s.action, err = exifsort.ParseAction(action)
 			if err != nil {
 				fmt.Printf("%s\n", err.Error())
 				return
@@ -182,26 +180,45 @@ func newCobraCmd(s *sortCmd) *cobra.Command {
 	}
 }
 
+func (s *sortCmd) newOpCmd(action string) *cobra.Command {
+	return &cobra.Command{
+		Use:   action,
+		Short: "Need to add usage for " + action + " subcommand.",
+		// Very long help message so we moved it to a func.
+		Long: s.sortLongHelp(),
+	}
+}
+
+func newSortRootCmd(s *sortCmd) *cobra.Command {
+	return &cobra.Command{
+		Use:   "sort",
+		Short: "Accepts an input directory and will sort media by time created",
+		// Very long help message so we moved it to a func.
+		Long: s.sortLongHelp(),
+	}
+}
+
 func newSortCmd() *cobra.Command {
 	var sortFlags = []cmdStringFlag{
-		{"a", "action", true,
-			"Transfer Action: <copy|move>"},
-		{"i", "input", false,
-			"Input Directory to scan media."},
-		{"j", "json", false,
-			"Json File input to load media."},
-		{"m", "method", true,
-			"Method to index media in output directory. <year|month|day>"},
-		{"o", "output", true,
-			"Output Directory to transfer media. (Must not exist.)"},
+		{"j", "json", false, "Json File input to load media."},
 	}
 
 	// sortCmd represents the sort command.
-	var cmd sortCmd
-	cmd.cobraCmd = newCobraCmd(&cmd)
+	var s sortCmd
+	s.cobraCmd = newSortRootCmd(&s)
 
-	setStringFlags(cmd.cobraCmd, sortFlags)
-	addCommonFlags(cmd.cobraCmd)
+	setStringFlags(s.cobraCmd, sortFlags)
+	copyCmd := s.newOpCmd("copy")
+	moveCmd := s.newOpCmd("move")
 
-	return cmd.cobraCmd
+	copyCmd.AddCommand(s.newMethodCmd("year", "copy"), s.newMethodCmd("month", "copy"),
+		s.newMethodCmd("day", "copy"))
+
+	moveCmd.AddCommand(s.newMethodCmd("year", "move"),
+		s.newMethodCmd("month", "move"),
+		s.newMethodCmd("day", "move"))
+
+	s.cobraCmd.AddCommand(moveCmd, copyCmd)
+
+	return s.cobraCmd
 }
