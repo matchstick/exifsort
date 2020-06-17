@@ -39,18 +39,18 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	}
 
 	if len(sorter.IndexErrors) != 0 {
-		fmt.Println("Index Errors were:")
+		fmt.Println("## Index Errors were:")
 
 		for path, err := range sorter.IndexErrors {
-			fmt.Printf("\t%s: (%s)\n", path, err)
+			fmt.Printf("## \t%s: (%s)\n", path, err)
 		}
 	}
 
 	if len(sorter.TransferErrors) != 0 {
-		fmt.Println("Transfer Errors were:")
+		fmt.Println("## Transfer Errors were:")
 
 		for path, err := range sorter.TransferErrors {
-			fmt.Printf("\t%s: (%s)\n", path, err)
+			fmt.Printf("## \t%s: (%s)\n", path, err)
 		}
 	}
 }
@@ -78,11 +78,30 @@ func (s *sortCmd) isSrcDir() bool {
 func (s *sortCmd) sortLongHelp() string {
 	return `Sort directory by Exif Date Info. 
 
-	exifsort sort <copy | move> <year | month | day> <src> <dst> [--json <json>]
+	exifsort sort <action> <method> <src> <dst>
 
-	exifsort will recursively check every file in an input directory and
-	then create antoher directory structure organized by time to either
-	move or copy the files into
+	sort command performs a number of steps:
+
+	1. Collect media information via scanning a directory or reading a json file from scan
+	2. Indexing the media by method
+	3. Create a directory for output
+	4. Transfer media to the output structed and sorted.
+
+	ARGUMENTS
+
+	action
+	Choice of how to move files from src to dst.
+	Valid values are 'copy' or 'move'
+
+	method
+	Choice of how to index the media in the new directory.
+	Valid values are 'year', 'month' or 'day'.
+
+	src
+	directory or json file to receive media to sort
+
+	dst
+	directory to create to transfer media
 	`
 }
 
@@ -129,7 +148,7 @@ func (s *sortCmd) newMethodCmd(action int, method int) *cobra.Command {
 
 	return &cobra.Command{
 		Use:   methodStr,
-		Short: fmt.Sprintf("Need to add subcommand for %s %s", actionStr, methodStr),
+		Short: fmt.Sprintf("Transfer by %s then sort by %s", actionStr, methodStr),
 		// Very long help message so we moved it to a func.
 		Long: s.sortLongHelp(),
 		Args: cobra.MinimumNArgs(numMethodCmdArgs),
@@ -159,7 +178,7 @@ func (s *sortCmd) newActionCmd(action int) *cobra.Command {
 
 	actionCmd := &cobra.Command{
 		Use:   actionStr,
-		Short: "Need to add usage for " + actionStr + " subcommand.",
+		Short: "Transfer by " + actionStr,
 		// Very long help message so we moved it to a func.
 		Long: s.sortLongHelp(),
 	}
