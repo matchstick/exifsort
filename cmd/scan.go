@@ -76,7 +76,7 @@ func newScanCmd() *cobra.Command {
 
 	src 
 	directory to scan for media date informaiton.`,
-		Args: cobra.MaximumNArgs(1),
+		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			dirPath := args[0]
 			json, _ := cmd.Flags().GetString("json")
