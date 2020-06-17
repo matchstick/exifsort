@@ -2,7 +2,7 @@
 
 ![Under Construction](data/construction.jpg) 
 
-Everything is done except merge for 1.0 release.  Code coverage is greater than 87% and climbing.
+Everything is done except merge for 1.0 release.  Code coverage is greater than 93% and climbing.
 Open [issues](https://github.com/matchstick/exifsort/issues) show remaining work.
 
 # exifsort
@@ -60,11 +60,12 @@ filter for media and retrieve time. Useful to test that exif library will be
 fine. You can optionally store the results in a json file.
 
 Example:
-`$ exifsort scan data`
+
+`$ exifsort scan data/`
 
 You can save data to a json file too:
 
-`$ exifsort scan data -j data.json`
+`$ exifsort scan data/ -j data.json`
 
 ## sort
 
@@ -77,17 +78,24 @@ The sort command performs a number of steps:
 
 Examples: 
 
-`$ exifsort sort copy month src dst`
+`$ exifsort sort copy month src/ dst/`
 
 Will create a new directory called dst, scan the media in src, index that media
 then **copy** it to dst so that it is arranged by **month**.
 
-`$ exifsort sort move year src dst`
+`$ exifsort sort move year src/ dst/`
 
 Will create a new directory called dst, scan the media in src, index that media
 then **move** the files to dst so that it is arranged by **year**. 
 
 Note: src can be either a directory or a json file.
+
+## merge
+
+Merge output from a sorted directory to another sorted directory.
+
+`$ exifsort merge src/ dst/ <method>`
+
 
 ## eval
 
@@ -95,15 +103,7 @@ scans by file not directory. Prints the date information of files specified.
 
 `$ exifsort eval data/*`
 
-## merge
-
-Merge output from a sorted directory to another sorted directory.
-
-`$ exifsort merge src dst <method>`
+# Thanks
 
 Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
 library](https://github.com/dsoprea/go-exif) and fast responses.
-
-
-TODO:
-  * Autodetect method in merge

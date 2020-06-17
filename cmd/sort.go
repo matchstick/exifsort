@@ -50,7 +50,7 @@ func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 		fmt.Println("## Transfer Errors were:")
 
 		for path, err := range sorter.TransferErrors {
-			fmt.Printf("## \t%s: (%s)\n", path, err)
+			fmt.Printf("##\t%s: (%s)\n", path, err)
 		}
 	}
 }
