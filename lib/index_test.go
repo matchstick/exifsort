@@ -100,7 +100,7 @@ func indexStringCheck(t *testing.T, targetSize int, idx index) {
 }
 
 func TestIndexPutGet(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		var idx, _ = newIndex(method)
 
 		testDir := indexTmpDir(t, "", "root")
@@ -113,7 +113,7 @@ func TestIndexPutGet(t *testing.T) {
 }
 
 func TestIndexCollisions(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		var idx, _ = newIndex(method)
 
 		testDir := indexTmpDir(t, "", "root_")
@@ -130,7 +130,7 @@ func TestIndexCollisions(t *testing.T) {
 }
 
 func TestIndexDuplicates(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		var exifPath = "../data/with_exif.jpg"
 
 		var idx, _ = newIndex(method)
@@ -169,7 +169,7 @@ func TestIndexBadMethod(t *testing.T) {
 }
 
 func TestIndexBadGet(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		idx, _ := newIndex(method)
 		badPath := "invalidPath"
 

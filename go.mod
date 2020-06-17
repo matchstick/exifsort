@@ -13,5 +13,5 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/udhos/equalfile v0.3.0
-	golang.org/x/tools v0.0.0-20200616195046-dc31b401abb5 // indirect
+	golang.org/x/tools v0.0.0-20200616215726-b7b89dcb8101 // indirect
 )
