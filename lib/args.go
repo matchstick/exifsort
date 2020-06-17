@@ -58,7 +58,7 @@ func (e *parseError) Error() string {
 
 // ParseMethod returns the constant value of the str.
 // Input is case insensitive.
-func ParseMethod(str string) (int, error) {
+func MethodParse(str string) (int, error) {
 	val := parseArg(str, MethodMap())
 	if val == parseUnknown {
 		return MethodNone, &parseError{MethodMap()}
@@ -84,7 +84,7 @@ func ActionMap() map[int]string {
 
 // ParseAction returns the constant value of the str.
 // Input is case insensitive.
-func ParseAction(str string) (int, error) {
+func ActionParse(str string) (int, error) {
 	val := parseArg(str, ActionMap())
 	if val == parseUnknown {
 		return ActionNone, &parseError{ActionMap()}

@@ -39,7 +39,7 @@ func newMergeCmd() *cobra.Command {
 			dst := args[1]
 			methodArg := args[2]
 
-			method, err := exifsort.ParseMethod(methodArg)
+			method, err := exifsort.MethodParse(methodArg)
 			if err != nil {
 				fmt.Printf("%s\n", err.Error())
 				return
