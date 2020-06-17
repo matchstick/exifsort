@@ -26,27 +26,27 @@ import (
 )
 
 func scanSummary(s *exifsort.Scanner) {
-	fmt.Printf("Scanned Total: %d\n", s.NumTotal())
-	fmt.Printf("Scanned Skipped: %d\n", s.NumSkipped())
-	fmt.Printf("Scanned Data: %d\n", s.NumData())
+	fmt.Printf("## Scanned Total: %d\n", s.NumTotal())
+	fmt.Printf("## Scanned Skipped: %d\n", s.NumSkipped())
+	fmt.Printf("## Scanned Data: %d\n", s.NumData())
 
 	for extension, num := range s.NumDataTypes {
-		fmt.Printf("Scanned [%s]: %d\n", extension, num)
+		fmt.Printf("##\t [%s]: %d\n", extension, num)
 	}
 
 	if s.NumExifErrors() != 0 {
-		fmt.Printf("Scanned ExifErrors: %d\n", s.NumExifErrors())
+		fmt.Printf("## Scanned ExifErrors: %d\n", s.NumExifErrors())
 
 		for path, err := range s.ExifErrors {
-			fmt.Printf("Scanned %s: (%s)\n", path, err)
+			fmt.Printf("##\t%s: (%s)\n", path, err)
 		}
 	}
 
 	if s.NumScanErrors() != 0 {
-		fmt.Println("Scan Errors were:")
+		fmt.Println("## Scanned Errors were:")
 
 		for path, err := range s.ScanErrors {
-			fmt.Printf("Scanned %s: (%s)\n", path, err)
+			fmt.Printf("##\t%s: (%s)\n", path, err)
 		}
 	}
 }
@@ -70,7 +70,12 @@ func newScanCmd() *cobra.Command {
 		Short: "Scan directory for Exif Dates",
 		Long: `Scan directory for Exif Date Info. 
 
-	exifsort scan <dir> [--json=<file>] `,
+	exifsort scan <src> [--json <file>] 
+
+	ARGUMENTS
+
+	src 
+	directory to scan for media date informaiton.`,
 		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			dirPath := args[0]

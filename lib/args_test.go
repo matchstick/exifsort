@@ -22,7 +22,7 @@ func TestParseMethod(t *testing.T) {
 	}
 
 	for str, val := range testMethods {
-		retVal, err := ParseMethod(str)
+		retVal, err := MethodParse(str)
 		if retVal != val {
 			t.Errorf("Method %s does not match val", str)
 		}
@@ -34,7 +34,7 @@ func TestParseMethod(t *testing.T) {
 
 	badStr := "Glabble"
 
-	retVal, err := ParseMethod(badStr)
+	retVal, err := MethodParse(badStr)
 	if !strings.Contains(err.Error(), "must be one of") {
 		t.Errorf("Unexpected error string %s", err.Error())
 	}
@@ -61,7 +61,7 @@ func TestParseAction(t *testing.T) {
 	}
 
 	for str, val := range testActions {
-		retVal, err := ParseAction(str)
+		retVal, err := ActionParse(str)
 		if retVal != val {
 			t.Errorf("Method %s does not match val", str)
 		}
@@ -73,7 +73,7 @@ func TestParseAction(t *testing.T) {
 
 	badStr := "Glabble"
 
-	retVal, err := ParseAction(badStr)
+	retVal, err := ActionParse(badStr)
 	if !strings.Contains(err.Error(), "must be one of") {
 		t.Errorf("Unexpected error string %s", err.Error())
 	}

@@ -42,6 +42,7 @@ fmt:
 	go fmt ./...
 	go get $(REPO_GOIMPORTS)
 	$(GOBIN)/goimports -w .
+	gofmt -w -s .
 
 tidy:
 	go mod tidy

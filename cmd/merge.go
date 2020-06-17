@@ -29,17 +29,24 @@ func newMergeCmd() *cobra.Command {
 	// scanCmd represents the scan command.
 	var scanCmd = &cobra.Command{
 		Use:   "merge",
-		Short: "Merge one directory to another",
-		Long: `Merge directory for Exif Date Info. 
+		Short: "Merge one sorted directory to another sorted directory",
+		Long: `Merge one sorted directory to another sorted directory.
 
-	exifsort scan [<options>...] <dir> `,
+	exifsort merge <src> <dir> 
+
+	src
+	directory or json file to receive media to sort
+
+	dst
+	directory to create to transfer media
+`,
 		Args: cobra.MinimumNArgs(minMergeArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			src := args[0]
 			dst := args[1]
 			methodArg := args[2]
 
-			method, err := exifsort.ParseMethod(methodArg)
+			method, err := exifsort.MethodParse(methodArg)
 			if err != nil {
 				fmt.Printf("%s\n", err.Error())
 				return

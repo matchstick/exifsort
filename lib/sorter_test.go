@@ -52,7 +52,7 @@ func testTransfer(t *testing.T, td *testdir, method int, action int) error {
 }
 
 func TestSortDir(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildRoot()
@@ -71,7 +71,7 @@ func TestSortDir(t *testing.T) {
 }
 
 func TestSortDuplicates(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildDuplicateWithinThisRoot()
@@ -90,7 +90,7 @@ func TestSortDuplicates(t *testing.T) {
 }
 
 func TestSortCollisions(t *testing.T) {
-	for method := MethodYear; method < MethodNone; method++ {
+	for method := range MethodMap() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildCollisionWithinThisRoot()

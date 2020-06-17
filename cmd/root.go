@@ -30,11 +30,16 @@ func newRootCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "exifsort",
 		Short: "Sorting media by date using the exif information",
-		Long: `exifsort is a program to sort media in nested directories 
-by accessing the exif information. Media wihtout exif information is 
-moved to a designated directory.
+		Long: `exifsort sorts media in nested directories 
+by primarily by accessing the exif information. 
 
-TODO: Add examples of use. `,
+The pipeline of commands are:
+exifsort scan <src>
+exifsort sort <action> <method> <src> <dst>
+exifsort merge <src> dst>
+
+Check out github.com/matchstick/exifsort for more details.
+. `,
 	}
 }
 
