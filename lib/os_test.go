@@ -78,7 +78,7 @@ func TestOSCopyFile(t *testing.T) {
 	src := filepath.Join(testDir, filepath.Base(exifPath))
 	dst := filepath.Join(testDir, filepath.Base(noExifPath))
 
-	err = moveFile(src, dst)
+	err = copyFile(src, dst)
 	if err == nil {
 		t.Fatalf("We clobbered a file.\n")
 	}
@@ -87,7 +87,7 @@ func TestOSCopyFile(t *testing.T) {
 
 	err = copyFile(src, dst)
 	if err != nil {
-		t.Fatalf("We failed to move file %s.\n", err.Error())
+		t.Fatalf("We failed to copy file %s.\n", err.Error())
 	}
 
 	if !exists(dst) {
