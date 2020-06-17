@@ -1,6 +1,7 @@
 package exifsort
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,11 +25,26 @@ func (e *duplicateError) Error() string {
 
 func (e *duplicateError) Unwrap() error { return e.Err }
 
-func moveFile(srcPath string, dstPath string) error {
-	return os.Rename(srcPath, dstPath)
+func exists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
+}
+
+func moveFile(src string, dst string) error {
+	if exists(dst) {
+		errStr := fmt.Sprintf("Cannot clobber %s with %s\n", dst, src)
+		return errors.New(errStr)
+	}
+
+	return os.Rename(src, dst)
 }
 
 func copyFile(src string, dst string) error {
+	if exists(dst) {
+		errStr := fmt.Sprintf("Cannot clobber %s with %s\n", dst, src)
+		return errors.New(errStr)
+	}
+
 	content, err := ioutil.ReadFile(src)
 	if err != nil {
 		return err
