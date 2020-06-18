@@ -24,10 +24,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func mergeExecute(src string, dst string, methodArg string, matchStr string) {
+	method, err := exifsort.MethodParse(methodArg)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		return
+	}
+
+	err = exifsort.MergeCheck(src, method)
+	if err != nil {
+		fmt.Printf("Input Dir Error: %s\n", err.Error())
+		return
+	}
+
+	err = exifsort.MergeCheck(dst, method)
+	if err != nil {
+		fmt.Printf("Output Dir Error: %s\n", err.Error())
+		return
+	}
+
+	err = exifsort.Merge(src, dst, method, matchStr, os.Stdout)
+	if err != nil {
+		fmt.Printf("Merge Error: %s\n", err.Error())
+		return
+	}
+}
+
 func newMergeCmd() *cobra.Command {
 	const minMergeArgs = 3
 	// scanCmd represents the scan command.
-	var scanCmd = &cobra.Command{
+	var mergeCmd = &cobra.Command{
 		Use:   "merge",
 		Short: "Merge one sorted directory to another sorted directory",
 		Long: `Merge one sorted directory to another sorted directory.
@@ -46,31 +72,9 @@ func newMergeCmd() *cobra.Command {
 			dst := args[1]
 			methodArg := args[2]
 
-			method, err := exifsort.MethodParse(methodArg)
-			if err != nil {
-				fmt.Printf("%s\n", err.Error())
-				return
-			}
-
-			err = exifsort.MergeCheck(src, method)
-			if err != nil {
-				fmt.Printf("Input Dir Error: %s\n", err.Error())
-				return
-			}
-
-			err = exifsort.MergeCheck(dst, method)
-			if err != nil {
-				fmt.Printf("Output Dir Error: %s\n", err.Error())
-				return
-			}
-
-			err = exifsort.Merge(src, dst, method, os.Stdout)
-			if err != nil {
-				fmt.Printf("Merge Error: %s\n", err.Error())
-				return
-			}
+			mergeExecute(src, dst, methodArg, "")
 		},
 	}
 
-	return scanCmd
+	return mergeCmd
 }

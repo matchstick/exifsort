@@ -114,6 +114,20 @@ func mergeDuplicate(err error, action int) error {
 	return os.Remove(dupErr.src)
 }
 
+func isMatch(matchStr string, path string) bool {
+	if matchStr == "" {
+		return true
+	}
+
+	matched, err := regexp.MatchString(matchStr, path)
+	if err != nil {
+		fmt.Printf("%s err %s\n", path, err.Error())
+		return false
+	}
+
+	return matched
+}
+
 func merge(srcPath string, srcRoot string, dstRoot string, action int) error {
 	// Remove the root but this is not the basename just what is between
 	// root and base
@@ -178,7 +192,8 @@ func merge(srcPath string, srcRoot string, dstRoot string, action int) error {
 	}
 }
 
-func Merge(srcRoot string, dstRoot string, action int, logger io.Writer) error {
+func Merge(srcRoot string, dstRoot string, action int,
+	match string, logger io.Writer) error {
 	err := filepath.Walk(srcRoot,
 		func(srcFile string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -193,6 +208,10 @@ func Merge(srcRoot string, dstRoot string, action int, logger io.Writer) error {
 			}
 
 			if skipFileType(srcFile) {
+				return nil
+			}
+
+			if !isMatch(match, srcFile) {
 				return nil
 			}
 

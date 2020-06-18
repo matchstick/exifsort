@@ -23,6 +23,7 @@ const (
 
 	noExifPath     = "../data/no_exif.jpg"
 	noRootExifPath = "../data/no_root_ifd.jpg"
+	tifPath        = "../data/car.tif"
 	skipPath       = "../README.md"
 	nonesensePath  = "../gobofragggle"
 	fileNoDefault  = 0
@@ -89,6 +90,7 @@ type testdir struct {
 
 	numExifError  int
 	numData       int
+	numTif        int
 	numDuplicates int
 	numSkipped    int
 	numScanError  int
@@ -152,6 +154,14 @@ func (td *testdir) populateFiles(dir string, num int,
 func (td *testdir) populateExifFiles(dir string, num int) {
 	td.populateFiles(dir, num, exifPath, exifPath)
 	td.numData += num
+}
+
+func (td *testdir) getTifRegex() string { return `.*\.tif$` }
+
+func (td *testdir) populateTifFiles(dir string, num int) {
+	td.populateFiles(dir, num, tifPath, tifPath)
+	td.numData += num
+	td.numTif += num
 }
 
 // The goal is to create filenames bases on zero with exif contents.
@@ -229,6 +239,14 @@ func (td *testdir) buildCollisionWithRoot() string {
 
 	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
 	td.populateCollisionFiles(mixedDir, 25)
+
+	return td.root
+}
+
+func (td *testdir) buildTifRoot() string {
+	exifDir, _ := ioutil.TempDir(td.root, "dir_")
+	td.populateNoExifFiles(exifDir, 25)
+	td.populateTifFiles(exifDir, 125)
 
 	return td.root
 }

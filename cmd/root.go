@@ -49,15 +49,12 @@ func Execute() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd := newRootCmd()
-	evalCmd := newEvalCmd()
-	mergeCmd := newMergeCmd()
-	scanCmd := newScanCmd()
-	sortCmd := newSortCmd()
 
-	rootCmd.AddCommand(evalCmd)
-	rootCmd.AddCommand(mergeCmd)
-	rootCmd.AddCommand(scanCmd)
-	rootCmd.AddCommand(sortCmd)
+	rootCmd.AddCommand(newEvalCmd())
+	rootCmd.AddCommand(newFilterCmd())
+	rootCmd.AddCommand(newMergeCmd())
+	rootCmd.AddCommand(newScanCmd())
+	rootCmd.AddCommand(newSortCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

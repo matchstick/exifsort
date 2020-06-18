@@ -96,6 +96,12 @@ Merge output from a sorted directory to another sorted directory.
 
 `$ exifsort merge src/ dst/ <method>`
 
+## filter
+
+Filter is identical to merge except it accepts a regular expression as an argument. 
+This is used to match the files in the src diretory. Only those are then merged to the dst directory.
+
+`$ exifsort filter src/ dst/ <method> "regex"`
 
 ## eval
 

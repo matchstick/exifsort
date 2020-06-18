@@ -50,38 +50,44 @@ func TestMergeCheckBad(t *testing.T) {
 	}
 }
 
-func testMergeResults(t *testing.T, tdSrc *testdir, tdDst *testdir,
-	fromDir string, toDir string,
-	action int, dup bool) error {
-	var leftOvers int
+func testSrcTotal(tdSrc *testdir, tdDst *testdir, action int) int {
+	var srcTotal int
 
 	switch action {
 	case ActionCopy:
 		// src dir should have all its media untouched
-		leftOvers = tdSrc.numTotal()
+		srcTotal = tdSrc.numTotal()
 	case ActionMove:
 		// src dir should have all media merged and be empty
-		leftOvers = 0
-	default:
-		return errors.New("unknown action")
+		srcTotal = 0
 	}
 
-	err := countFiles(t, fromDir, leftOvers, "Src Dir")
+	return srcTotal
+}
+
+func testDstTotal(tdSrc *testdir, tdDst *testdir, dup bool) int {
+	if dup {
+		// Destination should have data only from dst as src is all
+		// duplicates
+		return tdDst.numData
+	}
+
+	// Destination should have all data from both sources
+	return tdDst.numData + tdSrc.numData
+}
+
+func testMergeResults(t *testing.T, tdSrc *testdir, tdDst *testdir,
+	fromDir string, toDir string, action int, dup bool) error {
+	srcTotal := testSrcTotal(tdSrc, tdDst, action)
+
+	err := countFiles(t, fromDir, srcTotal, "Src Dir")
 	if err != nil {
 		return err
 	}
 
-	var total int
-	if dup {
-		// Destination should have data only from dst as src is all
-		// duplicates
-		total = tdDst.numData
-	} else {
-		// Destination should have all data from both sources
-		total = tdDst.numData + tdSrc.numData
-	}
+	dstTotal := testDstTotal(tdSrc, tdDst, dup)
 
-	err = countFiles(t, toDir, total, "Target Dir")
+	err = countFiles(t, toDir, dstTotal, "Target Dir")
 	if err != nil {
 		return err
 	}
@@ -101,7 +107,7 @@ func testMerge(t *testing.T, method int, action int, dstFileNo int, dup bool) er
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, ioutil.Discard)
+	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -132,7 +138,7 @@ func testMergeCollisions(t *testing.T, method int, action int) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, ioutil.Discard)
+	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -163,12 +169,65 @@ func testMergeTimeSpread(t *testing.T, method int, action int) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, ioutil.Discard)
+	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
 	if err != nil {
 		return err
 	}
 
 	err = testMergeResults(t, tdSrc, tdDst, fromDir, toDir, action, false)
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(fromDir)
+	defer os.RemoveAll(toDir)
+	defer os.RemoveAll(dst)
+	defer os.RemoveAll(src)
+
+	return nil
+}
+
+func testMergeFilter(t *testing.T, method int, action int) error {
+	tdSrc := newTestDir(t, method, fileNoDefault)
+	// Not for collisons the dst dir has to have the default fileNo
+	tdDst := newTestDir(t, method, fileNoDefault)
+
+	src := tdSrc.buildTifRoot()
+	dst := tdDst.buildRoot()
+
+	// Copy files to two sorted directories that are identical
+	fromDir := tdSrc.buildSortedDir(src, "fromDir_", ActionCopy)
+	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
+
+	// merge but only transfer tif files
+	regex := tdSrc.getTifRegex()
+
+	err := Merge(fromDir, toDir, action, regex, ioutil.Discard)
+	if err != nil {
+		return err
+	}
+
+	var srcTotal int
+
+	switch action {
+	case ActionCopy:
+		// src dir should have all its media untouched
+		srcTotal = tdSrc.numTotal()
+	case ActionMove:
+		// src dir should have all media merged and be empty
+		srcTotal = tdSrc.numTotal() - tdSrc.numTif
+	default:
+		return errors.New("unknown action")
+	}
+
+	err = countFiles(t, fromDir, srcTotal, "Src Dir")
+	if err != nil {
+		return err
+	}
+
+	dstTotal := tdDst.numData + tdSrc.numTif
+
+	err = countFiles(t, toDir, dstTotal, "Target Dir")
 	if err != nil {
 		return err
 	}
