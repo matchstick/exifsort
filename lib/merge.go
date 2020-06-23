@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	yearRe  = `(19|[2-9][0-9])\d{2}`         // year = 1900 - 9999
-	monthRe = `(0[1-9]|1[012])`              // month = 01 - 12
-	dayRe   = `(0[1-9]|1[0-9]|2[0-9]|3[01])` // day = 01 - 31
+	regexpYear  = `(19|[2-9][0-9])\d{2}`         // year = 1900 - 9999
+	regexpMonth = `(0[1-9]|1[012])`              // month = 01 - 12
+	regexpDay   = `(0[1-9]|1[0-9]|2[0-9]|3[01])` // day = 01 - 31
 )
 
 func mergePathValid(root string, path string, method int) bool {
@@ -44,14 +44,14 @@ func mergePathValid(root string, path string, method int) bool {
 
 	switch method {
 	case MethodYear:
-		matchStr = yearRe
+		matchStr = regexpYear
 	case MethodMonth:
-		matchStr = yearRe + regexSep +
-			yearRe + "_" + monthRe
+		matchStr = regexpYear + regexSep +
+			regexpYear + "_" + regexpMonth
 	case MethodDay:
-		matchStr = yearRe + regexSep +
-			yearRe + "_" + monthRe + regexSep +
-			yearRe + "_" + monthRe + "_" + dayRe
+		matchStr = regexpYear + regexSep +
+			regexpYear + "_" + regexpMonth + regexSep +
+			regexpYear + "_" + regexpMonth + "_" + regexpDay
 	default:
 		return false
 	}
