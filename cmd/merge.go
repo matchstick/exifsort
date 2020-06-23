@@ -24,26 +24,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func mergeExecute(src string, dst string, methodArg string, matchStr string) {
+func mergeExecute(src string, dst string, methodArg string, actionArg string, matchStr string) {
 	method, err := exifsort.MethodParse(methodArg)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		return
 	}
 
-	err = exifsort.MergeCheck(src, method)
+	action, err := exifsort.ActionParse(actionArg)
 	if err != nil {
-		fmt.Printf("Input Dir Error: %s\n", err.Error())
+		fmt.Printf("%s\n", err.Error())
 		return
 	}
 
-	err = exifsort.MergeCheck(dst, method)
-	if err != nil {
-		fmt.Printf("Output Dir Error: %s\n", err.Error())
-		return
-	}
+	merger := exifsort.NewMerger(src, dst, action, method, matchStr)
 
-	err = exifsort.Merge(src, dst, method, matchStr, os.Stdout)
+	err = merger.Merge(os.Stdout)
 	if err != nil {
 		fmt.Printf("Merge Error: %s\n", err.Error())
 		return
@@ -51,7 +47,7 @@ func mergeExecute(src string, dst string, methodArg string, matchStr string) {
 }
 
 func newMergeCmd() *cobra.Command {
-	const minMergeArgs = 3
+	const minMergeArgs = 4
 	// scanCmd represents the scan command.
 	var mergeCmd = &cobra.Command{
 		Use:   "merge",
@@ -70,9 +66,10 @@ func newMergeCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			src := args[0]
 			dst := args[1]
-			methodArg := args[2]
+			actionArg := args[2]
+			methodArg := args[3]
 
-			mergeExecute(src, dst, methodArg, "")
+			mergeExecute(src, dst, methodArg, actionArg, "")
 		},
 	}
 

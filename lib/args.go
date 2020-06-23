@@ -2,93 +2,64 @@ package exifsort
 
 import (
 	"fmt"
-	"strings"
 )
 
-// Methods to sort media files in nested directory structure.
+type Method int
+
 const (
-	MethodYear  = iota // Year : dst -> year-> media
-	MethodMonth        // Year : dst -> year-> month -> media
-	MethodDay          // Year : dst -> year-> month -> day -> media
+	MethodYear  Method = iota // Year : dst -> year-> media
+	MethodMonth               // Year : dst -> year-> month -> media
+	MethodDay                 // Year : dst -> year-> month -> day -> media
 	MethodNone
 )
 
-func MethodMap() map[int]string {
-	return map[int]string{
-		MethodYear:  "year",
-		MethodMonth: "month",
-		MethodDay:   "day",
+func (m Method) String() string {
+	return [...]string{"year", "month", "day", "none"}[m]
+}
+
+func Methods() []Method {
+	return []Method{
+		MethodYear,
+		MethodMonth,
+		MethodDay,
 	}
 }
 
-type argsMap map[int]string
-
-const parseUnknown = -1
-
-func parseArg(argStr string, argsMap map[int]string) int {
-	/// lower capitalization for safe comparing
-	argStr = strings.ToLower(argStr)
-
-	for val, str := range argsMap {
-		str = strings.ToLower(str)
-		if argStr == str {
-			return val
+func MethodParse(str string) (Method, error) {
+	for _, val := range Methods() {
+		if str == val.String() {
+			return val, nil
 		}
 	}
 
-	return parseUnknown
+	return MethodNone, fmt.Errorf("invalid method %s", str)
 }
 
-type parseError struct {
-	choices argsMap
-}
+type Action int
 
-func (e *parseError) Error() string {
-	var choicesList = make([]string, len(e.choices))
-
-	for _, str := range e.choices {
-		str = fmt.Sprintf("\"%s\"", str)
-		choicesList = append(choicesList, str)
-	}
-
-	choiceStr := strings.Join(choicesList, ",")
-
-	return fmt.Sprintf("must be one of [%s] (case insensitive)", choiceStr)
-}
-
-// ParseMethod returns the constant value of the str.
-// Input is case insensitive.
-func MethodParse(str string) (int, error) {
-	val := parseArg(str, MethodMap())
-	if val == parseUnknown {
-		return MethodNone, &parseError{MethodMap()}
-	}
-
-	return val, nil
-}
-
-// When sorting media you specify action to transfer files form the src to dst
-// directories.
 const (
-	ActionCopy = iota // copying
-	ActionMove        // moving
+	ActionCopy Action = iota // copying
+	ActionMove               // moving
 	ActionNone
 )
 
-func ActionMap() map[int]string {
-	return map[int]string{
-		ActionCopy: "copy",
-		ActionMove: "move",
+func Actions() []Action {
+	return []Action{
+		ActionCopy,
+		ActionMove,
 	}
 }
 
-// ParseAction returns the constant value of the str.
-// Input is case insensitive.
-func ActionParse(str string) (int, error) {
-	val := parseArg(str, ActionMap())
-	if val == parseUnknown {
-		return ActionNone, &parseError{ActionMap()}
+func (a Action) String() string {
+	return [...]string{"copy", "move", "none"}[a]
+}
+
+func ActionParse(str string) (Action, error) {
+	for _, val := range Actions() {
+		if str == val.String() {
+			return val, nil
+		}
 	}
 
-	return val, nil
+	return ActionNone, fmt.Errorf("invalid action %s", str)
 }

@@ -298,7 +298,7 @@ type index interface {
 	String() string
 }
 
-func newIndex(method int) (index, error) {
+func newIndex(method Method) (index, error) {
 	switch method {
 	case MethodYear:
 		var y yearIndex
@@ -319,7 +319,7 @@ func newIndex(method int) (index, error) {
 
 		return &d, nil
 	default:
-		errStr := fmt.Sprintf("Invalid method %d\n", method)
+		errStr := fmt.Sprintf("Invalid method %s\n", method)
 		return nil, errors.New(errStr)
 	}
 }

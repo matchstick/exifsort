@@ -27,8 +27,8 @@ import (
 type sortCmd struct {
 	src      string
 	dst      string
-	method   int
-	action   int
+	method   exifsort.Method
+	action   exifsort.Action
 	cobraCmd *cobra.Command
 }
 
@@ -140,11 +140,11 @@ func (s *sortCmd) sortExecute() {
 	s.sortSummary(&scanner, sorter)
 }
 
-func (s *sortCmd) newMethodCmd(action int, method int) *cobra.Command {
+func (s *sortCmd) newMethodCmd(action exifsort.Action, method exifsort.Method) *cobra.Command {
 	const numMethodCmdArgs = 2
 
-	methodStr := exifsort.MethodMap()[method]
-	actionStr := exifsort.ActionMap()[action]
+	methodStr := method.String()
+	actionStr := action.String()
 
 	return &cobra.Command{
 		Use:   methodStr,
@@ -173,8 +173,8 @@ func (s *sortCmd) newMethodCmd(action int, method int) *cobra.Command {
 	}
 }
 
-func (s *sortCmd) newActionCmd(action int) *cobra.Command {
-	actionStr := exifsort.ActionMap()[action]
+func (s *sortCmd) newActionCmd(action exifsort.Action) *cobra.Command {
+	actionStr := action.String()
 
 	actionCmd := &cobra.Command{
 		Use:   actionStr,
@@ -183,7 +183,7 @@ func (s *sortCmd) newActionCmd(action int) *cobra.Command {
 		Long: s.sortLongHelp(),
 	}
 
-	for method := range exifsort.MethodMap() {
+	for _, method := range exifsort.Methods() {
 		methodCmd := s.newMethodCmd(action, method)
 		actionCmd.AddCommand(methodCmd)
 	}
@@ -199,7 +199,7 @@ func newSortRootCmd(s *sortCmd) *cobra.Command {
 		Long: s.sortLongHelp(),
 	}
 
-	for action := range exifsort.ActionMap() {
+	for _, action := range exifsort.Actions() {
 		actionCmd := s.newActionCmd(action)
 		rootCmd.AddCommand(actionCmd)
 	}

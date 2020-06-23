@@ -7,7 +7,7 @@ import (
 )
 
 func TestMergePathGood(t *testing.T) {
-	var goodInput = map[string]int{
+	var goodInput = map[string]Method{
 		"gobo/1920/m.jpg":                    MethodYear,
 		"gobo/2010/m.jpg":                    MethodYear,
 		"gobo/2020/m.jpg":                    MethodYear,
@@ -31,7 +31,7 @@ func TestMergePathGood(t *testing.T) {
 
 	for input, method := range goodInput {
 		if !mergePathValid(root, input, method) {
-			t.Errorf("Expected Match with %s on method %d\n",
+			t.Errorf("Expected Match with %s on method %s\n",
 				input, method)
 		}
 	}
@@ -47,14 +47,14 @@ func TestMergePathRoots(t *testing.T) {
 
 	for root, input := range goodRootInput {
 		if !mergePathValid(root, input, MethodYear) {
-			t.Errorf("Expected Match with %s on method %d\n",
+			t.Errorf("Expected Match with %s on method %s\n",
 				input, MethodYear)
 		}
 	}
 }
 
 func TestMergePathBad(t *testing.T) {
-	var goodInput = map[string]int{
+	var goodInput = map[string]Method{
 		"gobo":                                 MethodYear,
 		"gobo/":                                MethodYear,
 		"gobo/0/m.jpg":                         MethodYear,
@@ -75,25 +75,25 @@ func TestMergePathBad(t *testing.T) {
 
 	for input, method := range goodInput {
 		if mergePathValid("gobo", input, method) {
-			t.Errorf("Unexpected Match with %s on method %d\n",
+			t.Errorf("Unexpected Match with %s on method %s\n",
 				input, method)
 		}
 	}
 }
 
 func TestMergeFilter(t *testing.T) {
-	for method := range MethodMap() {
+	for _, method := range Methods() {
 		err := testMergeFilter(t, method, ActionCopy)
 		if err != nil {
-			t.Fatalf("Method %d, Action Copy Error: %s\n",
+			t.Fatalf("Method %s, Action Copy Error: %s\n",
 				method, err.Error())
 		}
 	}
 
-	for method := range MethodMap() {
+	for _, method := range Methods() {
 		err := testMergeFilter(t, method, ActionMove)
 		if err != nil {
-			t.Fatalf("Method %d, Action Move Error: %s\n",
+			t.Fatalf("Method %s, Action Move Error: %s\n",
 				method, err.Error())
 		}
 	}
