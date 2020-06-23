@@ -21,7 +21,7 @@ import (
 )
 
 func newFilterCmd() *cobra.Command {
-	const minFilterArgs = 4
+	const minFilterArgs = 5
 	// scanCmd represents the scan command.
 	var filterCmd = &cobra.Command{
 		Use:   "filter",
@@ -43,10 +43,11 @@ func newFilterCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			src := args[0]
 			dst := args[1]
-			methodArg := args[2]
-			matchStr := args[3]
+			actionArg := args[2]
+			methodArg := args[3]
+			matchStr := args[4]
 
-			mergeExecute(src, dst, methodArg, matchStr)
+			mergeExecute(src, dst, methodArg, actionArg, matchStr)
 		},
 	}
 

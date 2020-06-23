@@ -44,16 +44,14 @@ func (s *Sorter) storeTransferError(path string, err error) {
 
 // Performs the transfer after indexing.
 // Transfer will fail if dst directory does not exist and is not accessible.
-func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
+func (s *Sorter) Transfer(dst string, action Action, logger io.Writer) error {
 	if action != ActionCopy && action != ActionMove {
-		errStr := fmt.Sprintf("Invalid action %d\n", action)
-		return errors.New(errStr)
+		return fmt.Errorf("invalid action %s", action)
 	}
 
 	info, err := os.Stat(dst)
 	if err != nil || !info.IsDir() {
-		errStr := fmt.Sprintf("Error: No Output dir: %s", dst)
-		return errors.New(errStr)
+		return fmt.Errorf("no output dir: %s", dst)
 	}
 
 	// Let's get rid of all the duplciates we know of before we transfer.
@@ -92,7 +90,7 @@ func (s *Sorter) Transfer(dst string, action int, logger io.Writer) error {
 	return nil
 }
 
-func (s *Sorter) Reset(scanner Scanner, method int) error {
+func (s *Sorter) Reset(scanner Scanner, method Method) error {
 	s.IndexErrors = make(map[string]string)
 	s.TransferErrors = make(map[string]string)
 
@@ -127,7 +125,7 @@ func (s *Sorter) Reset(scanner Scanner, method int) error {
 //
 // The structure of how it will organize the the dst directory is specified by
 // 'method'. This routine will index via the method speficied.
-func NewSorter(scanner Scanner, method int) (*Sorter, error) {
+func NewSorter(scanner Scanner, method Method) (*Sorter, error) {
 	var s Sorter
 
 	err := s.Reset(scanner, method)

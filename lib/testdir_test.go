@@ -86,7 +86,7 @@ type testdir struct {
 	root        string
 	t           *testing.T
 	time        time.Time
-	method      int
+	method      Method
 
 	numExifError  int
 	numData       int
@@ -112,7 +112,7 @@ func (td *testdir) incrementTimeByMethod(delta int) {
 	case MethodNone:
 		return
 	default:
-		td.t.Fatalf("Invalid Method %d", td.method)
+		td.t.Fatalf("Invalid Method %s", td.method)
 	}
 	td.numTimeSpread++
 }
@@ -339,7 +339,7 @@ func (td *testdir) buildDuplicateWithinThisRoot() string {
 	return td.root
 }
 
-func (td *testdir) buildSortedDir(src string, dst string, action int) string {
+func (td *testdir) buildSortedDir(src string, dst string, action Action) string {
 	scanner := NewScanner()
 	_ = scanner.ScanDir(src, ioutil.Discard)
 
@@ -351,7 +351,7 @@ func (td *testdir) buildSortedDir(src string, dst string, action int) string {
 	return dst
 }
 
-func newTestDir(t *testing.T, method int, fileNo int) *testdir {
+func newTestDir(t *testing.T, method Method, fileNo int) *testdir {
 	var td testdir
 
 	td.fileNoStart = fileNo

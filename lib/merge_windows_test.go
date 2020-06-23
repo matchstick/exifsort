@@ -5,7 +5,7 @@ import (
 )
 
 func TestWinMergePathGood(t *testing.T) {
-	var goodInput = map[string]int{
+	var goodInput = map[string]Method{
 		`gobo\1920\m.jpg`:                    MethodYear,
 		`gobo\2010\m.jpg`:                    MethodYear,
 		`gobo\2020\m.jpg`:                    MethodYear,
@@ -29,7 +29,7 @@ func TestWinMergePathGood(t *testing.T) {
 
 	for input, method := range goodInput {
 		if !mergePathValid(root, input, method) {
-			t.Errorf("Expected Match with %s on method %d\n",
+			t.Errorf("Expected Match with %s on method %s\n",
 				input, method)
 		}
 	}
@@ -45,14 +45,14 @@ func TestWinMergePathRoots(t *testing.T) {
 
 	for root, input := range goodRootInput {
 		if !mergePathValid(root, input, MethodYear) {
-			t.Errorf("Expected input %s to be valid on method %d\n",
+			t.Errorf("Expected input %s to be valid on method %s\n",
 				input, MethodYear)
 		}
 	}
 }
 
 func TestWinMergePathBad(t *testing.T) {
-	var goodInput = map[string]int{
+	var goodInput = map[string]Method{
 		`gobo`:                                 MethodYear,
 		`gobo\`:                                MethodYear,
 		`gobo\0\m.jpg`:                         MethodYear,
@@ -73,7 +73,7 @@ func TestWinMergePathBad(t *testing.T) {
 
 	for input, method := range goodInput {
 		if mergePathValid(`gobo`, input, method) {
-			t.Errorf("Unexpected valid input %s on method %d\n",
+			t.Errorf("Unexpected valid input %s on method %s\n",
 				input, method)
 		}
 	}

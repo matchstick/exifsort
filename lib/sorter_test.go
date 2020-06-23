@@ -4,11 +4,10 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 )
 
-func testTransfer(t *testing.T, td *testdir, method int, action int) error {
+func testTransfer(t *testing.T, td *testdir, method Method, action Action) error {
 	scanner := NewScanner()
 	_ = scanner.ScanDir(td.root, ioutil.Discard)
 
@@ -52,7 +51,7 @@ func testTransfer(t *testing.T, td *testdir, method int, action int) error {
 }
 
 func TestSortDir(t *testing.T) {
-	for method := range MethodMap() {
+	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildRoot()
@@ -71,7 +70,7 @@ func TestSortDir(t *testing.T) {
 }
 
 func TestSortDuplicates(t *testing.T) {
-	for method := range MethodMap() {
+	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildDuplicateWithinThisRoot()
@@ -90,7 +89,7 @@ func TestSortDuplicates(t *testing.T) {
 }
 
 func TestSortCollisions(t *testing.T) {
-	for method := range MethodMap() {
+	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
 		src := td.buildCollisionWithinThisRoot()
@@ -144,9 +143,5 @@ func TestSortNoOutputDir(t *testing.T) {
 	err := sorter.Transfer("dst", ActionMove, ioutil.Discard)
 	if err == nil {
 		t.Fatalf("Unexpected Success\n")
-	}
-
-	if !strings.Contains(err.Error(), "No Output dir") {
-		t.Fatalf("Unexpected msg (%s)\n", err.Error())
 	}
 }

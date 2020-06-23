@@ -6,19 +6,10 @@ import (
 )
 
 func TestParseMethod(t *testing.T) {
-	var testMethods = map[string]int{
-		"Year":  MethodYear,
+	var testMethods = map[string]Method{
 		"year":  MethodYear,
-		"YEAR":  MethodYear,
-		"yEaR":  MethodYear,
-		"Month": MethodMonth,
 		"month": MethodMonth,
-		"MONTH": MethodMonth,
-		"MoNtH": MethodMonth,
-		"Day":   MethodDay,
 		"day":   MethodDay,
-		"DAY":   MethodDay,
-		"DaY":   MethodDay,
 	}
 
 	for str, val := range testMethods {
@@ -32,32 +23,36 @@ func TestParseMethod(t *testing.T) {
 		}
 	}
 
+	// Case sensitive
+	for str := range testMethods {
+		str = strings.ToUpper(str)
+
+		retVal, err := MethodParse(str)
+		if retVal != MethodNone {
+			t.Errorf("We should have an error")
+		}
+
+		if err == nil {
+			t.Errorf("Did not expect success for %s", str)
+		}
+	}
+
 	badStr := "Glabble"
 
 	retVal, err := MethodParse(badStr)
-	if !strings.Contains(err.Error(), "must be one of") {
-		t.Errorf("Unexpected error string %s", err.Error())
-	}
-
 	if retVal != MethodNone {
-		t.Errorf("Method %s does not match val", badStr)
+		t.Errorf("Method %s should be MethodNone not %s", badStr, retVal)
 	}
 
 	if err == nil {
-		t.Errorf("Did not expect error for %s", badStr)
+		t.Errorf("Did not expect success for %s", badStr)
 	}
 }
 
 func TestParseAction(t *testing.T) {
-	var testActions = map[string]int{
-		"Copy": ActionCopy,
+	var testActions = map[string]Action{
 		"copy": ActionCopy,
-		"COPY": ActionCopy,
-		"cOpY": ActionCopy,
-		"Move": ActionMove,
 		"move": ActionMove,
-		"MOVE": ActionMove,
-		"MoVe": ActionMove,
 	}
 
 	for str, val := range testActions {
@@ -71,18 +66,28 @@ func TestParseAction(t *testing.T) {
 		}
 	}
 
+	// Case sensitive
+	for str := range testActions {
+		str = strings.ToUpper(str)
+
+		retVal, err := ActionParse(str)
+		if retVal != ActionNone {
+			t.Errorf("We should have an error")
+		}
+
+		if err == nil {
+			t.Errorf("Did not expect success for %s", str)
+		}
+	}
+
 	badStr := "Glabble"
 
 	retVal, err := ActionParse(badStr)
-	if !strings.Contains(err.Error(), "must be one of") {
-		t.Errorf("Unexpected error string %s", err.Error())
-	}
-
 	if retVal != ActionNone {
-		t.Errorf("Method %s does not match val", badStr)
+		t.Errorf("Method %s should be MethodNone not %s", badStr, retVal)
 	}
 
 	if err == nil {
-		t.Errorf("Did not expect error for %s", badStr)
+		t.Errorf("Did not expect success for %s", badStr)
 	}
 }
