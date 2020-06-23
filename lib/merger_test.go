@@ -17,7 +17,7 @@ func TestMergeCheckGood(t *testing.T) {
 
 		dst := td.buildSortedDir(src, "dst", ActionCopy)
 
-		err := MergeCheck(dst, method)
+		err := mergeCheck(dst, method)
 		if err != nil {
 			t.Errorf("Err %s, method %s\n", err.Error(), method)
 		}
@@ -40,7 +40,7 @@ func TestMergeCheckBad(t *testing.T) {
 
 		_ = ioutil.WriteFile(badFilePath, message, 0600)
 
-		err := MergeCheck(dst, method)
+		err := mergeCheck(dst, method)
 		if err == nil {
 			t.Errorf("Unexpected Success method %s\n", method)
 		}
@@ -107,7 +107,9 @@ func testMerge(t *testing.T, method Method, action Action, dstFileNo int, dup bo
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
+	m := NewMerger(fromDir, toDir, action, method, "")
+
+	err := m.Merge(ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -138,7 +140,9 @@ func testMergeCollisions(t *testing.T, method Method, action Action) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
+	m := NewMerger(fromDir, toDir, action, method, "")
+
+	err := m.Merge(ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -169,7 +173,9 @@ func testMergeTimeSpread(t *testing.T, method Method, action Action) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	err := Merge(fromDir, toDir, action, "", ioutil.Discard)
+	m := NewMerger(fromDir, toDir, action, method, "")
+
+	err := m.Merge(ioutil.Discard)
 	if err != nil {
 		return err
 	}
@@ -202,7 +208,9 @@ func testMergeFilter(t *testing.T, method Method, action Action) error {
 	// merge but only transfer tif files
 	regex := tdSrc.getTifRegex()
 
-	err := Merge(fromDir, toDir, action, regex, ioutil.Discard)
+	m := NewMerger(fromDir, toDir, action, method, regex)
+
+	err := m.Merge(ioutil.Discard)
 	if err != nil {
 		return err
 	}

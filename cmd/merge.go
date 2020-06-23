@@ -37,19 +37,9 @@ func mergeExecute(src string, dst string, methodArg string, actionArg string, ma
 		return
 	}
 
-	err = exifsort.MergeCheck(src, method)
-	if err != nil {
-		fmt.Printf("Input Dir Error: %s\n", err.Error())
-		return
-	}
+	merger := exifsort.NewMerger(src, dst, action, method, matchStr)
 
-	err = exifsort.MergeCheck(dst, method)
-	if err != nil {
-		fmt.Printf("Output Dir Error: %s\n", err.Error())
-		return
-	}
-
-	err = exifsort.Merge(src, dst, action, matchStr, os.Stdout)
+	err = merger.Merge(os.Stdout)
 	if err != nil {
 		fmt.Printf("Merge Error: %s\n", err.Error())
 		return
