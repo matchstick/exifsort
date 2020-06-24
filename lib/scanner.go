@@ -18,10 +18,19 @@ func newScanError(label string, dateString string) error {
 	return errors.New(errStr)
 }
 
+type ScannerInput int
+
+const (
+	ScannerInputJSON ScannerInput = iota
+	ScannerInputDir
+	ScannerInputNone
+)
+
 // Scanner is your API to scan directory of media.
 //
 // It holds errors and data results of the scan after scanning.
 type Scanner struct {
+	Input             ScannerInput
 	SkippedCount      int
 	Data              map[string]time.Time
 	NumDataTypes      map[string]int
@@ -176,6 +185,8 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 //
 // logger specifies where to send output while scanning.
 func (s *Scanner) ScanDir(src string, logger io.Writer) error {
+	s.Input = ScannerInputDir
+
 	info, err := os.Stat(src)
 	if err != nil || !info.IsDir() {
 		return err
@@ -206,6 +217,8 @@ func (s *Scanner) Save(jsonPath string) error {
 
 // Load Scanner from a json file.
 func (s *Scanner) Load(jsonPath string) error {
+	s.Input = ScannerInputJSON
+
 	content, err := ioutil.ReadFile(jsonPath)
 	if err != nil {
 		return err
@@ -221,6 +234,7 @@ func (s *Scanner) Load(jsonPath string) error {
 
 // Clears data so scanner can be reused.
 func (s *Scanner) Reset() {
+	s.Input = ScannerInputNone
 	s.SkippedCount = 0
 	s.Data = make(map[string]time.Time)
 	s.NumDataTypes = make(map[string]int)

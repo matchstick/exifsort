@@ -24,7 +24,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func mergeExecute(src string, dst string, methodArg string, actionArg string, matchStr string) {
+func mergeSummary(m *exifsort.Merger) {
+	fmt.Printf("## Merged files: %d\n", len(m.Merged))
+
+	if len(m.Removed) != 0 {
+		fmt.Printf("## Duplicates Removed %d:\n", len(m.Removed))
+
+		for _, path := range m.Removed {
+			fmt.Printf("##\t%s\n", path)
+		}
+	}
+
+	if len(m.Errors) != 0 {
+		fmt.Printf("## Errors were %d:\n", len(m.Errors))
+
+		for path, err := range m.Errors {
+			fmt.Printf("##\t%s: (%s)\n", path, err)
+		}
+	}
+}
+
+func mergeExecute(src string, dst string, methodArg string, actionArg string,
+	matchStr string) {
 	method, err := exifsort.MethodParse(methodArg)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
@@ -44,6 +65,8 @@ func mergeExecute(src string, dst string, methodArg string, actionArg string, ma
 		fmt.Printf("Merge Error: %s\n", err.Error())
 		return
 	}
+
+	mergeSummary(merger)
 }
 
 func newMergeCmd() *cobra.Command {

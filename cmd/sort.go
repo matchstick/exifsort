@@ -34,9 +34,7 @@ type sortCmd struct {
 
 func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	sorter *exifsort.Sorter) {
-	if s.src != "" {
-		scanSummary(scanner)
-	}
+	scanSummary(scanner)
 
 	if len(sorter.IndexErrors) != 0 {
 		fmt.Println("## Index Errors were:")

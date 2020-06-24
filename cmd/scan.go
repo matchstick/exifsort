@@ -26,6 +26,11 @@ import (
 )
 
 func scanSummary(s *exifsort.Scanner) {
+	// If we are not walking a directory there is no summary
+	if s.Input != exifsort.ScannerInputDir {
+		return
+	}
+
 	fmt.Printf("## Scanned Total: %d\n", s.NumTotal())
 	fmt.Printf("## Scanned Skipped: %d\n", s.NumSkipped())
 	fmt.Printf("## Scanned Data: %d\n", s.NumData())
