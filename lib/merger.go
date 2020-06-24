@@ -19,6 +19,19 @@ type Merger struct {
 	filter  string
 	Merged  map[string]string
 	Errors  map[string]string
+	Removed []string
+}
+
+func (m *Merger) storeMergeRemoved(path string) {
+	m.Removed = append(m.Removed, path)
+}
+
+func (m *Merger) storeMergeError(path string, err error) {
+	m.Errors[path] = err.Error()
+}
+
+func (m *Merger) storeMerged(src string, dst string) {
+	m.Merged[dst] = src
 }
 
 const (
@@ -162,6 +175,7 @@ func (m *Merger) mergeDuplicate(err error, action Action) error {
 	// If not a duplicate error just propagate it
 	var dupErr *duplicateError
 	if !errors.As(err, &dupErr) {
+		m.storeMergeError(dupErr.src, dupErr)
 		return err
 	}
 
@@ -172,6 +186,8 @@ func (m *Merger) mergeDuplicate(err error, action Action) error {
 
 	// We have a duplicate so we have to remove it
 	// Hopefully there is no os problem with doing so.
+	m.storeMergeRemoved(dupErr.src)
+
 	return os.Remove(dupErr.src)
 }
 
@@ -214,7 +230,7 @@ func (m *Merger) merge(srcPath string, srcRoot string, dstRoot string, action Ac
 			entryMap[baseName] = fullPath
 		}
 
-		// Find a new one base don ours
+		// Find a new one based on ours
 		dstBase, err := uniqueName(srcPath, func(filename string) string {
 			return entryMap[filename]
 		})
@@ -226,6 +242,8 @@ func (m *Merger) merge(srcPath string, srcRoot string, dstRoot string, action Ac
 
 		dstPath = filepath.Join(dstDir, dstBase)
 	}
+
+	m.storeMerged(srcPath, dstPath)
 
 	// Finally we have everything we need to move the media
 	switch action {
@@ -242,9 +260,8 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 	err := filepath.Walk(m.srcRoot,
 		func(srcFile string, info os.FileInfo, err error) error {
 			if err != nil {
-				errStr := fmt.Sprintf("Err on %s with %s",
-					srcFile, err.Error())
-				return errors.New(errStr)
+				m.storeMergeError(srcFile, err)
+				return fmt.Errorf("walk on %s with %s", srcFile, err.Error())
 			}
 
 			// Don't need to scan directories
@@ -258,6 +275,7 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 
 			err = m.merge(srcFile, m.srcRoot, m.dstRoot, m.action)
 			if err != nil {
+				m.storeMergeError(srcFile, err)
 				return err
 			}
 
@@ -291,7 +309,8 @@ func (m *Merger) Reset(srcRoot string, dstRoot string, action Action, method Met
 	m.filter = filter
 }
 
-func NewMerger(srcRoot string, dstRoot string, action Action, method Method, filter string) *Merger {
+func NewMerger(srcRoot string, dstRoot string, action Action, method Method,
+	filter string) *Merger {
 	var m Merger
 
 	m.Reset(srcRoot, dstRoot, action, method, filter)

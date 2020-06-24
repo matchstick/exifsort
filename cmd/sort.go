@@ -34,9 +34,7 @@ type sortCmd struct {
 
 func (s *sortCmd) sortSummary(scanner *exifsort.Scanner,
 	sorter *exifsort.Sorter) {
-	if s.src != "" {
-		scanSummary(scanner)
-	}
+	scanSummary(scanner)
 
 	if len(sorter.IndexErrors) != 0 {
 		fmt.Println("## Index Errors were:")
@@ -140,7 +138,8 @@ func (s *sortCmd) sortExecute() {
 	s.sortSummary(&scanner, sorter)
 }
 
-func (s *sortCmd) newMethodCmd(action exifsort.Action, method exifsort.Method) *cobra.Command {
+func (s *sortCmd) newSortMethodCmd(action exifsort.Action,
+	method exifsort.Method) *cobra.Command {
 	const numMethodCmdArgs = 2
 
 	methodStr := method.String()
@@ -173,7 +172,7 @@ func (s *sortCmd) newMethodCmd(action exifsort.Action, method exifsort.Method) *
 	}
 }
 
-func (s *sortCmd) newActionCmd(action exifsort.Action) *cobra.Command {
+func (s *sortCmd) newSortActionCmd(action exifsort.Action) *cobra.Command {
 	actionStr := action.String()
 
 	actionCmd := &cobra.Command{
@@ -184,7 +183,7 @@ func (s *sortCmd) newActionCmd(action exifsort.Action) *cobra.Command {
 	}
 
 	for _, method := range exifsort.Methods() {
-		methodCmd := s.newMethodCmd(action, method)
+		methodCmd := s.newSortMethodCmd(action, method)
 		actionCmd.AddCommand(methodCmd)
 	}
 
@@ -200,7 +199,7 @@ func newSortRootCmd(s *sortCmd) *cobra.Command {
 	}
 
 	for _, action := range exifsort.Actions() {
-		actionCmd := s.newActionCmd(action)
+		actionCmd := s.newSortActionCmd(action)
 		rootCmd.AddCommand(actionCmd)
 	}
 
