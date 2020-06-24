@@ -139,7 +139,7 @@ func (s *sortCmd) sortExecute() {
 }
 
 func (s *sortCmd) newSortMethodCmd(action exifsort.Action,
-								   method exifsort.Method) *cobra.Command {
+	method exifsort.Method) *cobra.Command {
 	const numMethodCmdArgs = 2
 
 	methodStr := method.String()

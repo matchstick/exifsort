@@ -44,23 +44,11 @@ func mergeSummary(m *exifsort.Merger) {
 	}
 }
 
-func mergeExecute(src string, dst string, methodArg string, actionArg string,
-	matchStr string) {
-	method, err := exifsort.MethodParse(methodArg)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		return
-	}
-
-	action, err := exifsort.ActionParse(actionArg)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		return
-	}
-
+func mergeExecute(src string, dst string, method exifsort.Method,
+	action exifsort.Action, matchStr string) {
 	merger := exifsort.NewMerger(src, dst, action, method, matchStr)
 
-	err = merger.Merge(os.Stdout)
+	err := merger.Merge(os.Stdout)
 	if err != nil {
 		fmt.Printf("Merge Error: %s\n", err.Error())
 		return
@@ -69,13 +57,8 @@ func mergeExecute(src string, dst string, methodArg string, actionArg string,
 	mergeSummary(merger)
 }
 
-func newMergeCmd() *cobra.Command {
-	const minMergeArgs = 4
-	// scanCmd represents the scan command.
-	var mergeCmd = &cobra.Command{
-		Use:   "merge",
-		Short: "Merge one sorted directory to another sorted directory",
-		Long: `Merge one sorted directory to another sorted directory.
+func mergeLongHelp() string {
+	return `Merge one sorted directory to another sorted directory.
 
 	exifsort merge <src> <dir> 
 
@@ -84,17 +67,61 @@ func newMergeCmd() *cobra.Command {
 
 	dst
 	directory to create to transfer media
-`,
-		Args: cobra.MinimumNArgs(minMergeArgs),
+`
+}
+
+func newMergeMethodCmd(action exifsort.Action,
+	method exifsort.Method) *cobra.Command {
+	const numMethodCmdArgs = 2
+
+	actionStr := action.String()
+	methodStr := method.String()
+
+	return &cobra.Command{
+		Use:   method.String(),
+		Short: fmt.Sprintf("Transfer by %s then merge by %s", actionStr, methodStr),
+		// Very long help message so we moved it to a func.
+		Long: mergeLongHelp(),
+		Args: cobra.MinimumNArgs(numMethodCmdArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			src := args[0]
 			dst := args[1]
-			actionArg := args[2]
-			methodArg := args[3]
 
-			mergeExecute(src, dst, methodArg, actionArg, "")
+			mergeExecute(src, dst, method, action, "")
 		},
 	}
+}
 
-	return mergeCmd
+func newMergeActionCmd(action exifsort.Action) *cobra.Command {
+	actionStr := action.String()
+
+	actionCmd := &cobra.Command{
+		Use:   actionStr,
+		Short: "Merge by " + actionStr,
+		// Very long help message so we moved it to a func.
+		Long: mergeLongHelp(),
+	}
+
+	for _, method := range exifsort.Methods() {
+		methodCmd := newMergeMethodCmd(action, method)
+		actionCmd.AddCommand(methodCmd)
+	}
+
+	return actionCmd
+}
+
+func newMergeCmd() *cobra.Command {
+	// scanCmd represents the scan command.
+	rootCmd := &cobra.Command{
+		Use:   "merge",
+		Short: "Merge one sorted directory to another sorted directory",
+		Long:  mergeLongHelp(),
+	}
+
+	for _, action := range exifsort.Actions() {
+		actionCmd := newMergeActionCmd(action)
+		rootCmd.AddCommand(actionCmd)
+	}
+
+	return rootCmd
 }
