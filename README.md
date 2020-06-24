@@ -65,7 +65,7 @@ Example:
 
 You can save data to a json file too:
 
-`$ exifsort scan data/ -j data.json`
+`$ exifsort scan data/ -j src.json`
 
 ## sort
 
@@ -76,7 +76,7 @@ The sort command performs a number of steps:
   1. Create a directory for output
   1. Transfer media to the output
 
-Examples: 
+Examples:
 
 `$ exifsort sort copy month src/ dst/`
 
@@ -88,24 +88,36 @@ then **copy** it to dst so that it is arranged by **month**.
 Will create a new directory called dst, scan the media in src, index that media
 then **move** the files to dst so that it is arranged by **year**. 
 
-Note: src can be either a directory or a json file.
+Example of json input:
+
+`$ exifsort sort copy month src.json dst/`
+
+You don't want to modify the directory that you scanned to generate the json
+file between generating it and then sorting. This allow you to only scan
+once.
 
 ## merge
 
 Merge output from a sorted directory to another sorted directory.
 
-`$ exifsort merge src/ dst/ <method>`
+`$ exifsort merge copy month src/ dst/ `
+
+Will merge two directories sorted by **month** and **copy** files from one to the
+other.
+
+If you are moving the subcommand will remove duplicates in the src directory.
 
 ## filter
 
-Filter is identical to merge except it accepts a regular expression as an argument. 
-This is used to match the files in the src diretory. Only those are then merged to the dst directory.
+Filter is identical to merge except it accepts a regular expression as an argument.
+This is used to match the files in the src diretory. Only those that match are
+then merged to the dst directory.
 
 `$ exifsort filter src/ dst/ <method> "regex"`
 
 ## eval
 
-scans by file not directory. Prints the date information of files specified. 
+scans by file not directory. Prints the date information of files specified.
 
 `$ exifsort eval data/*`
 
