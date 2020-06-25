@@ -9,17 +9,22 @@ import (
 )
 
 func TestMergeCheckGood(t *testing.T) {
-	for _, method := range Methods() {
-		td := newTestDir(t, method, fileNoDefault)
+	for _, goodMethod := range Methods() {
+		td := newTestDir(t, goodMethod, fileNoDefault)
 
 		src := td.buildRoot()
 		defer os.RemoveAll(src)
 
 		dst := td.buildSortedDir(src, "dst", ActionCopy)
 
-		err := mergeCheck(dst, method)
+		method, err := mergeCheck(dst)
 		if err != nil {
 			t.Errorf("Err %s, method %s\n", err.Error(), method)
+		}
+
+		if method != goodMethod {
+			t.Errorf("Err %s, method %s should be %s\n", err.Error(), method,
+				goodMethod)
 		}
 
 		os.RemoveAll(dst)
@@ -27,8 +32,8 @@ func TestMergeCheckGood(t *testing.T) {
 }
 
 func TestMergeCheckBad(t *testing.T) {
-	for _, method := range Methods() {
-		td := newTestDir(t, method, fileNoDefault)
+	for _, goodMethod := range Methods() {
+		td := newTestDir(t, goodMethod, fileNoDefault)
 
 		src := td.buildRoot()
 		defer os.RemoveAll(src)
@@ -40,9 +45,13 @@ func TestMergeCheckBad(t *testing.T) {
 
 		_ = ioutil.WriteFile(badFilePath, message, 0600)
 
-		err := mergeCheck(dst, method)
+		method, err := mergeCheck(dst)
 		if err == nil {
 			t.Errorf("Unexpected Success method %s\n", method)
+		}
+
+		if method != MethodNone {
+			t.Errorf("Method %s is not MethodNone as expected\n", method)
 		}
 
 		os.RemoveAll(badFilePath)
@@ -107,7 +116,7 @@ func testMerge(t *testing.T, method Method, action Action, dstFileNo int, dup bo
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	m := NewMerger(fromDir, toDir, action, method, "")
+	m := NewMerger(fromDir, toDir, action, "")
 
 	err := m.Merge(ioutil.Discard)
 	if err != nil {
@@ -140,7 +149,7 @@ func testMergeCollisions(t *testing.T, method Method, action Action) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	m := NewMerger(fromDir, toDir, action, method, "")
+	m := NewMerger(fromDir, toDir, action, "")
 
 	err := m.Merge(ioutil.Discard)
 	if err != nil {
@@ -173,7 +182,7 @@ func testMergeTimeSpread(t *testing.T, method Method, action Action) error {
 	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
 
 	// merge them
-	m := NewMerger(fromDir, toDir, action, method, "")
+	m := NewMerger(fromDir, toDir, action, "")
 
 	err := m.Merge(ioutil.Discard)
 	if err != nil {
@@ -208,7 +217,7 @@ func testMergeFilter(t *testing.T, method Method, action Action) error {
 	// merge but only transfer tif files
 	regex := tdSrc.getTifRegex()
 
-	m := NewMerger(fromDir, toDir, action, method, regex)
+	m := NewMerger(fromDir, toDir, action, regex)
 
 	err := m.Merge(ioutil.Discard)
 	if err != nil {

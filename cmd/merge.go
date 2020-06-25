@@ -44,9 +44,8 @@ func mergeSummary(m *exifsort.Merger) {
 	}
 }
 
-func mergeExecute(src string, dst string, method exifsort.Method,
-	action exifsort.Action, matchStr string) {
-	merger := exifsort.NewMerger(src, dst, action, method, matchStr)
+func mergeExecute(src string, dst string, action exifsort.Action, matchStr string) {
+	merger := exifsort.NewMerger(src, dst, action, matchStr)
 
 	err := merger.Merge(os.Stdout)
 	if err != nil {
@@ -70,29 +69,9 @@ func mergeLongHelp() string {
 `
 }
 
-func newMergeMethodCmd(action exifsort.Action,
-	method exifsort.Method) *cobra.Command {
+func newMergeActionCmd(action exifsort.Action) *cobra.Command {
 	const numMethodCmdArgs = 2
 
-	actionStr := action.String()
-	methodStr := method.String()
-
-	return &cobra.Command{
-		Use:   method.String(),
-		Short: fmt.Sprintf("Transfer by %s then merge by %s", actionStr, methodStr),
-		// Very long help message so we moved it to a func.
-		Long: mergeLongHelp(),
-		Args: cobra.MinimumNArgs(numMethodCmdArgs),
-		Run: func(cmd *cobra.Command, args []string) {
-			src := args[0]
-			dst := args[1]
-
-			mergeExecute(src, dst, method, action, "")
-		},
-	}
-}
-
-func newMergeActionCmd(action exifsort.Action) *cobra.Command {
 	actionStr := action.String()
 
 	actionCmd := &cobra.Command{
@@ -100,11 +79,13 @@ func newMergeActionCmd(action exifsort.Action) *cobra.Command {
 		Short: "Merge by " + actionStr,
 		// Very long help message so we moved it to a func.
 		Long: mergeLongHelp(),
-	}
+		Args: cobra.MinimumNArgs(numMethodCmdArgs),
+		Run: func(cmd *cobra.Command, args []string) {
+			src := args[0]
+			dst := args[1]
 
-	for _, method := range exifsort.Methods() {
-		methodCmd := newMergeMethodCmd(action, method)
-		actionCmd.AddCommand(methodCmd)
+			mergeExecute(src, dst, action, "")
+		},
 	}
 
 	return actionCmd
