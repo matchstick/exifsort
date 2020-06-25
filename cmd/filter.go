@@ -39,16 +39,14 @@ func filterLongHelp() string {
 `
 }
 
-func newFilterMethodCmd(action exifsort.Action,
-	method exifsort.Method) *cobra.Command {
+func newFilterActionCmd(action exifsort.Action) *cobra.Command {
 	const numMethodCmdArgs = 3
 
 	actionStr := action.String()
-	methodStr := method.String()
 
 	return &cobra.Command{
-		Use:   method.String(),
-		Short: fmt.Sprintf("Transfer by %s then merge by %s", actionStr, methodStr),
+		Use:   actionStr,
+		Short: fmt.Sprintf("Filter by %s", actionStr),
 		// Very long help message so we moved it to a func.
 		Long: mergeLongHelp(),
 		Args: cobra.MinimumNArgs(numMethodCmdArgs),
@@ -57,27 +55,9 @@ func newFilterMethodCmd(action exifsort.Action,
 			dst := args[1]
 			filter := args[2]
 
-			mergeExecute(src, dst, method, action, filter)
+			mergeExecute(src, dst, action, filter)
 		},
 	}
-}
-
-func newFilterActionCmd(action exifsort.Action) *cobra.Command {
-	actionStr := action.String()
-
-	actionCmd := &cobra.Command{
-		Use:   actionStr,
-		Short: "Filter by " + actionStr,
-		// Very long help message so we moved it to a func.
-		Long: filterLongHelp(),
-	}
-
-	for _, method := range exifsort.Methods() {
-		methodCmd := newFilterMethodCmd(action, method)
-		actionCmd.AddCommand(methodCmd)
-	}
-
-	return actionCmd
 }
 
 func newFilterCmd() *cobra.Command {

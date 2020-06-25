@@ -29,10 +29,10 @@ func TestMergePathGood(t *testing.T) {
 
 	root := "gobo"
 
-	for input, method := range goodInput {
-		if !mergePathValid(root, input, method) {
-			t.Errorf("Expected Match with %s on method %s\n",
-				input, method)
+	for input, goodMethod := range goodInput {
+		method := mergePathValid(root, input)
+		if method != goodMethod {
+			t.Errorf("Input %s, %s != %s\n", input, goodMethod, method)
 		}
 	}
 }
@@ -46,37 +46,38 @@ func TestMergePathRoots(t *testing.T) {
 	}
 
 	for root, input := range goodRootInput {
-		if !mergePathValid(root, input, MethodYear) {
-			t.Errorf("Expected Match with %s on method %s\n",
-				input, MethodYear)
+		method := mergePathValid(root, input)
+		if method != MethodYear {
+			t.Errorf("Expected year but got %s on %s\n",
+				method, input)
 		}
 	}
 }
 
 func TestMergePathBad(t *testing.T) {
-	var goodInput = map[string]Method{
-		"gobo":                                 MethodYear,
-		"gobo/":                                MethodYear,
-		"gobo/0/m.jpg":                         MethodYear,
-		"gobo/2010_/m.jpg":                     MethodYear,
-		"gobo/00000/m.jpg":                     MethodYear,
-		"gobo/10000/m.jpg":                     MethodYear,
-		"gobo/bad/m.jpg":                       MethodYear,
-		"gobo/2010/2010_00/m.jpg":              MethodMonth,
-		"gobo/2010/2010_13/m.jpg":              MethodMonth,
-		"gobo/2010/2010_32/m.jpg":              MethodMonth,
-		"gobo/2010/2010_gobo/m.jpg":            MethodMonth,
-		"gobo/2010/2010_02/2010__01/m.jpg":     MethodDay,
-		"gobo/2010/2010_02/2010_gobo_11/m.jpg": MethodDay,
-		"gobo/2010/2010_02/2010_02_gobo/m.jpg": MethodDay,
-		"gobo/2010/2010_02/2010_02_00/m.jpg":   MethodDay,
-		"gobo/2010/2010_02/2010_02_32/m.jpg":   MethodDay,
+	var badInput = []string{
+		"gobo",
+		"gobo/",
+		"gobo/0/m.jpg",
+		"gobo/2010_/m.jpg",
+		"gobo/00000/m.jpg",
+		"gobo/10000/m.jpg",
+		"gobo/bad/m.jpg",
+		"gobo/2010/2010_00/m.jpg",
+		"gobo/2010/2010_13/m.jpg",
+		"gobo/2010/2010_32/m.jpg",
+		"gobo/2010/2010_gobo/m.jpg",
+		"gobo/2010/2010_02/2010__01/m.jpg",
+		"gobo/2010/2010_02/2010_gobo_11/m.jpg",
+		"gobo/2010/2010_02/2010_02_gobo/m.jpg",
+		"gobo/2010/2010_02/2010_02_00/m.jpg",
+		"gobo/2010/2010_02/2010_02_32/m.jpg",
 	}
 
-	for input, method := range goodInput {
-		if mergePathValid("gobo", input, method) {
-			t.Errorf("Unexpected Match with %s on method %s\n",
-				input, method)
+	for _, input := range badInput {
+		method := mergePathValid("gobo", input)
+		if method != MethodNone {
+			t.Errorf("Input of %s yields method %s\n", input, method)
 		}
 	}
 }

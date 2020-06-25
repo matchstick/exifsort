@@ -100,12 +100,16 @@ once.
 
 Merge output from a sorted directory to another sorted directory.
 
-`$ exifsort merge copy month src/ dst/ `
+`$ exifsort merge copy src/ dst/ `
 
-Will merge two directories sorted by **month** and **copy** files from one to the
-other.
+Will merge two sorted directories and **copy** files from one to the other.
 
-If you are moving the subcommand will remove duplicates in the src directory.
+`$ exifsort merge move src/ dst/ `
+
+Will merge two sorted directories and **move** files from one to the other.
+
+When using subcommand **merge** and **move** together exifsort removes duplicates in the
+src directory.
 
 ## filter
 
@@ -113,7 +117,7 @@ Filter is identical to merge except it accepts a regular expression as an argume
 This is used to match the files in the src diretory. Only those that match are
 then merged to the dst directory.
 
-`$ exifsort filter src/ dst/ <method> "regex"`
+`$ exifsort filter src/ dst/ "regex"`
 
 ## eval
 
