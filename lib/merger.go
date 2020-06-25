@@ -33,6 +33,22 @@ func (m *Merger) storeMerged(src string, dst string) {
 	m.Merged[dst] = src
 }
 
+// Note that when we don't specify the expression we
+// assume we jut match
+func mergeMatch(expression string, path string) bool {
+	if expression == "" {
+		return true
+	}
+
+	matched, err := regexp.MatchString(expression, path)
+	if err != nil {
+		fmt.Printf("%s err %s\n", path, err.Error())
+		return false
+	}
+
+	return matched
+}
+
 func mergeStrToMethod(str string) Method {
 	const (
 		regexpYear  = `(19|[2-9][0-9])\d{2}`         // year = 1900 - 9999
@@ -46,24 +62,24 @@ func mergeStrToMethod(str string) Method {
 		// Thank you QuoteMeta.
 		regexSep = regexp.QuoteMeta(string(filepath.Separator))
 
-		regexpPathYear  = `^` + regexpYear + `$`
+		// Example: ^2020$
+		regexpPathYear = `^` + regexpYear + `$`
+		// Example: ^2020/2020_04$
 		regexpPathMonth = `^` + regexpYear + regexSep + regexpYear + "_" + regexpMonth + `$`
-		regexpPathDay   = `^` + regexpYear + regexSep + regexpYear + "_" + regexpMonth +
+		// Example: ^2020/2020_04/2020_04_27$
+		regexpPathDay = `^` + regexpYear + regexSep + regexpYear + "_" + regexpMonth +
 			regexSep + regexpYear + "_" + regexpMonth + "_" + regexpDay + `$`
 	)
 
-	isMatch, err := regexp.MatchString(regexpPathDay, str)
-	if err == nil && isMatch {
+	if mergeMatch(regexpPathDay, str) {
 		return MethodDay
 	}
 
-	isMatch, err = regexp.MatchString(regexpPathMonth, str)
-	if err == nil && isMatch {
+	if mergeMatch(regexpPathMonth, str) {
 		return MethodMonth
 	}
 
-	isMatch, err = regexp.MatchString(regexpPathYear, str)
-	if err == nil && isMatch {
+	if mergeMatch(regexpPathYear, str) {
 		return MethodYear
 	}
 
@@ -139,20 +155,6 @@ func mergeCheck(root string) (Method, error) {
 	}
 
 	return rootMethod, nil
-}
-
-func isMatch(matchStr string, path string) bool {
-	if matchStr == "" {
-		return true
-	}
-
-	matched, err := regexp.MatchString(matchStr, path)
-	if err != nil {
-		fmt.Printf("%s err %s\n", path, err.Error())
-		return false
-	}
-
-	return matched
 }
 
 func (m *Merger) mergeDuplicate(err error, action Action) error {
@@ -254,7 +256,7 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 				return nil
 			}
 
-			if !isMatch(m.filter, srcFile) {
+			if !mergeMatch(m.filter, srcFile) {
 				return nil
 			}
 
