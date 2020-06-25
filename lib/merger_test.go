@@ -338,3 +338,22 @@ func TestMergeCollisions(t *testing.T) {
 		}
 	}
 }
+
+func TestMergeMethodDiff(t *testing.T) {
+	tdSrc := newTestDir(t, MethodYear, fileNoDefault)
+	tdDst := newTestDir(t, MethodMonth, fileNoDefault)
+
+	src := tdSrc.buildRoot()
+	dst := tdDst.buildRoot()
+
+	// Copy files to two sorted directories that are identical
+	fromDir := tdSrc.buildSortedDir(src, "fromDir_", ActionCopy)
+	toDir := tdDst.buildSortedDir(dst, "toDir_", ActionCopy)
+
+	m := NewMerger(fromDir, toDir, ActionCopy, "")
+
+	err := m.Merge(ioutil.Discard)
+	if err == nil {
+		t.Errorf("Succes is unexpected. src and dst have the different methods\n")
+	}
+}
