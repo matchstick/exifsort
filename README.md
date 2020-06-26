@@ -29,7 +29,7 @@ to determine how to sort the media. If it cannot find exif data it uses file mod
 ## Usage
 
 If you have a directory full of files and photos called **random** and you want
-to copy them to a new directory sorted by month that only hase photos.
+to copy them to a new directory **sortedNew** sorted by month that only has photos.
 
 Simple Example:
 
