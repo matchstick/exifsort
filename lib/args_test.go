@@ -7,6 +7,7 @@ import (
 
 func TestParseMethod(t *testing.T) {
 	t.Parallel()
+
 	var testMethods = map[string]Method{
 		"year":  MethodYear,
 		"month": MethodMonth,
@@ -52,6 +53,7 @@ func TestParseMethod(t *testing.T) {
 
 func TestParseAction(t *testing.T) {
 	t.Parallel()
+
 	var testActions = map[string]Action{
 		"copy": ActionCopy,
 		"move": ActionMove,

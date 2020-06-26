@@ -35,6 +35,7 @@ func testGetModTime(path string) (time.Time, error) {
 
 func TestScanFile(t *testing.T) {
 	t.Parallel()
+
 	s := NewScanner()
 
 	exifTime, _ := extractTimeFromStr(exifTimeStr)
@@ -114,6 +115,7 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 
 func TestScanDir(t *testing.T) {
 	t.Parallel()
+
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
@@ -127,6 +129,7 @@ func TestScanDir(t *testing.T) {
 
 func TestScanSkipDir(t *testing.T) {
 	t.Parallel()
+
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildSkipRoot()
@@ -140,6 +143,7 @@ func TestScanSkipDir(t *testing.T) {
 
 func TestScanBadDir(t *testing.T) {
 	t.Parallel()
+
 	if winOS() {
 		return
 	}
@@ -157,6 +161,7 @@ func TestScanBadDir(t *testing.T) {
 
 func TestScanSaveLoad(t *testing.T) {
 	t.Parallel()
+
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
@@ -189,6 +194,7 @@ func TestScanSaveLoad(t *testing.T) {
 
 func TestScanBadSave(t *testing.T) {
 	t.Parallel()
+
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()
@@ -217,6 +223,7 @@ func TestScanBadSave(t *testing.T) {
 
 func TestScanBadLoad(t *testing.T) {
 	t.Parallel()
+
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	tmpPath := td.buildRoot()

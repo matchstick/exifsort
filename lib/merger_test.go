@@ -10,6 +10,7 @@ import (
 
 func TestMergeCheckGood(t *testing.T) {
 	t.Parallel()
+
 	for _, goodMethod := range Methods() {
 		td := newTestDir(t, goodMethod, fileNoDefault)
 
@@ -34,6 +35,7 @@ func TestMergeCheckGood(t *testing.T) {
 
 func TestMergeCheckBad(t *testing.T) {
 	t.Parallel()
+
 	for _, goodMethod := range Methods() {
 		td := newTestDir(t, goodMethod, fileNoDefault)
 
@@ -261,6 +263,7 @@ func testMergeFilter(t *testing.T, method Method, action Action) error {
 
 func TestMergeGood(t *testing.T) {
 	t.Parallel()
+
 	// By setting the fileNo so high the files will have different names
 	// between tesdirs We are hoping that this number is just high enough
 	// but as of this writing testdir has 150 files, and our countfiles
@@ -286,6 +289,7 @@ func TestMergeGood(t *testing.T) {
 
 func TestMergeTime(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		err := testMergeTimeSpread(t, method, ActionCopy)
 		if err != nil {
@@ -305,6 +309,7 @@ func TestMergeTime(t *testing.T) {
 
 func TestMergeDuplicate(t *testing.T) {
 	t.Parallel()
+
 	// By setting the fileNo to the default we ensure the dst directory will have
 	// files with the same names as src and then get duplicates.
 	fileNo := fileNoDefault
@@ -328,6 +333,7 @@ func TestMergeDuplicate(t *testing.T) {
 
 func TestMergeCollisions(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		err := testMergeCollisions(t, method, ActionCopy)
 		if err != nil {
@@ -347,6 +353,7 @@ func TestMergeCollisions(t *testing.T) {
 
 func TestMergeMethodDiff(t *testing.T) {
 	t.Parallel()
+
 	tdSrc := newTestDir(t, MethodYear, fileNoDefault)
 	tdDst := newTestDir(t, MethodMonth, fileNoDefault)
 
@@ -369,6 +376,7 @@ func TestMergeMethodDiff(t *testing.T) {
 // artifacts of other methods in side. Not valid so we should detext and fail.
 func TestMergeMethodMultiple(t *testing.T) {
 	t.Parallel()
+
 	tdSrc := newTestDir(t, MethodMonth, fileNoDefault)
 	tdDst := newTestDir(t, MethodMonth, fileNoDefault)
 

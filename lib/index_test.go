@@ -101,6 +101,7 @@ func indexStringCheck(t *testing.T, targetSize int, idx index) {
 
 func TestIndexPutGet(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		var idx, _ = newIndex(method)
 
@@ -115,6 +116,7 @@ func TestIndexPutGet(t *testing.T) {
 
 func TestIndexCollisions(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		var idx, _ = newIndex(method)
 
@@ -133,6 +135,7 @@ func TestIndexCollisions(t *testing.T) {
 
 func TestIndexDuplicates(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		var exifPath = "../data/with_exif.jpg"
 
@@ -158,6 +161,7 @@ func TestIndexDuplicates(t *testing.T) {
 
 func TestIndexBadMethod(t *testing.T) {
 	t.Parallel()
+
 	var idx, err = newIndex(MethodNone)
 	if err == nil {
 		t.Errorf("Expected non nil return\n")
@@ -174,6 +178,7 @@ func TestIndexBadMethod(t *testing.T) {
 
 func TestIndexBadGet(t *testing.T) {
 	t.Parallel()
+
 	for _, method := range Methods() {
 		idx, _ := newIndex(method)
 		badPath := "invalidPath"
