@@ -51,6 +51,7 @@ func testTransfer(t *testing.T, td *testdir, method Method, action Action) error
 }
 
 func TestSortDir(t *testing.T) {
+	t.Parallel()
 	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
@@ -70,6 +71,7 @@ func TestSortDir(t *testing.T) {
 }
 
 func TestSortDuplicates(t *testing.T) {
+	t.Parallel()
 	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
@@ -89,6 +91,7 @@ func TestSortDuplicates(t *testing.T) {
 }
 
 func TestSortCollisions(t *testing.T) {
+	t.Parallel()
 	for _, method := range Methods() {
 		td := newTestDir(t, method, fileNoDefault)
 
@@ -108,6 +111,7 @@ func TestSortCollisions(t *testing.T) {
 }
 
 func TestBadSortMethod(t *testing.T) {
+	t.Parallel()
 	const badMethod = 888
 
 	td := newTestDir(t, badMethod, fileNoDefault)
@@ -119,6 +123,7 @@ func TestBadSortMethod(t *testing.T) {
 }
 
 func TestBadSortAction(t *testing.T) {
+	t.Parallel()
 	const badAction = 888
 
 	td := newTestDir(t, MethodNone, fileNoDefault)
@@ -130,6 +135,7 @@ func TestBadSortAction(t *testing.T) {
 }
 
 func TestSortNoOutputDir(t *testing.T) {
+	t.Parallel()
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	src := td.buildRoot()

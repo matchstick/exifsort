@@ -7,6 +7,7 @@ import (
 )
 
 func TestFormatError(t *testing.T) {
+	t.Parallel()
 	testErrStr := "bad format for dingle: dangle Problem"
 	err := newScanError("dangle", "dingle")
 
@@ -16,6 +17,7 @@ func TestFormatError(t *testing.T) {
 }
 
 func TestGoodTimes(t *testing.T) {
+	t.Parallel()
 	good1String := "2008:03:01 12:36:01"
 	good2String := "2008:03:01 12:36:01.34"
 	testMonth := 3
@@ -41,6 +43,7 @@ func TestGoodTimes(t *testing.T) {
 }
 
 func TestExtractBadTimeFromStr(t *testing.T) {
+	t.Parallel()
 	var formBadInput = map[string]string{
 		"Gobo":                    "Space Problem",
 		"Gobo a a a a":            "Space Problem",
@@ -69,6 +72,7 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 }
 
 func TestGetExifTime(t *testing.T) {
+	t.Parallel()
 	goodTime, _ := extractTimeFromStr(exifTimeStr)
 
 	time, err := ExifTimeGet(exifPath)

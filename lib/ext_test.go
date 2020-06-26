@@ -7,6 +7,7 @@ import (
 )
 
 func TestSkipFileType(t *testing.T) {
+	t.Parallel()
 	// Try just gobo.<extension>
 	for extension := range extensionMap() {
 		goodInput := fmt.Sprintf("gobo.%s", extension)
@@ -62,6 +63,7 @@ func TestSkipFileType(t *testing.T) {
 }
 
 func TestSkipSynologyTypes(t *testing.T) {
+	t.Parallel()
 	badInput := "@eaDir"
 
 	skip := skipFileType(badInput)
