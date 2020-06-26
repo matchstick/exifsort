@@ -1,63 +1,73 @@
 # exifsort
 
-![Under Construction](data/construction.jpg) 
-
-Everything is done except merge for 1.0 release.  Code coverage is greater than 93% and climbing.
-Open [issues](https://github.com/matchstick/exifsort/issues) show remaining work.
-
-# exifsort
-
-Libraries and CLI to sort to sort media by date using EXIF information.
+Libraries and CLI to sort media by date using EXIF and file modTime information.
 
 This is for folks who have a closet full of hard drives and network drives full
 of photos and want to centralize them in one folder structure that is organized
 by time.
+
+exifsort been tested on over 120K files taken from 1999 til present day. It is
+also given special case for being run on a Synology to avoid special metadata
+files on those servers. Code coverage is ~93%.
+
+exifsort will process these [file extensions](https://godoc.org/github.com/matchstick/exifsort/lib#pkg-constants) and skip other files.
 
 # Overview
 
 The library and API live in the lib directory. Check out
 [exifsort/lib godocs](https://godoc.org/github.com/matchstick/exifsort/lib).
 
+The program is written to employ several stages to let the user transform a set of
+directories of random directories of unorganized photos to one centralized
+sorted directory. Much care has been taken to ensure no files are removed that
+are not duplicates among this series of stages. Along the way it tries to weed
+out duplicates. This directory is sorted by one of three **methods**.
 
-The program is written to employ several stages to let the user verify the
-step results as they organize their photos. We break down the pipeline into
-four stages so we can verify correctness for each stage.
+exifsort will try to use the file exif data's **IFD/EXIF/DateTimeOriginal** field
+to determine how to sort the media. If it cannot find exif data it uses file modtime.
+
+## Usage
+
+If you have a directory full of files and photos called **random** and you want
+to copy them to a new directory sorted by month that only hase photos.
+
+Simple Example:
+
+` $ exifsort sort copy month random/ sortedNew/`
+
+JSON Example:
+
+`$ exifsort scan random/ -j random.json`
+
+`$ exifsort sort copy month random.json sortedNew/`
+
+# Stages
+
+exifsort is intended to be used in sequential stages.
 
 | Stage | Description |
 |-------|-------------|
-| Scan  | Collect the mapping of path to time in json |
-| Sort  | Accept scan results to transfer media to new directory organized by time. |
-| Merge | Transfer one sorted directory to another sorted directory. |
-
-## Actions
-
-An action specifies whether to move or copy the files from input to output 
-
-| Action | Transfer By |
-| ------ | --------- |
-| Copy   | copy file from src to dst |
-| Move   | move file from src to dst |
-
+| Scan  | Collect the mapping of file path to time it was created |
+| Sort  | Use scan mapping to transfer files to newly created sorted directory organized by a method. |
+| Merge | Transfer files from one sorted directory to another sorted directory. |
 
 ## Methods
 
-| Method | Structure |
-| ------ | --------- |
-| Year   | dst -> year -> media |
-| Month  | dst -> year-> month -> media |
-| Day    | dst -> year-> month -> day -> media |
+Sorted directories are organized by a method.
 
-exifsort will try to use the exifdata to determine the time period to sort the
-media. If it cannot find one due to an error in the exif data it will then rely
-on file modtime.
+| Method | Structure | Example |
+| ------ | --------- | ------- |
+| Year   | dst -> year -> media | dst/2020/pic.jpg |
+| Month  | dst -> year-> month -> media | dst/2020/2020_04/pic.jpg |
+| Day    | dst -> year-> month -> day -> media | dst/2020/2020_4/20202_04_12/pic.jpg |
 
 # Commands
 
 ## scan
 
-Scanning is when exifsort will read the data from the directory of files,
-filter for media and retrieve time. Useful to test that exif library will be
-fine. You can optionally store the results in a json file.
+**exifsort scan** reads the data from the directory of files, and builds a mapping of path to time created.
+
+Useful to test that exif library and program has no surprises.
 
 Example:
 
@@ -69,12 +79,14 @@ You can save data to a json file too:
 
 ## sort
 
-The sort command performs a number of steps:
+The sort command performs a number of steps. It can also optionally scan and sort in one command.
 
-  1. Collect media information via scanning a directory or reading a json file from scan
-  1. Indexing the media by method
   1. Create a directory for output
+  1. Collect file mapping to creating time via scanning a directory or reading a json file
+  1. Indexing the media by method. To prevent filename collisions sort renames files.
+  1. If using **move** it will remove duplicates in the src directory.
   1. Transfer media to the output
+
 
 Examples:
 
@@ -127,5 +139,4 @@ scans by file not directory. Prints the date information of files specified.
 
 # Thanks
 
-Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif
-library](https://github.com/dsoprea/go-exif) and fast responses.
+Huge thanks to [dsoprea](https://github.com/dsoprea) for his [exif library](https://github.com/dsoprea/go-exif)

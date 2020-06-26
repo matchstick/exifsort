@@ -39,29 +39,9 @@ type Scanner struct {
 	ScanErrors        map[string]string
 }
 
-// Returns how many files were skipped.
-func (s *Scanner) NumSkipped() int {
-	return s.SkippedCount
-}
-
-// Returns how many files had valid exif DateTimeOriginal data.
-func (s *Scanner) NumData() int {
-	return len(s.Data)
-}
-
-// Returns how many files had invalid exif DateTimeOriginal data.
-func (s *Scanner) NumExifErrors() int {
-	return len(s.ExifErrors)
-}
-
-// Returns how many files had errors walking.
-func (s *Scanner) NumScanErrors() int {
-	return len(s.ScanErrors)
-}
-
-// Returns the total number of files skipped and scanned.
+// Returns the total number of files skipped, scanned and errors.
 func (s *Scanner) NumTotal() int {
-	return s.SkippedCount + s.NumData() + s.NumScanErrors()
+	return s.SkippedCount + len(s.Data) + len(s.ScanErrors)
 }
 
 // We don't check if you have a path duplicate.
