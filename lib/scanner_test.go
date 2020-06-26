@@ -74,9 +74,9 @@ func TestScanFile(t *testing.T) {
 }
 
 func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
-	if td.numData != s.NumData() {
+	if td.numData != len(s.Data) {
 		t.Errorf("Expected %d Data Count. Got %d\n",
-			td.numData, s.NumData())
+			td.numData, len(s.Data))
 	}
 
 	walkData := s.Data
@@ -85,9 +85,9 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 			td.numData, len(walkData))
 	}
 
-	if td.numExifError != s.NumExifErrors() {
+	if td.numExifError != len(s.ExifErrors) {
 		t.Errorf("Expected %d ExifErrors got %d\n",
-			td.numExifError, s.NumExifErrors())
+			td.numExifError, len(s.ExifErrors))
 	}
 
 	exifErrs := s.ExifErrors
@@ -96,14 +96,14 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 			td.numExifError, len(exifErrs))
 	}
 
-	if td.numSkipped != s.NumSkipped() {
+	if td.numSkipped != s.SkippedCount {
 		t.Errorf("Expected %d Skipped got %d\n",
-			td.numSkipped, s.NumSkipped())
+			td.numSkipped, s.SkippedCount)
 	}
 
-	if td.numScanError != s.NumScanErrors() {
+	if td.numScanError != len(s.ScanErrors) {
 		t.Errorf("Expected %d ScanErrors got %d\n",
-			td.numScanError, s.NumScanErrors())
+			td.numScanError, len(s.ScanErrors))
 	}
 
 	if td.numTotal() != s.NumTotal() {

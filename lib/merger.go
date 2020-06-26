@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// Merge holds the API and statistics to merge sorted directories.
 type Merger struct {
 	action  Action
 	srcRoot string
@@ -272,6 +273,13 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 	return err
 }
 
+// Merge performs several actions. It checks that its src and dst directories
+// are correctly sorted and determines by what method for each. If the
+// directories' sort methods don't match an error is returned. Src directory is
+// walked and all files are transferred to the appropriate directory in dst. New
+// directories are made if necessary. If the move action was specified then
+// duplicate files are removd from src. If files have the same filename and end
+// up in the same dst directory they will be renamed to not collide.
 func (m *Merger) Merge(logger io.Writer) error {
 	srcMethod, err := mergeCheck(m.srcRoot)
 	if err != nil {
@@ -291,19 +299,27 @@ func (m *Merger) Merge(logger io.Writer) error {
 	return m.mergeRoots(logger)
 }
 
-func (m *Merger) Reset(srcRoot string, dstRoot string, action Action, filter string) {
+// Reset will clear all previous state of a merge from the struct so it is ready
+// to Merge again. src is the sorted directory to transfer from. dst is the
+// sorted directory to transfer to. action is how to transfer files. filter is a
+// regexp to use to filter which files to transfer
+func (m *Merger) Reset(src string, dst string, action Action, filter string) {
 	m.Errors = make(map[string]string)
 	m.Merged = make(map[string]string)
-	m.srcRoot = srcRoot
-	m.dstRoot = dstRoot
+	m.srcRoot = src
+	m.dstRoot = dst
 	m.action = action
 	m.filter = filter
 }
 
-func NewMerger(srcRoot string, dstRoot string, action Action, filter string) *Merger {
+// Returns a Merger to execute a merge of two sorted directories.
+// src is the sorted directory to transfer from. dst is the sorted directory to
+// transfer to. action is how to transfer files. filter is a regexp to use to
+// filter which files to transfer
+func NewMerger(src string, dst string, action Action, filter string) *Merger {
 	var m Merger
 
-	m.Reset(srcRoot, dstRoot, action, filter)
+	m.Reset(src, dst, action, filter)
 
 	return &m
 }
