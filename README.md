@@ -26,6 +26,16 @@ out duplicates. This directory is sorted by one of three **methods**.
 exifsort will try to use the file exif data's **IFD/EXIF/DateTimeOriginal** field
 to determine how to sort the media. If it cannot find exif data it uses file modtime.
 
+## Installation
+
+To build exifsort you need to use standard Makefile.
+
+`$ make`
+
+Creates exifsort.
+
+Cross compilation is also supported in the Makefile.
+
 ## Usage
 
 If you have a directory full of files and photos called **random** and you want
