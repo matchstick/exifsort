@@ -5,65 +5,92 @@ import (
 	"strings"
 )
 
-// Files extensions that are processed and not skipped.
-const (
-	ExtensionBMP = iota
-	ExtensionCR2
-	ExtensionDNG
-	ExtensionGIF
-	ExtensionJPEG
-	ExtensionJPG
-	ExtensionNEF
-	ExtensionPNG
-	ExtensionPSD
-	ExtensionRAF
-	ExtensionRAW
-	ExtensionTIF
-	ExtensionTIFF
-)
-
-func extensionMap() map[string]int {
+// Supported Extensions that we process by checking "IFD/EXIF/DateTimeOriginal"
+// data then if needed modTime.
+//
+// Set includes: bmp, cr2, dng, gif, jpeg, jpg, nef, png, psd, raf, raw, tif,
+// tiff.
+func ExtensionsPhoto() []string {
 	// We are going to do this check a lot so let's use a map.
-	return map[string]int{
-		".bmp":  ExtensionBMP,
-		".cr2":  ExtensionCR2,
-		".dng":  ExtensionDNG,
-		".gif":  ExtensionGIF,
-		".jpeg": ExtensionJPEG,
-		".jpg":  ExtensionJPG,
-		".nef":  ExtensionNEF,
-		".png":  ExtensionPNG,
-		".psd":  ExtensionPSD,
-		".raf":  ExtensionRAF,
-		".raw":  ExtensionRAW,
-		".tif":  ExtensionTIF,
-		".tiff": ExtensionTIFF,
+	return []string{
+		".bmp",
+		".cr2",
+		".dng",
+		".gif",
+		".jpeg",
+		".jpg",
+		".nef",
+		".png",
+		".psd",
+		".raf",
+		".raw",
+		".tif",
+		".tiff",
 	}
 }
 
-func skipFileType(path string) bool {
+// These extensions are for files that take a long time to extract "IFD/EXIF/DateTimeOriginal"
+// so we only check modTime. Set includes: 3g2, 3gp, avi, m4v, mov, mp4, mpg,
+// wmv.
+func ExtensionsMovie() []string {
+	return []string{
+		".3g2",
+		".3gp",
+		".avi",
+		".m4v",
+		".mpg",
+		".mov",
+		".mp4",
+		".wmv",
+	}
+}
+
+// Files or directories that contain these strings we assume are metadata we
+// find on Synology file servers and ignore. The check is case insensitive.
+// Set includes: @eadir, @syno, synofile_thumb
+func SynologySkip() []string {
+	return []string{
+		"@eadir",
+		"@syno",
+		"synofile_thumb",
+	}
+}
+
+type fileCategory int
+
+const (
+	categorySkip fileCategory = iota
+	categoryExif
+	categoryModTime
+)
+
+func categorizeFile(path string) fileCategory {
 	// All comparisons are lower case as case don't matter
 	path = strings.ToLower(path)
 
-	// Running this on a synology results in the file server
-	// creating all these useless media files. We want to skip
-	// them.
-	switch {
-	case strings.Contains(path, "@eadir"):
-		return true
-	case strings.Contains(path, "@syno"):
-		return true
-	case strings.Contains(path, "synofile_thumb"):
-		return true
+	for _, str := range SynologySkip() {
+		if strings.Contains(path, str) {
+			return categorySkip
+		}
 	}
 
 	extension := filepath.Ext(path)
-	// no extension to check so we skip
 	if extension == "" {
-		return true
+		// no extension found so we skip
+		return categorySkip
 	}
 
-	_, inExtMap := extensionMap()[extension]
+	for _, str := range ExtensionsPhoto() {
+		if extension == str {
+			return categoryExif
+		}
+	}
 
-	return !inExtMap
+	for _, str := range ExtensionsMovie() {
+		if extension == str {
+			return categoryModTime
+		}
+	}
+
+	return categorySkip
 }

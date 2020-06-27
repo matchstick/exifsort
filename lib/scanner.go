@@ -110,16 +110,13 @@ func (s *Scanner) modTime(path string) (time.Time, error) {
 //
 // It returns an error if the file has no exif data and cannot be statted.
 func (s *Scanner) ScanFile(path string) (time.Time, error) {
-	var t time.Time
-
-	t, err := ExifTimeGet(path)
+	time, err := ExifTimeGet(path)
 	if err != nil {
 		s.storeExifError(path, err)
-
 		return s.modTime(path)
 	}
 
-	return t, nil
+	return time, nil
 }
 
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
@@ -138,20 +135,24 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 			return nil
 		}
 
-		// Only looking for media files that may have exif.
-		if skipFileType(path) {
+		fileCategory := categorizeFile(path)
+		switch fileCategory {
+		case categorySkip:
 			s.storeSkipped()
 			return nil
+		case categoryExif:
+			time, err = s.ScanFile(path)
+		case categoryModTime:
+			time, err = s.modTime(path)
 		}
 
-		time, err = s.ScanFile(path)
 		if err != nil {
 			s.storeScanError(path, err)
 			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
+		} else {
+			s.storeData(path, time)
+			fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
 		}
-
-		fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-		s.storeData(path, time)
 
 		return nil
 	}

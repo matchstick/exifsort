@@ -6,80 +6,65 @@ import (
 	"testing"
 )
 
-func TestSkipFileType(t *testing.T) {
+func TestExtSkipFileType(t *testing.T) {
 	// Try just gobo.<extension>
-	for extension := range extensionMap() {
+	for _, extension := range ExtensionsPhoto() {
 		goodInput := fmt.Sprintf("gobo.%s", extension)
 
-		skip := skipFileType(goodInput)
-		if skip {
-			t.Errorf("Expected False for %s\n", goodInput)
+		category := categorizeFile(goodInput)
+		if category == categorySkip {
+			t.Errorf("Expected to not skip for %s\n", goodInput)
 		}
 	}
 	// Try a simple upper case just gobo.<extension>
-	for extension := range extensionMap() {
+	for _, extension := range ExtensionsPhoto() {
 		goodInput := strings.ToUpper(fmt.Sprintf("gobo.%s", extension))
 
-		skip := skipFileType(goodInput)
-		if skip {
-			t.Errorf("Expected False for %s\n", goodInput)
+		category := categorizeFile(goodInput)
+		if category == categorySkip {
+			t.Errorf("Expected to not skip for %s\n", goodInput)
 		}
 	}
 
 	// Try with many "." hey.gobo.<extension>
-	for extension := range extensionMap() {
+	for _, extension := range ExtensionsPhoto() {
 		goodInput := fmt.Sprintf("hey.gobo.%s", extension)
 
-		skip := skipFileType(goodInput)
-		if skip {
-			t.Errorf("Expected False for %s\n", goodInput)
+		category := categorizeFile(goodInput)
+		if category == categorySkip {
+			t.Errorf("Expected to not skip for %s\n", goodInput)
 		}
 	}
 
 	badInput := "gobobob.."
 
-	skip := skipFileType(badInput)
-	if !skip {
-		t.Errorf("Expected True for %s\n", badInput)
+	category := categorizeFile(badInput)
+	if category != categorySkip {
+		t.Errorf("Expected to skip for %s\n", badInput)
 	}
 
 	badInput = "gobo"
 
-	skip = skipFileType(badInput)
-	if !skip {
-		t.Errorf("Expected True for %s\n", badInput)
-	}
-
-	// Try ".." at the end.<extension>
-	for extension := range extensionMap() {
-		badInput := fmt.Sprintf("gobo.%s..", extension)
-
-		skip := skipFileType(badInput)
-		if !skip {
-			t.Errorf("Expected True for %s\n", badInput)
-		}
+	category = categorizeFile(badInput)
+	if category != categorySkip {
+		t.Errorf("Expected to skip for %s\n", badInput)
 	}
 }
 
-func TestSkipSynologyTypes(t *testing.T) {
-	badInput := "@eaDir"
-
-	skip := skipFileType(badInput)
-	if !skip {
-		t.Errorf("Expected True for %s\n", badInput)
+func TestExtSkipSynologyTypes(t *testing.T) {
+	badInput := []string{
+		".DS_Store@SynoResource",
+		"2019@SynoEAStream",
+		"PSD_Work/@eaDir/",
+		"@eaDir",
+		"@syno",
+		"IMG_0269.JPG/SYNOFILE_THUMB_M_r1.jpg",
 	}
 
-	badInput = "@syno"
-
-	skip = skipFileType(badInput)
-	if !skip {
-		t.Errorf("Expected True for %s\n", badInput)
-	}
-
-	badInput = "synofile_thumb"
-
-	skip = skipFileType(badInput)
-	if !skip {
-		t.Errorf("Expected True for %s\n", badInput)
+	for _, input := range badInput {
+		category := categorizeFile(input)
+		if category != categorySkip {
+			t.Errorf("Expected to skip for %s\n", input)
+		}
 	}
 }
