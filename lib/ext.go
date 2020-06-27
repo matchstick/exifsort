@@ -30,15 +30,18 @@ func ExtensionsPhoto() []string {
 }
 
 // These extensions are for files that take a long time to extract "IFD/EXIF/DateTimeOriginal"
-// so we only check modTime. Set includes: 3g2, 3gp, avi, mov, mp4, m4v.
+// so we only check modTime. Set includes: 3g2, 3gp, avi, m4v, mov, mp4, mpg,
+// wmv.
 func ExtensionsMovie() []string {
 	return []string{
 		".3g2",
 		".3gp",
 		".avi",
+		".m4v",
+		".mpg",
 		".mov",
 		".mp4",
-		".m4v",
+		".wmv",
 	}
 }
 
