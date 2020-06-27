@@ -184,7 +184,8 @@ func (m *Merger) mergeDuplicate(err error, action Action) error {
 	return os.Remove(dupErr.src)
 }
 
-func (m *Merger) merge(srcPath string, srcRoot string, dstRoot string, action Action) error {
+func (m *Merger) merge(srcPath string, srcRoot string, dstRoot string,
+	action Action, logger io.Writer) error {
 	// Remove the root but this is not the basename just what is between
 	// root and base
 	filePath := strings.Replace(srcPath, srcRoot, "", 1)
@@ -236,17 +237,24 @@ func (m *Merger) merge(srcPath string, srcRoot string, dstRoot string, action Ac
 		dstPath = filepath.Join(dstDir, dstBase)
 	}
 
-	m.storeMerged(srcPath, dstPath)
-
 	// Finally we have everything we need to move the media
 	switch action {
 	case ActionCopy:
-		return copyFile(srcPath, dstPath)
+		err = copyFile(srcPath, dstPath)
 	case ActionMove:
-		return moveFile(srcPath, dstPath)
+		err = moveFile(srcPath, dstPath)
 	default:
 		return fmt.Errorf("unknown Action %s", action)
 	}
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(logger, "Merged %s to %s\n", srcPath, dstPath)
+	m.storeMerged(srcPath, dstPath)
+
+	return nil
 }
 
 func (m *Merger) mergeRoots(logger io.Writer) error {
@@ -271,7 +279,7 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 				return nil
 			}
 
-			err = m.merge(srcFile, m.srcRoot, m.dstRoot, m.action)
+			err = m.merge(srcFile, m.srcRoot, m.dstRoot, m.action, logger)
 			if err != nil {
 				m.storeMergeError(srcFile, err)
 				return err
