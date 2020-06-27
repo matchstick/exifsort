@@ -129,8 +129,8 @@ func mergeCheck(root string) (Method, error) {
 				return nil
 			}
 
-			// Only looking for media files that may have exif.
-			if skipFileType(path) {
+			fileCategory := categorizeFile(path)
+			if fileCategory == categorySkip {
 				return nil
 			}
 
@@ -262,7 +262,8 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 				return nil
 			}
 
-			if skipFileType(srcFile) {
+			fileCategory := categorizeFile(srcFile)
+			if fileCategory == categorySkip {
 				return nil
 			}
 
