@@ -129,6 +129,11 @@ func mergeCheck(root string) (Method, error) {
 				return nil
 			}
 
+			// Only looking for media files that may have exif.
+			if skipFileType(path) {
+				return nil
+			}
+
 			pathMethod := mergePathValid(root, path)
 			if pathMethod == MethodNone {
 				return fmt.Errorf("path violates method structure %s", path)
@@ -254,6 +259,10 @@ func (m *Merger) mergeRoots(logger io.Writer) error {
 
 			// Don't need to scan directories
 			if info.IsDir() {
+				return nil
+			}
+
+			if skipFileType(srcFile) {
 				return nil
 			}
 

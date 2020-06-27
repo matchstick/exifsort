@@ -40,7 +40,7 @@ func TestMergeCheckBad(t *testing.T) {
 
 		dst := td.buildSortedDir(src, "dst", ActionCopy)
 
-		badFilePath := filepath.Join(dst, "testfile.txt")
+		badFilePath := filepath.Join(dst, "testfile.CR2")
 		message := []byte("Hello, Gophers!")
 
 		_ = ioutil.WriteFile(badFilePath, message, 0600)
