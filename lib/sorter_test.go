@@ -52,6 +52,7 @@ func testTransfer(t *testing.T, td *testdir, method Method, action Action) error
 
 func TestSortDir(t *testing.T) {
 	for _, method := range Methods() {
+		method := method
 		t.Run(method.String(), func(t *testing.T) {
 			t.Parallel()
 			td := newTestDir(t, method, fileNoDefault)
@@ -74,6 +75,7 @@ func TestSortDir(t *testing.T) {
 
 func TestSortDuplicates(t *testing.T) {
 	for _, method := range Methods() {
+		method := method
 		t.Run(method.String(), func(t *testing.T) {
 			td := newTestDir(t, method, fileNoDefault)
 
@@ -95,6 +97,7 @@ func TestSortDuplicates(t *testing.T) {
 
 func TestSortCollisions(t *testing.T) {
 	for _, method := range Methods() {
+		method := method
 		t.Run(method.String(), func(t *testing.T) {
 			td := newTestDir(t, method, fileNoDefault)
 

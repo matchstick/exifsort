@@ -10,6 +10,7 @@ import (
 
 func TestMergeCheckGood(t *testing.T) {
 	for _, goodMethod := range Methods() {
+		goodMethod := goodMethod
 		t.Run(goodMethod.String(), func(t *testing.T) {
 			t.Parallel()
 			td := newTestDir(t, goodMethod, fileNoDefault)
@@ -36,6 +37,7 @@ func TestMergeCheckGood(t *testing.T) {
 
 func TestMergeCheckBad(t *testing.T) {
 	for _, goodMethod := range Methods() {
+		goodMethod := goodMethod
 		t.Run(goodMethod.String(), func(t *testing.T) {
 			t.Parallel()
 			td := newTestDir(t, goodMethod, fileNoDefault)
@@ -272,7 +274,9 @@ func TestMergeGood(t *testing.T) {
 
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() +  "/" + method.String()
+			method := method
+			action := action
+			name := action.String() + "/" + method.String()
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
@@ -289,7 +293,10 @@ func TestMergeGood(t *testing.T) {
 func TestMergeTime(t *testing.T) {
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() +  "/" + method.String()
+			name := action.String() + "/" + method.String()
+			action := action
+			method := method
+
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 				err := testMergeTimeSpread(t, method, action)
@@ -309,7 +316,10 @@ func TestMergeDuplicate(t *testing.T) {
 
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() +  "/" + method.String()
+			name := action.String() + "/" + method.String()
+			action := action
+			method := method
+
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
@@ -326,10 +336,13 @@ func TestMergeDuplicate(t *testing.T) {
 func TestMergeCollisions(t *testing.T) {
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() +  "/" + method.String()
+			name := action.String() + "/" + method.String()
+			action := action
+			method := method
+
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
-				err := testMergeCollisions(t, method, ActionCopy)
+				err := testMergeCollisions(t, method, action)
 				if err != nil {
 					t.Fatalf("Method %s, Action Copy Error: %s\n",
 						method, err.Error())
