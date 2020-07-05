@@ -32,7 +32,7 @@ func Methods() []Method {
 	}
 }
 
-// MethodParser returns Method from string (must be lower case). Returns
+// MethodParse returns Method from string (must be lower case). Returns
 // MethodNone if invalid.
 func MethodParse(str string) (Method, error) {
 	for _, val := range Methods() {

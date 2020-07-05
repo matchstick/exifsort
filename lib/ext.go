@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ExtensionsPhotos returns set of supported Extensions that we process by
+// ExtensionsPhoto returns set of supported Extensions that we process by
 // checking "IFD/EXIF/DateTimeOriginal" data then if needed modTime.
 //
 // Set includes: bmp, cr2, dng, gif, jpeg, jpg, nef, png, psd, raf, raw, tif,
