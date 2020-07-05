@@ -71,39 +71,45 @@ func TestSortDir(t *testing.T) {
 
 func TestSortDuplicates(t *testing.T) {
 	for _, method := range Methods() {
-		td := newTestDir(t, method, fileNoDefault)
+		method := method
+		t.Run(method.String(), func(t *testing.T) {
+			td := newTestDir(t, method, fileNoDefault)
 
-		src := td.buildDuplicateWithinThisRoot()
-		defer os.RemoveAll(src)
+			src := td.buildDuplicateWithinThisRoot()
+			defer os.RemoveAll(src)
 
-		err := testTransfer(t, td, method, ActionCopy)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err := testTransfer(t, td, method, ActionCopy)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
 
-		err = testTransfer(t, td, method, ActionMove)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err = testTransfer(t, td, method, ActionMove)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
+		})
 	}
 }
 
 func TestSortCollisions(t *testing.T) {
 	for _, method := range Methods() {
-		td := newTestDir(t, method, fileNoDefault)
+		method := method
+		t.Run(method.String(), func(t *testing.T) {
+			td := newTestDir(t, method, fileNoDefault)
 
-		src := td.buildCollisionWithinThisRoot()
-		defer os.RemoveAll(src)
+			src := td.buildCollisionWithinThisRoot()
+			defer os.RemoveAll(src)
 
-		err := testTransfer(t, td, method, ActionCopy)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err := testTransfer(t, td, method, ActionCopy)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
 
-		err = testTransfer(t, td, method, ActionMove)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err = testTransfer(t, td, method, ActionMove)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
+		})
 	}
 }
 

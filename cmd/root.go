@@ -45,6 +45,8 @@ Check out github.com/matchstick/exifsort for more details.
 
 const exitErr = 1
 
+// Execute is the single function to set up the complete set of nested cobra
+// based commands that provide CLI functionality to the exifsort library.
 func Execute() {
 	cobra.OnInitialize(initConfig)
 

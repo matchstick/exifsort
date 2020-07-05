@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// Supported Extensions that we process by checking "IFD/EXIF/DateTimeOriginal"
-// data then if needed modTime.
+// ExtensionsPhotos returns set of supported Extensions that we process by
+// checking "IFD/EXIF/DateTimeOriginal" data then if needed modTime.
 //
 // Set includes: bmp, cr2, dng, gif, jpeg, jpg, nef, png, psd, raf, raw, tif,
 // tiff.
@@ -29,9 +29,9 @@ func ExtensionsPhoto() []string {
 	}
 }
 
-// These extensions are for files that take a long time to extract "IFD/EXIF/DateTimeOriginal"
-// so we only check modTime. Set includes: 3g2, 3gp, avi, m4v, mov, mp4, mpg,
-// wmv.
+// ExtensionsMovie returns the set of extensions for files that take a long time
+// to extract "IFD/EXIF/DateTimeOriginal" so we only check modTime. Set
+// includes: 3g2, 3gp, avi, m4v, mov, mp4, mpg, wmv.
 func ExtensionsMovie() []string {
 	return []string{
 		".3g2",
@@ -45,8 +45,9 @@ func ExtensionsMovie() []string {
 	}
 }
 
-// Files or directories that contain these strings we assume are metadata we
+// SynologySkip returns the set of files or directories that contain strings we
 // find on Synology file servers and ignore. The check is case insensitive.
+//
 // Set includes: @eadir, @syno, synofile_thumb
 func SynologySkip() []string {
 	return []string{
