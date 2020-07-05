@@ -1,6 +1,7 @@
-[![Go CI](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/matchstick/exifsort/actions)
-![Go Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchstick/exifsort)](https://goreportcard.com/report/github.com/matchstick/exifsort)
+[![CI](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/matchstick/exifsort/actions)
+![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
+![golangci-lint](https://img.shields.io/badge/golangci--lint-100%25-brightgreen)
 [![GoDoc](https://godoc.org/github.com/matchstick/exifsort?status.svg)](https://godoc.org/github.com/matchstick/exifsort)
 
 # exifsort
@@ -11,9 +12,9 @@ This is for folks who have a closet full of hard drives and network drives full
 of photos and want to centralize them in one folder structure that is organized
 by time.
 
-exifsort been tested on over 120K files taken from 1999 til present day. It is
+exifsort has been tested on over 120K files taken from 1999 til present day. It is
 also given special case for being run on a Synology to avoid special metadata
-files on those servers. Code coverage is ~93%.
+files on those servers.
 
 exifsort will process these [file extensions](https://godoc.org/github.com/matchstick/exifsort/lib#pkg-constants) and skip other files.
 
@@ -23,7 +24,7 @@ The library and API live in the lib directory. Check out
 [exifsort/lib godocs](https://godoc.org/github.com/matchstick/exifsort/lib).
 
 The program is written to employ several stages to let the user transform a set of
-directories of random directories of unorganized photos to one centralized
+directories of random directories with unorganized photos to one centralized
 sorted directory. Much care has been taken to ensure no files are removed that
 are not duplicates among this series of stages. Along the way it tries to weed
 out duplicates. This directory is sorted by one of three **methods**.
