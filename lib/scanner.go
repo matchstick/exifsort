@@ -18,11 +18,15 @@ func newScanError(label string, dateString string) error {
 	return errors.New(errStr)
 }
 
+// ScannerInput specifies how scanner receives data
 type ScannerInput int
 
 const (
+	// ScannerJSON : Input via JSON file
 	ScannerInputJSON ScannerInput = iota
+	// ScannerInputDir : Input via dir
 	ScannerInputDir
+	// ScannerInputNone : Error valueI
 	ScannerInputNone
 )
 
@@ -39,7 +43,7 @@ type Scanner struct {
 	ScanErrors        map[string]string
 }
 
-// Returns the total number of files skipped, scanned and errors.
+// NumTotal returns the total number of files skipped, scanned and errors.
 func (s *Scanner) NumTotal() int {
 	return s.SkippedCount + len(s.Data) + len(s.ScanErrors)
 }
@@ -213,7 +217,7 @@ func (s *Scanner) Load(jsonPath string) error {
 	return nil
 }
 
-// Clears data so scanner can be reused.
+// Reset clears data so Scanner can be reused.
 func (s *Scanner) Reset() {
 	s.Input = ScannerInputNone
 	s.SkippedCount = 0
@@ -224,7 +228,7 @@ func (s *Scanner) Reset() {
 	s.ScanErrors = make(map[string]string)
 }
 
-// Allocates a new Scanner.
+// NewScanner allocates a new Scanner.
 func NewScanner() Scanner {
 	var s Scanner
 

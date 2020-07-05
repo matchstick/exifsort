@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Merge holds the API and statistics to merge sorted directories.
+// Merger holds the API and statistics to merge sorted directories.
 type Merger struct {
 	action  Action
 	srcRoot string
@@ -330,7 +330,7 @@ func (m *Merger) Reset(src string, dst string, action Action, filter string) {
 	m.filter = filter
 }
 
-// Returns a Merger to execute a merge of two sorted directories.
+// NewMerger returns a Merger to execute a merge of two sorted directories.
 // src is the sorted directory to transfer from. dst is the sorted directory to
 // transfer to. action is how to transfer files. filter is a regexp to use to
 // filter which files to transfer
