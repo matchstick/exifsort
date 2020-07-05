@@ -1,3 +1,5 @@
+[![Go CI](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/matchstick/exifsort/actions)
+![Go Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchstick/exifsort)](https://goreportcard.com/report/github.com/matchstick/exifsort)
 [![GoDoc](https://godoc.org/github.com/matchstick/exifsort?status.svg)](https://godoc.org/github.com/matchstick/exifsort)
 
