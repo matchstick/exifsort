@@ -68,30 +68,35 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 	}
 }
 
-func TestGetExifTime(t *testing.T) {
+func TestGetExifTimeErr(t *testing.T) {
+	var testInput = map[string]bool{
+		exifPath:       true,
+		noExifPath:     false,
+		noRootExifPath: false,
+		nonesensePath:  false,
+	}
+
+	for path, valid := range testInput {
+		_, err := ExifTimeGet(path)
+		if valid == true && err != nil {
+			t.Errorf("Unexpected Error with good input file %s\n", path)
+		}
+
+		if !valid && err == nil {
+			t.Errorf("Expected error with invalid Exif file %s.\n", path)
+		}
+	}
+}
+
+func TestGetExifTimeVal(t *testing.T) {
 	goodTime, _ := extractTimeFromStr(exifTimeStr)
 
 	time, err := ExifTimeGet(exifPath)
 	if err != nil {
-		t.Errorf("Unexpected Error with good input file\n")
+		t.Errorf("Unexpected Error with good input file %s\n", exifPath)
 	}
 
 	if goodTime != time {
 		t.Errorf("Expected Time %s but got %s\n", goodTime, time)
-	}
-
-	_, err = ExifTimeGet(noExifPath)
-	if err == nil {
-		t.Errorf("Expected error with invalid Exif file.\n")
-	}
-
-	_, err = ExifTimeGet(noRootExifPath)
-	if err == nil {
-		t.Errorf("Expected error with invalid Exif file.\n")
-	}
-
-	_, err = ExifTimeGet(nonesensePath)
-	if err == nil {
-		t.Errorf("Expected error with nonsense path\n")
 	}
 }
