@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/dsoprea/go-exif.svg?branch=master)](https://travis-ci.org/dsoprea/go-exif)
-[![Coverage Status](https://coveralls.io/repos/github/dsoprea/go-exif/badge.svg?branch=master)](https://coveralls.io/github/dsoprea/go-exif?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchstick/exifsort)](https://goreportcard.com/report/github.com/matchstick/exifsort)
 [![GoDoc](https://godoc.org/github.com/matchstick/exifsort?status.svg)](https://godoc.org/github.com/matchstick/exifsort)
 

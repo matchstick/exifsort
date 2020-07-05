@@ -1,3 +1,3 @@
-// Package lib exifsort implements libraries to sort media by date using exif
+// Package exifsort/lib exifsort implements libraries to sort media by date using exif
 // and modtime information.
 package exifsort

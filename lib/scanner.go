@@ -22,7 +22,7 @@ func newScanError(label string, dateString string) error {
 type ScannerInput int
 
 const (
-	// ScannerJSON : Input via JSON file
+	// ScannerInputJSON : Input via JSON file
 	ScannerInputJSON ScannerInput = iota
 	// ScannerInputDir : Input via dir
 	ScannerInputDir
