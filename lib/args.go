@@ -9,7 +9,7 @@ type Method int
 
 const (
 	// MethodYear : dst -> year-> media
-	MethodYear  Method = iota
+	MethodYear Method = iota
 	// MethodMonth : dst -> year-> month -> media
 	MethodMonth
 	// MethodDay : dst -> year-> month -> day -> media

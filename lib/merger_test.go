@@ -10,60 +10,52 @@ import (
 
 func TestMergeCheckGood(t *testing.T) {
 	for _, goodMethod := range Methods() {
-		goodMethod := goodMethod
-		t.Run(goodMethod.String(), func(t *testing.T) {
-			t.Parallel()
-			td := newTestDir(t, goodMethod, fileNoDefault)
+		td := newTestDir(t, goodMethod, fileNoDefault)
 
-			src := td.buildRoot()
-			defer os.RemoveAll(src)
+		src := td.buildRoot()
+		defer os.RemoveAll(src)
 
-			dst := td.buildSortedDir(src, "dst", ActionCopy)
+		dst := td.buildSortedDir(src, "dst", ActionCopy)
 
-			method, err := mergeCheck(dst)
-			if err != nil {
-				t.Errorf("Err %s, method %s\n", err.Error(), method)
-			}
+		method, err := mergeCheck(dst)
+		if err != nil {
+			t.Errorf("Err %s, method %s\n", err.Error(), method)
+		}
 
-			if method != goodMethod {
-				t.Errorf("Err %s, method %s should be %s\n", err.Error(), method,
-					goodMethod)
-			}
+		if method != goodMethod {
+			t.Errorf("Err %s, method %s should be %s\n", err.Error(), method,
+				goodMethod)
+		}
 
-			os.RemoveAll(dst)
-		})
+		os.RemoveAll(dst)
 	}
 }
 
 func TestMergeCheckBad(t *testing.T) {
 	for _, goodMethod := range Methods() {
-		goodMethod := goodMethod
-		t.Run(goodMethod.String(), func(t *testing.T) {
-			t.Parallel()
-			td := newTestDir(t, goodMethod, fileNoDefault)
+		td := newTestDir(t, goodMethod, fileNoDefault)
 
-			src := td.buildRoot()
-			defer os.RemoveAll(src)
+		src := td.buildRoot()
+		defer os.RemoveAll(src)
 
-			dst := td.buildSortedDir(src, "dst", ActionCopy)
+		dst := td.buildSortedDir(src, "dst", ActionCopy)
 
-			badFilePath := filepath.Join(dst, "testfile.CR2")
-			message := []byte("Hello, Gophers!")
+		badFilePath := filepath.Join(dst, "testfile.CR2")
+		message := []byte("Hello, Gophers!")
 
-			_ = ioutil.WriteFile(badFilePath, message, 0600)
+		_ = ioutil.WriteFile(badFilePath, message, 0600)
 
-			method, err := mergeCheck(dst)
-			if err == nil {
-				t.Errorf("Unexpected Success method %s\n", method)
-			}
+		method, err := mergeCheck(dst)
+		if err == nil {
+			t.Errorf("Unexpected Success method %s\n", method)
+		}
 
-			if method != MethodNone {
-				t.Errorf("Method %s is not MethodNone as expected\n", method)
-			}
+		if method != MethodNone {
+			t.Errorf("Method %s is not MethodNone as expected\n", method)
+		}
 
-			os.RemoveAll(badFilePath)
-			os.RemoveAll(dst)
-		})
+		os.RemoveAll(badFilePath)
+		os.RemoveAll(dst)
 	}
 }
 
@@ -274,18 +266,11 @@ func TestMergeGood(t *testing.T) {
 
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			method := method
-			action := action
-			name := action.String() + "/" + method.String()
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				err := testMerge(t, method, action, fileNo, false)
-				if err != nil {
-					t.Fatalf("Method %s, Action %s Error: %s\n",
-						action, method, err.Error())
-				}
-			})
+			err := testMerge(t, method, action, fileNo, false)
+			if err != nil {
+				t.Fatalf("Method %s, Action %s Error: %s\n",
+					action, method, err.Error())
+			}
 		}
 	}
 }
@@ -293,18 +278,11 @@ func TestMergeGood(t *testing.T) {
 func TestMergeTime(t *testing.T) {
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() + "/" + method.String()
-			action := action
-			method := method
-
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-				err := testMergeTimeSpread(t, method, action)
-				if err != nil {
-					t.Fatalf("Method %s, Action Copy Error: %s\n",
-						method, err.Error())
-				}
-			})
+			err := testMergeTimeSpread(t, method, action)
+			if err != nil {
+				t.Fatalf("Method %s, Action Copy Error: %s\n",
+					method, err.Error())
+			}
 		}
 	}
 }
@@ -316,19 +294,11 @@ func TestMergeDuplicate(t *testing.T) {
 
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() + "/" + method.String()
-			action := action
-			method := method
-
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				err := testMerge(t, method, action, fileNo, true)
-				if err != nil {
-					t.Fatalf("Method %s, Action Copy Error: %s\n",
-						method, err.Error())
-				}
-			})
+			err := testMerge(t, method, action, fileNo, true)
+			if err != nil {
+				t.Fatalf("Method %s, Action Copy Error: %s\n",
+					method, err.Error())
+			}
 		}
 	}
 }
@@ -336,18 +306,11 @@ func TestMergeDuplicate(t *testing.T) {
 func TestMergeCollisions(t *testing.T) {
 	for _, action := range Actions() {
 		for _, method := range Methods() {
-			name := action.String() + "/" + method.String()
-			action := action
-			method := method
-
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-				err := testMergeCollisions(t, method, action)
-				if err != nil {
-					t.Fatalf("Method %s, Action Copy Error: %s\n",
-						method, err.Error())
-				}
-			})
+			err := testMergeCollisions(t, method, action)
+			if err != nil {
+				t.Fatalf("Method %s, Action Copy Error: %s\n",
+					method, err.Error())
+			}
 		}
 	}
 }
