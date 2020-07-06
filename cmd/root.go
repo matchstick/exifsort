@@ -25,6 +25,21 @@ import (
 	"github.com/spf13/viper"
 )
 
+func newVersionCmd() *cobra.Command {
+	const numVersionCmdArgs = 0
+
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Output release version.",
+		Long:  `Outputs release version. `,
+		Args:  cobra.MaximumNArgs(numVersionCmdArgs),
+		Run: func(cmd *cobra.Command, args []string) {
+			version := "v1.1.1"
+			fmt.Printf("%s\n", version)
+		},
+	}
+}
+
 func newRootCmd() *cobra.Command {
 	// rootCmd represents the base command when called without any subcommands.
 	return &cobra.Command{
@@ -57,6 +72,7 @@ func Execute() {
 	rootCmd.AddCommand(newMergeCmd())
 	rootCmd.AddCommand(newScanCmd())
 	rootCmd.AddCommand(newSortCmd())
+	rootCmd.AddCommand(newVersionCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
