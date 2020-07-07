@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchstick/exifsort)](https://goreportcard.com/report/github.com/matchstick/exifsort)
-![[Go](https://github.com/matchstick/exifsort/workflows/Go/badge.svg?branch=master)](https://github.com/matchstick/exifsort/actions?query=workflow%3AGo)
+[![Go CI](https://github.com/matchstick/exifsort/workflows/Go/badge.svg?branch=master)](https://github.com/matchstick/exifsort/actions?query=workflow%3AGo)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 ![golangci-lint](https://img.shields.io/badge/golangci--lint-100%25-brightgreen)
 [![GoDoc](https://godoc.org/github.com/matchstick/exifsort?status.svg)](https://godoc.org/github.com/matchstick/exifsort)
