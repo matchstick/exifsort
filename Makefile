@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: fix vet fmt test build tidy lint build_linux build_darwin build_windows docs
+.PHONY: fix vet fmt test build tidy lint release
 
 default: build
 
@@ -24,14 +24,10 @@ REPO_GODOC := golang.org/x/tools/cmd/godoc
 build:
 	go build -v
 
-build_linux:
-	env GOOS=linux GOARCH=amd64 go build -v -o exifsort.linux
-
-build_darwin:
-	env GOOS=darwin GOARCH=amd64 go build -v -o exifsort.darwin
-
-build_windows:
-	env GOOS=windows GOARCH=amd64 go build -v -o exifsort.windows
+release:
+	env GOOS=linux GOARCH=amd64 go build -v -o release/linux/exifsort
+	env GOOS=darwin GOARCH=amd64 go build -v -o release/darwin/exifsort
+	env GOOS=windows GOARCH=amd64 go build -v -o release/windows/exifsort
 
 all: fix vet fmt tidy build lint test
 
@@ -70,4 +66,4 @@ covfunc:
 	go tool cover -func=cov.out
 
 clean:
-	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin exifsort.windows *.json
+	rm -f exifsort cov.out *.bak *.json

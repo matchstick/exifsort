@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchstick/exifsort)](https://goreportcard.com/report/github.com/matchstick/exifsort)
-[![CI](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/matchstick/exifsort/actions)
+[![Go CI](https://github.com/matchstick/exifsort/workflows/Go/badge.svg?branch=master)](https://github.com/matchstick/exifsort/actions?query=workflow%3AGo)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 ![golangci-lint](https://img.shields.io/badge/golangci--lint-100%25-brightgreen)
 [![GoDoc](https://godoc.org/github.com/matchstick/exifsort?status.svg)](https://godoc.org/github.com/matchstick/exifsort)
@@ -18,7 +18,7 @@ files on those servers.
 
 exifsort will process these [file extensions](https://godoc.org/github.com/matchstick/exifsort/lib#pkg-constants) and skip other files.
 
-# Overview
+## Overview
 
 The library and API live in the lib directory. Check out
 [exifsort/lib godocs](https://godoc.org/github.com/matchstick/exifsort/lib).
@@ -34,13 +34,30 @@ to determine how to sort the media. If it cannot find exif data it uses file mod
 
 ## Installation
 
-To build exifsort you need to use standard Makefile.
+### Install from binaries
 
-`$ make`
+| Platform |
+|----------|
+| [Linux (x64)](release/linux/exifsort) |
+| [macOS (x64)](release/darwin/exifsort) |
+| [Windows (x64)](release/windows/exifsort) |
 
-Creates exifsort.
+```sh
+# For linux/mac
+chmod +x exifsort
 
-Cross compilation is also supported in the Makefile.
+./exifsort version
+```
+
+Note: To run on MacOS the first time, it may be necessary to open the program from the finder with ctrl-click open.
+### Install from source
+
+```sh
+$ GO111MODULE=on go get -v github.com/matchstick/exifsort
+$ cd `go env GOPATH` 
+$ cd src/github.com/matchstick/exifsort
+$ make
+```
 
 ## Usage
 
@@ -57,7 +74,7 @@ JSON Example:
 
 `$ exifsort sort copy month random.json sortedNew/`
 
-# Stages
+### Stages
 
 exifsort is intended to be used in sequential stages.
 
@@ -67,7 +84,7 @@ exifsort is intended to be used in sequential stages.
 | Sort  | Use scan mapping to transfer files to newly created sorted directory organized by a method. |
 | Merge | Transfer files from one sorted directory to another sorted directory. |
 
-## Methods
+### Methods
 
 Sorted directories are organized by a method.
 
@@ -77,9 +94,9 @@ Sorted directories are organized by a method.
 | Month  | dst -> year-> month -> media | dst/2020/2020_04/pic.jpg |
 | Day    | dst -> year-> month -> day -> media | dst/2020/2020_4/20202_04_12/pic.jpg |
 
-# Commands
+## Commands
 
-## scan
+### scan
 
 **exifsort scan** reads the data from the directory of files, and builds a mapping of path to time created.
 
@@ -93,7 +110,7 @@ You can save data to a json file too:
 
 `$ exifsort scan data/ -j src.json`
 
-## sort
+### sort
 
 The sort command performs a number of steps. It can also optionally scan and sort in one command.
 
@@ -124,7 +141,7 @@ You don't want to modify the directory that you scanned to generate the json
 file between generating it and then sorting. This allow you to only scan
 once.
 
-## merge
+### merge
 
 Merge output from a sorted directory to another sorted directory.
 
@@ -139,7 +156,7 @@ Will merge two sorted directories and **move** files from one to the other.
 When using subcommand **merge** and **move** together exifsort removes duplicates in the
 src directory.
 
-## filter
+### filter
 
 Filter is identical to merge except it accepts a regular expression as an argument.
 This is used to match the files in the src diretory. Only those that match are
@@ -147,7 +164,7 @@ then merged to the dst directory.
 
 `$ exifsort filter src/ dst/ "regex"`
 
-## eval
+### eval
 
 scans by file not directory. Prints the date information of files specified.
 
