@@ -34,7 +34,7 @@ func newVersionCmd() *cobra.Command {
 		Long:  `Outputs release version. `,
 		Args:  cobra.MaximumNArgs(numVersionCmdArgs),
 		Run: func(cmd *cobra.Command, args []string) {
-			version := "v1.1.1"
+			version := "v1.1.2"
 			fmt.Printf("%s\n", version)
 		},
 	}

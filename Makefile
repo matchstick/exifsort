@@ -66,4 +66,4 @@ covfunc:
 	go tool cover -func=cov.out
 
 clean:
-	rm -f exifsort cov.out *.bak exifsort.linux exifsort.darwin exifsort.windows *.json
+	rm -f exifsort cov.out *.bak *.json
