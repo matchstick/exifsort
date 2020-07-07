@@ -34,22 +34,6 @@ to determine how to sort the media. If it cannot find exif data it uses file mod
 
 ## Installation
 
-### Install from binaries
-
-| Platform |
-|----------|
-| [Linux (x64)](release/linux/exifsort) |
-| [macOS (x64)](release/darwin/exifsort) |
-| [Windows (x64)](release/windows/exifsort) |
-
-```sh
-# For linux/mac
-chmod +x exifsort
-
-./exifsort version
-```
-
-Note: To run on MacOS the first time, it may be necessary to open the program from the finder with ctrl-click open.
 ### Install from source
 
 ```sh
