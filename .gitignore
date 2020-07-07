@@ -6,7 +6,6 @@ exifsort
 exifsort.linux
 exifsort.darwin
 exifsort.windows
-!/release/*/exifsort
 
 # Goland
 .idea/

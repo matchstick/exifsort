@@ -24,10 +24,10 @@ REPO_GODOC := golang.org/x/tools/cmd/godoc
 build:
 	go build -v
 
-release:
-	env GOOS=linux GOARCH=amd64 go build -v -o release/linux/exifsort
-	env GOOS=darwin GOARCH=amd64 go build -v -o release/darwin/exifsort
-	env GOOS=windows GOARCH=amd64 go build -v -o release/windows/exifsort
+cross:
+	env GOOS=linux   GOARCH=amd64 go build -v -o exifsort.linux
+	env GOOS=darwin  GOARCH=amd64 go build -v -o exifsort.darwin
+	env GOOS=windows GOARCH=amd64 go build -v -o exifsort.windows
 
 all: fix vet fmt tidy build lint test
 
@@ -66,4 +66,5 @@ covfunc:
 	go tool cover -func=cov.out
 
 clean:
-	rm -f exifsort cov.out *.bak *.json
+	rm -f exifsort cov.out *.bak *.json \
+		exifsort.darwin exifsort.windows exifsort.linux
