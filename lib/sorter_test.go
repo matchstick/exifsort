@@ -52,20 +52,24 @@ func testTransfer(t *testing.T, td *testdir, method Method, action Action) error
 
 func TestSortDir(t *testing.T) {
 	for _, method := range Methods() {
-		td := newTestDir(t, method, fileNoDefault)
+		method := method
+		t.Run(method.String(), func(t *testing.T) {
+			t.Parallel()
+			td := newTestDir(t, method, fileNoDefault)
 
-		src := td.buildRoot()
-		defer os.RemoveAll(src)
+			src := td.buildRoot()
+			defer os.RemoveAll(src)
 
-		err := testTransfer(t, td, method, ActionCopy)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err := testTransfer(t, td, method, ActionCopy)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
 
-		err = testTransfer(t, td, method, ActionMove)
-		if err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+			err = testTransfer(t, td, method, ActionMove)
+			if err != nil {
+				t.Errorf("%s\n", err.Error())
+			}
+		})
 	}
 }
 
@@ -136,6 +140,7 @@ func TestBadSortAction(t *testing.T) {
 }
 
 func TestSortNoOutputDir(t *testing.T) {
+	t.Parallel()
 	td := newTestDir(t, MethodNone, fileNoDefault)
 
 	src := td.buildRoot()

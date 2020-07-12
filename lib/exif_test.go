@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestFormatError(t *testing.T) {
+func TestExifFormatError(t *testing.T) {
 	testErrStr := "bad format for dingle: dangle Problem"
 	err := newScanError("dangle", "dingle")
 
@@ -15,7 +15,7 @@ func TestFormatError(t *testing.T) {
 	}
 }
 
-func TestGoodTimes(t *testing.T) {
+func TestExifGoodTimes(t *testing.T) {
 	good1String := "2008:03:01 12:36:01"
 	good2String := "2008:03:01 12:36:01.34"
 	testMonth := 3
@@ -40,7 +40,7 @@ func TestGoodTimes(t *testing.T) {
 	}
 }
 
-func TestExtractBadTimeFromStr(t *testing.T) {
+func TestExifExtractBadTimeFromStr(t *testing.T) {
 	var formBadInput = map[string]string{
 		"Gobo":                    "Space Problem",
 		"Gobo a a a a":            "Space Problem",
@@ -68,7 +68,7 @@ func TestExtractBadTimeFromStr(t *testing.T) {
 	}
 }
 
-func TestGetExifTimeErr(t *testing.T) {
+func TestExifTimeErr(t *testing.T) {
 	var testInput = map[string]bool{
 		exifPath:       true,
 		noExifPath:     false,
@@ -77,18 +77,26 @@ func TestGetExifTimeErr(t *testing.T) {
 	}
 
 	for path, valid := range testInput {
-		_, err := ExifTimeGet(path)
-		if valid == true && err != nil {
-			t.Errorf("Unexpected Error with good input file %s\n", path)
-		}
+		path := path
+		valid := valid
 
-		if !valid && err == nil {
-			t.Errorf("Expected error with invalid Exif file %s.\n", path)
-		}
+		t.Run(path, func(t *testing.T) {
+			t.Parallel()
+			_, err := ExifTimeGet(path)
+			if valid == true && err != nil {
+				t.Errorf("Unexpected Error with good input file %s\n", path)
+			}
+
+			if !valid && err == nil {
+				t.Errorf("Expected error with invalid Exif file %s.\n", path)
+			}
+		})
 	}
 }
 
-func TestGetExifTimeVal(t *testing.T) {
+func TestExifTimeVal(t *testing.T) {
+	t.Parallel()
+
 	goodTime, _ := extractTimeFromStr(exifTimeStr)
 
 	time, err := ExifTimeGet(exifPath)
