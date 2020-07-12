@@ -212,41 +212,41 @@ func (td *testdir) setModTimes(dir string, match string) {
 
 func (td *testdir) buildRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
-	td.populateExifFiles(exifDir, 50)
+	td.populateExifFiles(exifDir, 10)
 
 	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
-	td.populateExifFiles(nestedDir, 25)
+	td.populateExifFiles(nestedDir, 5)
 
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	td.populateNoExifFiles(noExifDir, 25)
+	td.populateNoExifFiles(noExifDir, 5)
 
 	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
-	td.populateExifFiles(mixedDir, 25)
-	td.populateNoExifFiles(mixedDir, 25)
+	td.populateExifFiles(mixedDir, 5)
+	td.populateNoExifFiles(mixedDir, 5)
 
 	return td.root
 }
 
 func (td *testdir) buildCollisionWithRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
-	td.populateCollisionFiles(exifDir, 50)
+	td.populateCollisionFiles(exifDir, 10)
 
 	nestedDir, _ := ioutil.TempDir(exifDir, "nested_exif")
-	td.populateCollisionFiles(nestedDir, 25)
+	td.populateCollisionFiles(nestedDir, 5)
 
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	td.populateCollisionFiles(noExifDir, 25)
+	td.populateCollisionFiles(noExifDir, 5)
 
 	mixedDir, _ := ioutil.TempDir(td.root, "mixed_exif")
-	td.populateCollisionFiles(mixedDir, 25)
+	td.populateCollisionFiles(mixedDir, 5)
 
 	return td.root
 }
 
 func (td *testdir) buildTifRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "dir_")
-	td.populateNoExifFiles(exifDir, 25)
-	td.populateTifFiles(exifDir, 125)
+	td.populateNoExifFiles(exifDir, 5)
+	td.populateTifFiles(exifDir, 25)
 
 	return td.root
 }
@@ -255,7 +255,7 @@ func (td *testdir) buildTifRoot() string {
 // All modtimes.
 func (td *testdir) buildTimeSpreadRoot() string {
 	exifDir, _ := ioutil.TempDir(td.root, "with_exif")
-	td.populateNoExifFiles(exifDir, 25)
+	td.populateNoExifFiles(exifDir, 5)
 	td.setModTimes(exifDir, noExifPath)
 
 	td.incrementTimeByMethod(10)
@@ -267,7 +267,7 @@ func (td *testdir) buildTimeSpreadRoot() string {
 	td.incrementTimeByMethod(10)
 
 	noExifDir, _ := ioutil.TempDir(td.root, "no_exif")
-	td.populateNoExifFiles(noExifDir, 25)
+	td.populateNoExifFiles(noExifDir, 5)
 	td.setModTimes(noExifDir, noExifPath)
 
 	return td.root
@@ -278,9 +278,9 @@ func (td *testdir) buildSkipRoot() string {
 	skipDir, _ := ioutil.TempDir(td.root, "skip")
 
 	// First add exif files
-	td.populateExifFiles(exifDir, 50)
+	td.populateExifFiles(exifDir, 10)
 	// Add files we want to skip.
-	td.populateSkipFiles(skipDir, 25)
+	td.populateSkipFiles(skipDir, 5)
 
 	return td.root
 }
@@ -290,7 +290,7 @@ func (td *testdir) buildBadRoot() string {
 	badDir, _ := ioutil.TempDir(td.root, "bad")
 
 	// First add exif files
-	td.populateExifFiles(exifDir, 50)
+	td.populateExifFiles(exifDir, 10)
 
 	// Taint the badDir so we can exercise the error paths
 	err := os.Chmod(badDir, 0)
@@ -309,14 +309,14 @@ func (td *testdir) buildCollisionWithinThisRoot() string {
 	collisionDir, _ := ioutil.TempDir(td.root, "collision")
 
 	// First add exif files
-	td.populateExifFiles(exifDir, 50)
+	td.populateExifFiles(exifDir, 10)
 
 	// What we are doing is setting our fileno counter back to the start
 	// This will construct filenames that equal the ones created alredy.
 	td.fileNo = td.fileNoStart
 
 	// Add collision files to first exif set using noExifPath
-	td.populateCollisionFiles(collisionDir, 25)
+	td.populateCollisionFiles(collisionDir, 5)
 
 	return td.root
 }
@@ -327,14 +327,14 @@ func (td *testdir) buildDuplicateWithinThisRoot() string {
 	duplicateDir, _ := ioutil.TempDir(td.root, "duplicate")
 
 	// First add exif files
-	td.populateExifFiles(exifDir, 50)
+	td.populateExifFiles(exifDir, 10)
 
 	// What we are doing is setting our fileno counter back to the start
 	// This will construct filenames that equal the ones created already.
 	td.fileNo = td.fileNoStart
 
 	// Add collision files to first exif set using noExifPath
-	td.populateDuplicateFiles(duplicateDir, exifPath, 25)
+	td.populateDuplicateFiles(duplicateDir, exifPath, 5)
 
 	return td.root
 }
