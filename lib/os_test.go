@@ -24,6 +24,8 @@ func testOSPopulateFile(dir string, filename string) error {
 }
 
 func TestOSMoveFile(t *testing.T) {
+	t.Parallel()
+
 	testDir, _ := ioutil.TempDir("", "moveDir_")
 	defer os.RemoveAll(testDir)
 
@@ -62,6 +64,8 @@ func TestOSMoveFile(t *testing.T) {
 }
 
 func TestOSCopyFile(t *testing.T) {
+	t.Parallel()
+
 	testDir, _ := ioutil.TempDir("", "moveDir_")
 	defer os.RemoveAll(testDir)
 
