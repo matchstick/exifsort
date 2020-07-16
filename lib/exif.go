@@ -2,6 +2,7 @@ package exifsort
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -11,6 +12,11 @@ import (
 )
 
 const numSecsSplit = 2 // we expect two pieces
+
+func newExifError(label string, dateString string) error {
+	return fmt.Errorf("bad format for %s: %s Problem", dateString, label)
+}
+
 
 // Seconds are funny. The format may be "<sec> <milli>"
 // or it may be with an extra decmial place such as <sec>.<hundredths>.
@@ -34,24 +40,24 @@ const numDateSplit = 3 // We expect the date to be X:X:X
 func dateFromStr(str string, exifDateTime string) (int, time.Month, int, error) {
 	splitDate := strings.Split(str, ":")
 	if len(splitDate) != numDateSplit {
-		return 0, 0, 0, newScanError("Date Split", exifDateTime)
+		return 0, 0, 0, newExifError("Date Split", exifDateTime)
 	}
 
 	year, err := strconv.Atoi(splitDate[0])
 	if err != nil || year <= 0 || year > 9999 {
-		return 0, 0, 0, newScanError("Year", exifDateTime)
+		return 0, 0, 0, newExifError("Year", exifDateTime)
 	}
 
 	monthInt, err := strconv.Atoi(splitDate[1])
 
 	month := time.Month(monthInt)
 	if err != nil || month < time.January || month > time.December {
-		return 0, 0, 0, newScanError("Month", exifDateTime)
+		return 0, 0, 0, newExifError("Month", exifDateTime)
 	}
 
 	day, err := strconv.Atoi(splitDate[2])
 	if err != nil || day < 1 || day > 31 {
-		return 0, 0, 0, newScanError("Day", exifDateTime)
+		return 0, 0, 0, newExifError("Day", exifDateTime)
 	}
 
 	return year, month, day, nil
@@ -62,24 +68,24 @@ const numTimeSplit = 3 // We expect time to be X:X:X
 func timeFromStr(str string, exifDateTime string) (int, int, int, error) {
 	splitTime := strings.Split(str, ":")
 	if len(splitTime) != numTimeSplit {
-		return 0, 0, 0, newScanError("Time Split", exifDateTime)
+		return 0, 0, 0, newExifError("Time Split", exifDateTime)
 	}
 
 	hour, err := strconv.Atoi(splitTime[0])
 	if err != nil || hour < 0 || hour > 23 {
-		return 0, 0, 0, newScanError("Hour", exifDateTime)
+		return 0, 0, 0, newExifError("Hour", exifDateTime)
 	}
 
 	minute, err := strconv.Atoi(splitTime[1])
 	if err != nil || minute < 0 || minute > 59 {
-		return 0, 0, 0, newScanError("Minute", exifDateTime)
+		return 0, 0, 0, newExifError("Minute", exifDateTime)
 	}
 
 	second, err := strconv.Atoi(splitTime[2])
 	if err != nil || second < 0 || second > 59 {
 		second, err = secsFractionFromStr(splitTime[2])
 		if err != nil {
-			return 0, 0, 0, newScanError("Sec", exifDateTime)
+			return 0, 0, 0, newExifError("Sec", exifDateTime)
 		}
 	}
 
@@ -93,7 +99,7 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 
 	splitDateTime := strings.Split(exifDateTime, " ")
 	if len(splitDateTime) != numDateTimeSplit {
-		return t, newScanError("Space Problem", exifDateTime)
+		return t, newExifError("Space Problem", exifDateTime)
 	}
 
 	date := splitDateTime[0]

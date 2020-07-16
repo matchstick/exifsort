@@ -8,7 +8,7 @@ import (
 
 func TestExifFormatError(t *testing.T) {
 	testErrStr := "bad format for dingle: dangle Problem"
-	err := newScanError("dangle", "dingle")
+	err := newExifError("dangle", "dingle")
 
 	if err.Error() != testErrStr {
 		t.Errorf("Errors do not match: %s %s", err, testErrStr)
