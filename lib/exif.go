@@ -17,7 +17,6 @@ func newExifError(label string, dateString string) error {
 	return fmt.Errorf("bad format for %s: %s Problem", dateString, label)
 }
 
-
 // Seconds are funny. The format may be "<sec> <milli>"
 // or it may be with an extra decmial place such as <sec>.<hundredths>.
 func secsFractionFromStr(secsStr string) (int, error) {

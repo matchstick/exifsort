@@ -12,5 +12,5 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	github.com/udhos/equalfile v0.3.0
-	golang.org/x/tools v0.0.0-20200711155855-7342f9734a7d // indirect
+	golang.org/x/tools v0.0.0-20200715235423-130c9f19d3fe // indirect
 )
