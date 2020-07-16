@@ -7,7 +7,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
+	"github.com/stretchr/powerwalk"
+	"sync"
 )
 
 // ScannerInput specifies how scanner receives data
@@ -22,6 +25,16 @@ const (
 	ScannerInputNone
 )
 
+type scanError struct {
+	path	string
+	err		error
+}
+
+type scanData struct {
+	path	string
+	time	time.Time
+}
+
 // Scanner is your API to scan directory of media.
 //
 // It holds errors and data results of the scan after scanning.
@@ -33,6 +46,34 @@ type Scanner struct {
 	ExifErrors        map[string]string
 	NumExifErrorTypes map[string]int
 	ScanErrors        map[string]string
+	scanErrorChannel  chan scanError
+	exifErrorChannel  chan scanError
+	dataChannel       chan scanData
+	done              chan bool
+	walkComplete      sync.WaitGroup
+}
+
+func (s *Scanner) sendScanError(logger io.Writer, path string, err error) {
+	var payload scanError
+	payload.path = path
+	payload.err  = err
+	fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
+	s.scanErrorChannel <- payload
+}
+
+func (s *Scanner) sendExifError(path string, err error) {
+	var payload scanError
+	payload.path = path
+	payload.err  = err
+	s.exifErrorChannel <- payload
+}
+
+func (s *Scanner) sendScanData(logger io.Writer, path string, time time.Time) {
+	var payload scanData
+	payload.path  = path
+	payload.time  = time
+	fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
+	s.dataChannel <- payload
 }
 
 // NumTotal returns the total number of files skipped, scanned and errors.
@@ -108,7 +149,7 @@ func (s *Scanner) modTime(path string) (time.Time, error) {
 func (s *Scanner) ScanFile(path string) (time.Time, error) {
 	time, err := ExifTimeGet(path)
 	if err != nil {
-		s.storeExifError(path, err)
+		s.sendExifError(path, err)
 		return s.modTime(path)
 	}
 
@@ -120,9 +161,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		var time time.Time
 
 		if err != nil {
-			s.storeScanError(path, err)
-			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
-
+			s.sendScanError(logger, path, err)
 			return nil
 		}
 
@@ -143,14 +182,28 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		}
 
 		if err != nil {
-			s.storeScanError(path, err)
-			fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
+			s.sendScanError(logger, path, err)
 		} else {
-			s.storeData(path, time)
-			fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
+			s.sendScanData(logger, path, time)
 		}
 
 		return nil
+	}
+}
+
+func (s *Scanner) scanResults() {
+	for {
+		select {
+		case scanErr  := <-s.scanErrorChannel:
+			s.storeScanError(scanErr.path, scanErr.err)
+		case scanErr  := <-s.exifErrorChannel:
+			s.storeExifError(scanErr.path, scanErr.err)
+		case scanData := <-s.dataChannel:
+			s.storeData(scanData.path, scanData.time)
+		case <-s.done:
+			s.walkComplete.Done()
+			return
+		}
 	}
 }
 
@@ -162,6 +215,12 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 //
 // logger specifies where to send output while scanning.
 func (s *Scanner) ScanDir(src string, logger io.Writer) error {
+	defer close (s.scanErrorChannel)
+	defer close (s.exifErrorChannel)
+	defer close (s.dataChannel)
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	s.Input = ScannerInputDir
 
 	info, err := os.Stat(src)
@@ -169,10 +228,16 @@ func (s *Scanner) ScanDir(src string, logger io.Writer) error {
 		return err
 	}
 
+	s.walkComplete.Add(1)
+	go s.scanResults()
 	// scanFunc never returns an error
 	// We don't want to walk for an hour and then fail on one error.
 	// Consult the walkstate for errors.
-	_ = filepath.Walk(src, s.scanFunc(logger))
+	fmt.Printf("src: %s\n", src)
+	_ = powerwalk.Walk(src, s.scanFunc(logger))
+	close (s.done)
+
+	s.walkComplete.Wait()
 
 	return nil
 }
@@ -218,6 +283,10 @@ func (s *Scanner) Reset() {
 	s.ExifErrors = make(map[string]string)
 	s.NumExifErrorTypes = make(map[string]int)
 	s.ScanErrors = make(map[string]string)
+	s.exifErrorChannel = make(chan scanError)
+	s.scanErrorChannel = make(chan scanError)
+	s.dataChannel = make(chan scanData)
+	s.done = make(chan bool)
 }
 
 // NewScanner allocates a new Scanner.
