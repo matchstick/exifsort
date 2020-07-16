@@ -2,7 +2,6 @@ package exifsort
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,13 +9,6 @@ import (
 	"path/filepath"
 	"time"
 )
-
-func newScanError(label string, dateString string) error {
-	errStr := fmt.Sprintf("bad format for %s: %s Problem",
-		dateString, label)
-
-	return errors.New(errStr)
-}
 
 // ScannerInput specifies how scanner receives data
 type ScannerInput int
