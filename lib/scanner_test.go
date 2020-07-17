@@ -96,9 +96,9 @@ func testCheckScanCounts(t *testing.T, td *testdir, s Scanner) {
 			td.numExifError, len(exifErrs))
 	}
 
-	if td.numSkipped != s.SkippedCount {
+	if td.numSkipped != s.NumSkipped() {
 		t.Errorf("Expected %d Skipped got %d\n",
-			td.numSkipped, s.SkippedCount)
+			td.numSkipped, s.NumSkipped())
 	}
 
 	if td.numScanError != len(s.ScanErrors) {

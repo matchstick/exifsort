@@ -7,10 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
-	"time"
-	"github.com/stretchr/powerwalk"
 	"sync"
+	"sync/atomic"
+	"time"
 )
 
 // ScannerInput specifies how scanner receives data
@@ -26,13 +25,88 @@ const (
 )
 
 type scanError struct {
-	path	string
-	err		error
+	path string
+	err  error
 }
 
 type scanData struct {
-	path	string
-	time	time.Time
+	path string
+	time time.Time
+}
+
+type scanDirState struct {
+	scanErrorChannel chan scanError
+	exifErrorChannel chan scanError
+	dataChannel      chan scanData
+	done             chan bool
+	walkComplete     sync.WaitGroup
+}
+
+func (s *scanDirState) gatherResults(scanner *Scanner) {
+	go func() {
+		for {
+			select {
+			case scanErr := <-s.scanErrorChannel:
+				scanner.storeScanError(scanErr.path, scanErr.err)
+			case scanErr := <-s.exifErrorChannel:
+				scanner.storeExifError(scanErr.path, scanErr.err)
+			case scanData := <-s.dataChannel:
+				scanner.storeData(scanData.path, scanData.time)
+			case <-s.done:
+				s.walkComplete.Done()
+				return
+			}
+		}
+	}()
+}
+
+func (s *scanDirState) sendScanError(logger io.Writer, path string, err error) {
+	var payload scanError
+	payload.path = path
+	payload.err = err
+	fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
+	s.scanErrorChannel <- payload
+}
+
+func (s *scanDirState) sendExifError(path string, err error) {
+	var payload scanError
+	payload.path = path
+	payload.err = err
+	s.exifErrorChannel <- payload
+}
+
+func (s *scanDirState) sendScanData(logger io.Writer, path string, time time.Time) {
+	var payload scanData
+	payload.path = path
+	payload.time = time
+
+	str := fmt.Sprintf("%d:%02d:%02d %02d:%02d:%02d",
+		time.Year(), time.Month(), time.Day(),
+		time.Hour(), time.Minute(), time.Second())
+	fmt.Fprintf(logger, "%s, %s\n", path, str)
+	s.dataChannel <- payload
+}
+
+func (s *scanDirState) Wait() {
+	close(s.done)
+
+	s.walkComplete.Wait()
+
+	close(s.scanErrorChannel)
+	close(s.exifErrorChannel)
+	close(s.dataChannel)
+}
+
+func newRunState() *scanDirState {
+	var s scanDirState
+	s.exifErrorChannel = make(chan scanError)
+	s.scanErrorChannel = make(chan scanError)
+	s.dataChannel = make(chan scanData)
+	s.done = make(chan bool)
+
+	s.walkComplete.Add(1)
+
+	return &s
 }
 
 // Scanner is your API to scan directory of media.
@@ -40,45 +114,18 @@ type scanData struct {
 // It holds errors and data results of the scan after scanning.
 type Scanner struct {
 	Input             ScannerInput
-	SkippedCount      int
+	SkippedCount      int32
 	Data              map[string]time.Time
 	NumDataTypes      map[string]int
 	ExifErrors        map[string]string
 	NumExifErrorTypes map[string]int
 	ScanErrors        map[string]string
-	scanErrorChannel  chan scanError
-	exifErrorChannel  chan scanError
-	dataChannel       chan scanData
-	done              chan bool
-	walkComplete      sync.WaitGroup
-}
-
-func (s *Scanner) sendScanError(logger io.Writer, path string, err error) {
-	var payload scanError
-	payload.path = path
-	payload.err  = err
-	fmt.Fprintf(logger, "Error: %s: (%s)\n", path, err.Error())
-	s.scanErrorChannel <- payload
-}
-
-func (s *Scanner) sendExifError(path string, err error) {
-	var payload scanError
-	payload.path = path
-	payload.err  = err
-	s.exifErrorChannel <- payload
-}
-
-func (s *Scanner) sendScanData(logger io.Writer, path string, time time.Time) {
-	var payload scanData
-	payload.path  = path
-	payload.time  = time
-	fmt.Fprintf(logger, "%s, %s\n", path, exifTimeToStr(time))
-	s.dataChannel <- payload
+	DirState          *scanDirState
 }
 
 // NumTotal returns the total number of files skipped, scanned and errors.
 func (s *Scanner) NumTotal() int {
-	return s.SkippedCount + len(s.Data) + len(s.ScanErrors)
+	return s.NumSkipped() + len(s.Data) + len(s.ScanErrors)
 }
 
 // We don't check if you have a path duplicate.
@@ -114,13 +161,11 @@ func (s *Scanner) storeScanError(path string, err error) {
 }
 
 func (s *Scanner) storeSkipped() {
-	s.SkippedCount++
+	atomic.AddInt32(&s.SkippedCount, 1)
 }
 
-func exifTimeToStr(t time.Time) string {
-	return fmt.Sprintf("%d:%02d:%02d %02d:%02d:%02d",
-		t.Year(), t.Month(), t.Day(),
-		t.Hour(), t.Minute(), t.Second())
+func (s *Scanner) NumSkipped() int {
+	return int(atomic.LoadInt32(&s.SkippedCount))
 }
 
 func (s *Scanner) modTime(path string) (time.Time, error) {
@@ -148,12 +193,20 @@ func (s *Scanner) modTime(path string) (time.Time, error) {
 // It returns an error if the file has no exif data and cannot be statted.
 func (s *Scanner) ScanFile(path string) (time.Time, error) {
 	time, err := ExifTimeGet(path)
-	if err != nil {
-		s.sendExifError(path, err)
-		return s.modTime(path)
+	// Note we are checking == not !=
+	if err == nil {
+		return time, nil
 	}
 
-	return time, nil
+	// If we are running a ScanDir while calling ScanFile we need to use the
+	// state tooling to gather stats concurrently.
+	if s.DirState != nil {
+		s.DirState.sendExifError(path, err)
+	} else {
+		s.storeExifError(path, err)
+	}
+
+	return s.modTime(path)
 }
 
 func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
@@ -161,7 +214,7 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		var time time.Time
 
 		if err != nil {
-			s.sendScanError(logger, path, err)
+			s.DirState.sendScanError(logger, path, err)
 			return nil
 		}
 
@@ -182,28 +235,12 @@ func (s *Scanner) scanFunc(logger io.Writer) filepath.WalkFunc {
 		}
 
 		if err != nil {
-			s.sendScanError(logger, path, err)
+			s.DirState.sendScanError(logger, path, err)
 		} else {
-			s.sendScanData(logger, path, time)
+			s.DirState.sendScanData(logger, path, time)
 		}
 
 		return nil
-	}
-}
-
-func (s *Scanner) scanResults() {
-	for {
-		select {
-		case scanErr  := <-s.scanErrorChannel:
-			s.storeScanError(scanErr.path, scanErr.err)
-		case scanErr  := <-s.exifErrorChannel:
-			s.storeExifError(scanErr.path, scanErr.err)
-		case scanData := <-s.dataChannel:
-			s.storeData(scanData.path, scanData.time)
-		case <-s.done:
-			s.walkComplete.Done()
-			return
-		}
 	}
 }
 
@@ -215,12 +252,6 @@ func (s *Scanner) scanResults() {
 //
 // logger specifies where to send output while scanning.
 func (s *Scanner) ScanDir(src string, logger io.Writer) error {
-	defer close (s.scanErrorChannel)
-	defer close (s.exifErrorChannel)
-	defer close (s.dataChannel)
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	s.Input = ScannerInputDir
 
 	info, err := os.Stat(src)
@@ -228,16 +259,17 @@ func (s *Scanner) ScanDir(src string, logger io.Writer) error {
 		return err
 	}
 
-	s.walkComplete.Add(1)
-	go s.scanResults()
+	s.DirState = newRunState()
+
+	s.DirState.gatherResults(s)
+
 	// scanFunc never returns an error
 	// We don't want to walk for an hour and then fail on one error.
 	// Consult the walkstate for errors.
-	fmt.Printf("src: %s\n", src)
-	_ = powerwalk.Walk(src, s.scanFunc(logger))
-	close (s.done)
+	_ = filepath.Walk(src, s.scanFunc(logger))
+	s.DirState.Wait()
 
-	s.walkComplete.Wait()
+	s.DirState = nil
 
 	return nil
 }
@@ -283,10 +315,7 @@ func (s *Scanner) Reset() {
 	s.ExifErrors = make(map[string]string)
 	s.NumExifErrorTypes = make(map[string]int)
 	s.ScanErrors = make(map[string]string)
-	s.exifErrorChannel = make(chan scanError)
-	s.scanErrorChannel = make(chan scanError)
-	s.dataChannel = make(chan scanData)
-	s.done = make(chan bool)
+	s.DirState = nil
 }
 
 // NewScanner allocates a new Scanner.
