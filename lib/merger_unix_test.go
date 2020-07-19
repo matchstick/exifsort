@@ -81,21 +81,3 @@ func TestMergePathBad(t *testing.T) {
 		}
 	}
 }
-
-func TestMergeFilter(t *testing.T) {
-	for _, method := range Methods() {
-		err := testMergeFilter(t, method, ActionCopy)
-		if err != nil {
-			t.Fatalf("Method %s, Action Copy Error: %s\n",
-				method, err.Error())
-		}
-	}
-
-	for _, method := range Methods() {
-		err := testMergeFilter(t, method, ActionMove)
-		if err != nil {
-			t.Fatalf("Method %s, Action Move Error: %s\n",
-				method, err.Error())
-		}
-	}
-}
