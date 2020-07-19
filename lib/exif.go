@@ -120,10 +120,29 @@ func extractTimeFromStr(exifDateTime string) (time.Time, error) {
 	return t, nil
 }
 
-const validDateTimeOrigninalTagNum = 1
+func queryTag(exifIfd *exif.Ifd) (value string, err error) {
+	const uniqueTagNum = 1
 
-// ExifTimeGet accepts a filepath, returns the 'IFD/EXIF/DateTimeOriginal'
-// contained in its metadata.
+	tags := []string{
+		"DateTimeOriginal",
+		"DateTimeDigitized",
+	}
+
+	for _, tag := range tags {
+		results, err := exifIfd.FindTagWithName(tag)
+		// See if we found tag and there is only one
+		if err == nil && len(results) == uniqueTagNum {
+			// Found it, so extract value
+			value, _ := results[0].Value()
+			return value.(string), nil
+		}
+	}
+
+	return "", fmt.Errorf("cannot find tags: %s", strings.Join(tags, " or "))
+}
+
+// ExifTimeGet accepts a filepath, returns either 'IFD/EXIF/DateTimeOriginal'
+// value or 'IFD/EXIF/DateTimeDigitized' contained in its metadata.
 func ExifTimeGet(filepath string) (time.Time, error) {
 	var time time.Time
 	// Get the Exif Data and Ifd root
@@ -136,27 +155,19 @@ func ExifTimeGet(filepath string) (time.Time, error) {
 		return time, errors.New("root ifd not found")
 	}
 
-	// See if the EXIF info path is there. We want DateTimeOriginal
+	// See if the EXIF info path is there.
 	exifIfd, err := exif.FindIfdFromRootIfd(mc.RootIfd, "IFD/Exif")
 	if err != nil {
 		return time, errors.New("media IFD/Exif not found")
 	}
 
-	// Query for DateTimeOriginal
-	results, err := exifIfd.FindTagWithName("DateTimeOriginal")
+	value, err := queryTag(exifIfd)
 	if err != nil {
-		return time, errors.New("the DateTimeOriginal Tag was not found")
+		return time, err
 	}
-
-	if len(results) != validDateTimeOrigninalTagNum {
-		return time, errors.New("too many DateTimeOriginal Tags found")
-	}
-
-	// Found it, so extract value
-	value, _ := results[0].Value()
 
 	// Parse string into Time
-	time, err = extractTimeFromStr(value.(string))
+	time, err = extractTimeFromStr(value)
 	if err != nil {
 		return time, err
 	}
