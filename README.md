@@ -30,7 +30,8 @@ are not duplicates among this series of stages. Along the way it tries to weed
 out duplicates. This directory is sorted by one of three **methods**.
 
 exifsort will try to use the file exif data's **IFD/EXIF/DateTimeOriginal** field
-to determine how to sort the media. If it cannot find exif data it uses file modtime.
+to determine how to sort the media. If it cannot find exif data it checks
+**IFD/EXIF/DateTimeDigitized**. If it cannot find that it uses file modtime.
 
 ## Installation
 

@@ -100,9 +100,9 @@ func (s *Scanner) modTime(path string) (time.Time, error) {
 }
 
 // ScanFile accepts a filepath, reads the exifdata stored inside and
-// returns the 'Exif/DateTimeOriginal' value as a golang time.Time format. If
-// the exifData is not valid it will return the time based on FileInfo's
-// ModTime.
+// returns the 'Exif/DateTimeOriginal' value or the 'ExifDateTimeDigitized'
+// value as a golang time.Time format. If the exifData is not valid it will
+// return the time based on FileInfo's ModTime.
 //
 // It returns an error if the file has no exif data and cannot be statted.
 func (s *Scanner) ScanFile(path string) (time.Time, error) {

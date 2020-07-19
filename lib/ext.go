@@ -5,8 +5,7 @@ import (
 	"strings"
 )
 
-// ExtensionsPhoto returns set of supported Extensions that we process by
-// checking "IFD/EXIF/DateTimeOriginal" data then if needed modTime.
+// ExtensionsPhoto returns set of supported Extensions that we process.
 //
 // Set includes: bmp, cr2, dng, gif, jpeg, jpg, nef, png, psd, raf, raw, tif,
 // tiff.
@@ -30,7 +29,7 @@ func ExtensionsPhoto() []string {
 }
 
 // ExtensionsMovie returns the set of extensions for files that take a long time
-// to extract "IFD/EXIF/DateTimeOriginal" so we only check modTime. Set
+// to extract exif data so we only check modTime for these extensions. Set
 // includes: 3g2, 3gp, avi, m4v, mov, mp4, mpg, wmv.
 func ExtensionsMovie() []string {
 	return []string{
