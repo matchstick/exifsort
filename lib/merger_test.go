@@ -405,3 +405,33 @@ func TestMergeMethodMultiple(t *testing.T) {
 		t.Errorf("Succes is unexpected. src and dst have the different methods\n")
 	}
 }
+
+func TestMergeFilter(t *testing.T) {
+	for _, method := range Methods() {
+		method := method
+
+		t.Run(method.String(), func(t *testing.T) {
+			t.Parallel()
+
+			err := testMergeFilter(t, method, ActionCopy)
+			if err != nil {
+				t.Fatalf("Method %s, Action Copy Error: %s\n",
+					method, err.Error())
+			}
+		})
+	}
+
+	for _, method := range Methods() {
+		method := method
+
+		t.Run(method.String(), func(t *testing.T) {
+			t.Parallel()
+
+			err := testMergeFilter(t, method, ActionMove)
+			if err != nil {
+				t.Fatalf("Method %s, Action Move Error: %s\n",
+					method, err.Error())
+			}
+		})
+	}
+}
