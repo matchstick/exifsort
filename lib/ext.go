@@ -7,8 +7,8 @@ import (
 
 // ExtensionsPhoto returns set of supported Extensions that we process.
 //
-// Set includes: bmp, cr2, dng, gif, jpeg, jpg, nef, png, psd, raf, raw, tif,
-// tiff.
+// Set includes: bmp, cr2, dng, gif, heic, heics, jpeg, jpg, nef, png, psd, raf,
+// raw, tif, tiff.
 func ExtensionsPhoto() []string {
 	// We are going to do this check a lot so let's use a map.
 	return []string{
@@ -16,6 +16,8 @@ func ExtensionsPhoto() []string {
 		".cr2",
 		".dng",
 		".gif",
+		".heic",
+		".heics",
 		".jpeg",
 		".jpg",
 		".nef",
