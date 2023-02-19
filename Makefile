@@ -26,7 +26,8 @@ build:
 
 cross:
 	env GOOS=linux   GOARCH=amd64 go build -v -o exifsort.linux
-	env GOOS=darwin  GOARCH=amd64 go build -v -o exifsort.darwin
+	env GOOS=darwin  GOARCH=amd64 go build -v -o exifsort.darwin-amd64
+	env GOOS=darwin  GOARCH=arm64 go build -v -o exifsort.darwin-arm64
 	env GOOS=windows GOARCH=amd64 go build -v -o exifsort.exe
 
 all: fix vet fmt tidy build lint test
